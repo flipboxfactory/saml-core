@@ -123,7 +123,7 @@ abstract class AbstractMetadata extends Controller
      */
     public function actionCreate()
     {
-
+        $this->newProviderRecord([]);
         if (! $this->keyPairId) {
             $this->chooseFromKeyChain();
         }

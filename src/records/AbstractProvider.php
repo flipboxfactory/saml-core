@@ -15,11 +15,6 @@ use LightSaml\Model\Metadata\EntityDescriptor;
 abstract class AbstractProvider extends ActiveRecord
 {
     const METADATA_HASH_ALGO = 'sha256';
-//
-//    /**
-//     * @var null|EntityDescriptor
-//     */
-//    private $metadataModel;
 
     public function beforeSave($insert)
     {

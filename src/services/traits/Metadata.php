@@ -41,7 +41,7 @@ trait Metadata
             $spSsoDescriptor->addKeyDescriptor(
                 $keyDescriptor = (new KeyDescriptor())
                     ->setUse(KeyDescriptor::USE_SIGNING)
-                    ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->certificate))
+                    ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getCertificate()))
             );
         }
 
@@ -54,7 +54,7 @@ trait Metadata
             $spSsoDescriptor->addKeyDescriptor(
                 $keyDescriptor = (new KeyDescriptor())
                     ->setUse(KeyDescriptor::USE_ENCRYPTION)
-                    ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->certificate))
+                    ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getCertificate()))
             );
 
         }
