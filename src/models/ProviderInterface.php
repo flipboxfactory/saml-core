@@ -7,6 +7,7 @@
  */
 
 namespace flipbox\saml\core\models;
+
 use LightSaml\Model\Metadata\EntityDescriptor;
 
 interface ProviderInterface
@@ -15,5 +16,5 @@ interface ProviderInterface
      *
      * @return EntityDescriptor|null
      */
-    public function getMetadata();
+    public function getMetadataModel();
 }

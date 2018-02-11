@@ -18,6 +18,33 @@ use flipbox\saml\core\records\LinkRecord;
 abstract class AbstractProviderService extends Component
 {
     /**
+     * @return string
+     */
+    abstract protected function getRecordClass();
+
+    /**
+     * @param array $condition
+     * @return AbstractProvider
+     */
+    public function find($condition = [])
+    {
+        /** @var AbstractProvider $class */
+        $class = $this->getRecordClass();
+        return $class::find()->where($condition)->one();
+    }
+
+    /**
+     * @param $entityId
+     * @return AbstractProvider
+     */
+    public function findByEntityId($entityId)
+    {
+        return $this->find([
+            'entityId' => $entityId,
+        ]);
+    }
+
+    /**
      * @param AbstractProvider $record
      * @param bool $runValidation
      * @param null $attributeNames
@@ -26,6 +53,10 @@ abstract class AbstractProviderService extends Component
      */
     public function save(AbstractProvider $record, $runValidation = true, $attributeNames = null)
     {
+        if ($record->isNewRecord) {
+            $record->loadDefaultValues();
+        }
+
         //save record
         if (! $record->save($runValidation, $attributeNames)) {
             throw new \Exception(Json::encode($record->getErrors()));

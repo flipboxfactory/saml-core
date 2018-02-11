@@ -16,6 +16,12 @@ abstract class AbstractProvider extends ActiveRecord
 {
     const METADATA_HASH_ALGO = 'sha256';
 
+    protected $metadataModel;
+
+    /**
+     * @param $insert
+     * @return bool
+     */
     public function beforeSave($insert)
     {
         if (! $this->entityId) {
@@ -26,13 +32,19 @@ abstract class AbstractProvider extends ActiveRecord
         return parent::beforeSave($insert);
     }
 
+    /**
+     * @return string
+     */
     public function getEntityId()
     {
-        $metadata = $this->getMetadata();
+        $metadata = $this->getMetadataModel();
         return $metadata->getEntityID();
     }
 
-    public function getMetadata(): EntityDescriptor
+    /**
+     * @return EntityDescriptor
+     */
+    public function getMetadataModel(): EntityDescriptor
     {
         if (! $this->metadataModel) {
             $this->metadataModel = EntityDescriptor::loadXml($this->metadata);

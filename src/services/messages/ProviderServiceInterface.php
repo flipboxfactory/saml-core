@@ -9,6 +9,7 @@
 namespace flipbox\saml\core\services\messages;
 
 
+use flipbox\saml\core\models\ProviderInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\keychain\records\KeyChainRecord;
 
@@ -37,4 +38,10 @@ interface ProviderServiceInterface
         $runValidation = true,
         $attributeNames = null
     );
+
+    /**
+     * @param string $entityId
+     * @return ProviderInterface
+     */
+    public function findByEntityId($entityId);
 }

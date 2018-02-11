@@ -7,15 +7,25 @@
  */
 
 namespace flipbox\saml\core\services\traits;
+
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\SamlPluginInterface;
 use LightSaml\Model\Metadata\SSODescriptor;
 use flipbox\keychain\records\KeyChainRecord;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Credential\X509Certificate;
+use LightSaml\SamlConstants;
 
 
 trait Metadata
 {
+    /**
+     * @var array
+     */
+    protected $supportedBindings = [
+        SamlConstants::BINDING_SAML2_HTTP_REDIRECT,
+        SamlConstants::BINDING_SAML2_HTTP_POST,
+    ];
 
     /**
      * @return string
@@ -32,32 +42,62 @@ trait Metadata
      */
     abstract public function getLoginLocation();
 
+    /**
+     * @return array
+     */
+    abstract public function getSupportedBindings();
+
+    /**
+     * @return SamlPluginInterface
+     */
     abstract protected function getSamlPlugin(): SamlPluginInterface;
 
-    public function setSign(SSODescriptor $spSsoDescriptor, KeyChainRecord $keyChainRecord)
+    /**
+     * @param AbstractProvider $provider
+     * @return bool
+     */
+    abstract protected function useSigning(AbstractProvider $provider);
+
+    /**
+     * @param AbstractProvider $provider
+     * @return bool
+     */
+    abstract protected function useEncryption(AbstractProvider $provider);
+
+    /**
+     * @param AbstractProvider $record
+     * @return AbstractProvider
+     * @throws \Exception
+     */
+    public function saveProvider(AbstractProvider $record)
     {
-        if ($this->getSamlPlugin()->getSettings()->signAssertions) {
-
-            $spSsoDescriptor->addKeyDescriptor(
-                $keyDescriptor = (new KeyDescriptor())
-                    ->setUse(KeyDescriptor::USE_SIGNING)
-                    ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getCertificate()))
-            );
-        }
-
+        return $this->getSamlPlugin()->getProvider()->save($record);
     }
 
-    public function setEncrypt(SSODescriptor $spSsoDescriptor, KeyChainRecord $keyChainRecord)
+    /**
+     * @param SSODescriptor $ssoDescriptor
+     * @param KeyChainRecord $keyChainRecord
+     */
+    public function setSign(SSODescriptor $ssoDescriptor, KeyChainRecord $keyChainRecord)
     {
+        $ssoDescriptor->addKeyDescriptor(
+            $keyDescriptor = (new KeyDescriptor())
+                ->setUse(KeyDescriptor::USE_SIGNING)
+                ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getDecryptedCertificate()))
+        );
+    }
 
-        if ($this->getSamlPlugin()->getSettings()->encryptAssertions) {
-            $spSsoDescriptor->addKeyDescriptor(
-                $keyDescriptor = (new KeyDescriptor())
-                    ->setUse(KeyDescriptor::USE_ENCRYPTION)
-                    ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getCertificate()))
-            );
-
-        }
+    /**
+     * @param SSODescriptor $ssoDescriptor
+     * @param KeyChainRecord $keyChainRecord
+     */
+    public function setEncrypt(SSODescriptor $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    {
+        $ssoDescriptor->addKeyDescriptor(
+            $keyDescriptor = (new KeyDescriptor())
+                ->setUse(KeyDescriptor::USE_ENCRYPTION)
+                ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getDecryptedCertificate()))
+        );
     }
 
 }
