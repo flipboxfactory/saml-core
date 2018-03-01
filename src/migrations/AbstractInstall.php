@@ -46,14 +46,18 @@ abstract class AbstractInstall extends Migration
     protected function getProviderFields()
     {
         return [
-            'id'          => $this->primaryKey(),
-            'entityId'    => $this->string()->notNull(),
-            'metadata'    => $this->text()->notNull(),
-            'sha256'      => $this->string()->notNull(),
-            'enabled'     => $this->boolean()->defaultValue(true)->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'uid'         => $this->uid()
+            'id'           => $this->primaryKey(),
+            'entityId'     => $this->string()->notNull(),
+            'metadata'     => $this->text()->notNull(),
+            'sha256'       => $this->string()->notNull(),
+            'providerType' => $this->enum('providerType', [
+                'idp',
+                'sp'
+            ])->notNull(),
+            'enabled'      => $this->boolean()->defaultValue(true)->notNull(),
+            'dateUpdated'  => $this->dateTime()->notNull(),
+            'dateCreated'  => $this->dateTime()->notNull(),
+            'uid'          => $this->uid()
         ];
     }
 
@@ -78,16 +82,16 @@ abstract class AbstractInstall extends Migration
         ]);
 
         $this->createTable(static::getIdentityTableName(), [
-            'id'               => $this->primaryKey(),
-            'providerId'       => $this->integer()->notNull(),
-            'userId'           => $this->integer()->notNull(),
-            'providerIdentity' => $this->string()->notNull(),
-            'sessionId'        => $this->string()->null(),
-            'enabled'          => $this->boolean()->defaultValue(true)->notNull(),
-            'lastLoginDate'    => $this->dateTime()->notNull(),
-            'dateUpdated'      => $this->dateTime()->notNull(),
-            'dateCreated'      => $this->dateTime()->notNull(),
-            'uid'              => $this->uid()
+            'id'            => $this->primaryKey(),
+            'providerId'    => $this->integer()->notNull(),
+            'userId'        => $this->integer()->notNull(),
+            'nameId'        => $this->string()->notNull(),
+            'sessionId'     => $this->string()->null(),
+            'enabled'       => $this->boolean()->defaultValue(true)->notNull(),
+            'lastLoginDate' => $this->dateTime()->notNull(),
+            'dateUpdated'   => $this->dateTime()->notNull(),
+            'dateCreated'   => $this->dateTime()->notNull(),
+            'uid'           => $this->uid()
         ]);
 
     }

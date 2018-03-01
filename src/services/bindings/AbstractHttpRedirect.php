@@ -11,21 +11,34 @@ namespace flipbox\saml\core\services\bindings;
 
 use craft\base\Component;
 use craft\web\Request;
+use flipbox\saml\core\models\Transport;
+use flipbox\saml\core\records\AbstractProvider;
 use LightSaml\Error\LightSamlBindingException;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\XmlDSig\SignatureStringReader;
 use LightSaml\SamlConstants;
+use flipbox\saml\core\helpers\SerializeHelper;
 
 abstract class AbstractHttpRedirect extends Component implements BindingInterface
 {
 
-    public function send(SamlMessage $message)
+    /**
+     * @param SamlMessage $message
+     * @param AbstractProvider $provider
+     * @return Transport
+     */
+    public function send(SamlMessage $message, AbstractProvider $provider)
     {
 
-        $parameters= [];
-        $parameters['RelayState'] = $message->getRelayState();
+        if ($signature = $message->getSignature()) {
+            $message->setSignature(null);
+            $destination = SerializeHelper::redirectUrl($message->getDestination(), SerializeHelper::addSignatureToUrl($parameters, $signature));
+        } else {
+            $destination = SerializeHelper::redirectUrl($message->getDestination(), $parameters);
+        }
 
+        return $transport;
     }
 
     /**
@@ -35,8 +48,9 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
      */
     public function receive(Request $request)
     {
-        $encodedMessage = $this->getMessage($request->getQueryParams());
-        $encoding = $this->getEncoding($request->getQueryParams());
+        $data = $this->parseQuery($request);
+        $encodedMessage = $this->getMessage($data);
+        $encoding = $this->getEncoding($data);
         $messageString = $this->decodeMessageString($encodedMessage, $encoding);
 
 
@@ -46,11 +60,60 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
             $message->setRelayState($request->getQueryParam('RelayState'));
         }
 
-        $queryData = $this->getSignedQuery($request->getQueryParams());
+        $queryData = $this->getSignedQuery($data);
         $this->loadSignature($message, $queryData);
 
         return $message;
 
+    }
+    protected function parseQuery(Request $request)
+    {
+        /*
+         * Parse the query string. We need to do this ourself, so that we get access
+         * to the raw (urlencoded) values. This is required because different software
+         * can urlencode to different values.
+         */
+        $sigQuery = $relayState = $sigAlg = '';
+        $data = $this->parseQueryString($request->getQueryString(), false);
+        $result = array();
+        foreach ($data as $name => $value) {
+            $result[$name] = urldecode($value);
+            switch ($name) {
+                case 'SAMLRequest':
+                case 'SAMLResponse':
+                    $sigQuery = $name.'='.$value;
+                    break;
+                case 'RelayState':
+                    $relayState = '&RelayState='.$value;
+                    break;
+                case 'SigAlg':
+                    $sigAlg = '&SigAlg='.$value;
+                    break;
+            }
+        }
+        $result['SignedQuery'] = $sigQuery.$relayState.$sigAlg;
+
+        return $result;
+    }
+
+    /**
+     * @param string $queryString
+     * @param bool   $urlDecodeValues
+     *
+     * @return array
+     */
+    protected function parseQueryString($queryString, $urlDecodeValues = false)
+    {
+        $result = array();
+        foreach (explode('&', $queryString) as $e) {
+            $tmp = explode('=', $e, 2);
+            $name = $tmp[0];
+            $value = count($tmp) === 2 ? $value = $tmp[1] : '';
+            $name = urldecode($name);
+            $result[$name] = $urlDecodeValues ? urldecode($value) : $value;
+        }
+
+        return $result;
     }
 
     /**
@@ -64,7 +127,7 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
                 throw new LightSamlBindingException('Missing signature algorithm');
             }
             $message->setSignature(
-                new SignatureStringReader($data['Signature'], $data['SigAlg'], $data['SignedQuery'])
+                new SignatureStringReader($data['Signature'], urldecode($data['SigAlg']), $data['SignedQuery'])
             );
         }
     }
@@ -80,17 +143,17 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
             switch ($name) {
                 case 'SAMLRequest':
                 case 'SAMLResponse':
-                    $sigQuery = $name.'='.$value;
+                    $sigQuery = $name . '=' . $value;
                     break;
                 case 'RelayState':
-                    $relayState = '&RelayState='.$value;
+                    $relayState = '&RelayState=' . $value;
                     break;
                 case 'SigAlg':
-                    $sigAlg = '&SigAlg='.$value;
+                    $sigAlg = '&SigAlg=' . urldecode($value);
                     break;
             }
         }
-        $data['SignedQuery'] = $sigQuery.$relayState.$sigAlg;
+        $data['SignedQuery'] = $sigQuery . $relayState . $sigAlg;
         return $data;
 
     }

@@ -46,4 +46,5 @@ class MessageHelper
     {
         return static::isRequest($message) ? static::REQUEST_PARAMETER : static::RESPONSE_PARAMETER;
     }
+
 }

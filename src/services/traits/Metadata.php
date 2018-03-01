@@ -23,7 +23,6 @@ trait Metadata
      * @var array
      */
     protected $supportedBindings = [
-        SamlConstants::BINDING_SAML2_HTTP_REDIRECT,
         SamlConstants::BINDING_SAML2_HTTP_POST,
     ];
 
@@ -63,6 +62,16 @@ trait Metadata
      * @return bool
      */
     abstract protected function useEncryption(AbstractProvider $provider);
+
+    protected function supportsRedirect()
+    {
+        return in_array(SamlConstants::BINDING_SAML2_HTTP_REDIRECT, $this->getSupportedBindings());
+    }
+
+    protected function supportsPost()
+    {
+        return in_array(SamlConstants::BINDING_SAML2_HTTP_POST, $this->getSupportedBindings());
+    }
 
     /**
      * @param AbstractProvider $record

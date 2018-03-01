@@ -113,7 +113,7 @@ trait Security
 
         /** @var \LightSaml\Model\XmlDSig\SignatureXmlReader $signatureReader */
         $signatureReader = $message->getSignature();
-        $key = $provider->getMetadata()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor(KeyDescriptor::USE_SIGNING);
+        $key = $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor(KeyDescriptor::USE_SIGNING);
         try {
 
             if ($signatureReader->validate(

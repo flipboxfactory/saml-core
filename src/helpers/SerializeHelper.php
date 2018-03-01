@@ -9,8 +9,11 @@
 namespace flipbox\saml\core\helpers;
 
 use craft\web\Response;
+use flipbox\saml\core\models\Transport;
+use LightSaml\Error\LightSamlBindingException;
 use LightSaml\Model\Context\SerializationContext;
 use LightSaml\Model\AbstractSamlModel;
+use LightSaml\Model\Protocol\AbstractRequest;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\XmlDSig\SignatureWriter;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
@@ -77,24 +80,85 @@ class SerializeHelper
     }
 
 
+    public static function getRedirectURL(SamlMessage $message, $destination)
+    {
+        $signature = $message->getSignature();
+        if ($signature && false == $signature instanceof SignatureWriter) {
+            throw new LightSamlBindingException('Signature must be SignatureWriter');
+        }
+
+        $message->setSignature(null);
+        $xml = static::toXml($message);
+        $xml = gzdeflate($xml);
+        $xml = base64_encode($xml);
+        $msg = static::addMessageToUrl($message, $xml);
+        static::addRelayStateToUrl($msg, $message);
+        static::addSignatureToUrl($msg, $signature);
+
+        return static::getDestinationUrl($msg, $message, $destination);
+    }
+
     /**
-     * @param array $parameters
-     * @param SignatureWriter|null $signature
-     * @return array
-     * @todo move to AbstractHttpRedirect ... maybe?
+     * @param SamlMessage $message
+     * @param string      $xml
+     *
+     * @return string
      */
-    public static function addSignatureToUrl(array $parameters, SignatureWriter $signature = null)
+    protected static function addMessageToUrl(SamlMessage $message, $xml)
+    {
+        if ($message instanceof AbstractRequest) {
+            $msg = 'SAMLRequest=';
+        } else {
+            $msg = 'SAMLResponse=';
+        }
+        $msg .= urlencode($xml);
+
+        return $msg;
+    }
+
+    /**
+     * @param string      $msg
+     * @param SamlMessage $message
+     */
+    protected static function addRelayStateToUrl(&$msg, SamlMessage $message)
+    {
+        if ($message->getRelayState() !== null) {
+            $msg .= '&RelayState='.urlencode($message->getRelayState());
+        }
+    }
+
+    /**
+     * @param string               $msg
+     * @param SignatureWriter|null $signature
+     */
+    protected static function addSignatureToUrl(&$msg, SignatureWriter $signature = null)
     {
         /** @var $key XMLSecurityKey */
         $key = $signature ? $signature->getXmlSecurityKey() : null;
 
         if (null != $key) {
-            $parameters['SigAlg'] = urlencode($key->type);
-            $signature = $key->signData(http_build_query($parameters));
-            $parameters['Signature'] = base64_encode($signature);
+            $msg .= '&SigAlg='.urlencode($key->type);
+            $signature = $key->signData($msg);
+            $msg .= '&Signature='.urlencode(base64_encode($signature));
+        }
+    }
+
+    /**
+     * @param string      $msg
+     * @param SamlMessage $message
+     * @param string|null $destination
+     *
+     * @return string
+     */
+    protected static function getDestinationUrl($msg, SamlMessage $message, $destination)
+    {
+        $destination = $message->getDestination() ? $message->getDestination() : $destination;
+        if (strpos($destination, '?') === false) {
+            $destination .= '?'.$msg;
+        } else {
+            $destination .= '&'.$msg;
         }
 
-        return $parameters;
-
+        return $destination;
     }
 }

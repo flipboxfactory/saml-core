@@ -12,6 +12,10 @@ use flipbox\ember\helpers\ModelHelper;
 use flipbox\ember\records\ActiveRecord;
 use LightSaml\Model\Metadata\EntityDescriptor;
 
+/**
+ * Class AbstractProvider
+ * @package flipbox\saml\core\records
+ */
 abstract class AbstractProvider extends ActiveRecord
 {
     const METADATA_HASH_ALGO = 'sha256';
@@ -51,5 +55,10 @@ abstract class AbstractProvider extends ActiveRecord
         }
 
         return $this->metadataModel;
+    }
+
+    public function getType(): string
+    {
+        return $this->providerType;
     }
 }

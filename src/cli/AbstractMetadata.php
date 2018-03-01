@@ -8,7 +8,10 @@
 
 namespace flipbox\saml\core\cli;
 
+use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\SamlPluginInterface;
 use yii\console\Controller;
@@ -123,6 +126,7 @@ abstract class AbstractMetadata extends Controller
      */
     public function actionCreate()
     {
+
         $this->newProviderRecord([]);
         if (! $this->keyPairId) {
             $this->chooseFromKeyChain();
@@ -139,7 +143,7 @@ abstract class AbstractMetadata extends Controller
                 return ExitCode::DATAERR;
             }
         } else if ($this->keyPairId) {
-            if (!($keyPairRecord = KeyChainRecord::findOne([
+            if (! ($keyPairRecord = KeyChainRecord::findOne([
                 'id' => $this->keyPairId,
             ]))) {
                 $this->stderr(
@@ -166,6 +170,43 @@ abstract class AbstractMetadata extends Controller
             return ExitCode::OK;
         }
 
+        return ExitCode::UNSPECIFIED_ERROR;
+    }
+
+    /**
+     * Import a metadata file for an external provider.
+     * @param $file
+     * Path to file.
+     * @param $type
+     * This is an enum. Either 'idp' or 'sp'.
+     * @return int
+     * @throws \Exception
+     */
+    public function actionImport($file, $type)
+    {
+
+        if (! in_array($type, ['idp', 'sp'])) {
+            throw new \InvalidArgumentException('Type must be idp or sp');
+        }
+
+        $providerClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+
+        /** @var AbstractProvider $provider */
+        $provider = new $providerClass([
+            'metadata'     => file_get_contents($file),
+            'providerType' => $type,
+        ]);
+
+        $provider->getMetadataModel();
+
+        if ($this->getSamlPlugin()->getProvider()->save($provider)) {
+
+            $this->stdout(sprintf(
+                    'Save for %s metadata was successful.',
+                    $provider->entityId
+                ) . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
+        }
         return ExitCode::UNSPECIFIED_ERROR;
     }
 

@@ -12,16 +12,17 @@ namespace flipbox\saml\core\services\bindings;
 use Craft;
 use craft\base\Component;
 use craft\web\Request;
+use flipbox\saml\core\exceptions\InvalidIssuer;
 use flipbox\saml\core\exceptions\InvalidSignature;
 use flipbox\saml\core\helpers\MessageHelper;
+use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\helpers\SerializeHelper;
-use flipbox\saml\core\models\ProviderInterface;
-use flipbox\saml\core\services\traits\Security;
+use flipbox\saml\core\records\ProviderInterface;
+use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Context\Profile\MessageContext;
 use LightSaml\Error\LightSamlBindingException;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Protocol\SamlMessage;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 /**
  * Class AbstractHttpPost
@@ -29,9 +30,26 @@ use RobRichards\XMLSecLibs\XMLSecurityKey;
  */
 abstract class AbstractHttpPost extends Component implements BindingInterface
 {
-    use Security;
+    use EnsureSamlPlugin;
 
     abstract function getTemplatePath();
+
+    /**
+     * @inheritdoc
+     */
+    public function getProviderByIssuer(Issuer $issuer): ProviderInterface
+    {
+        $provider = $this->getSamlPlugin()->getProvider()->findByEntityId(
+            $issuer->getValue()
+        );
+        if (! $provider) {
+            throw new InvalidIssuer(
+                sprintf("Invalid issuer: %s", $issuer->getValue())
+            );
+        }
+
+        return $provider;
+    }
 
     /**
      * @param SamlMessage $message
@@ -39,25 +57,53 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
      */
-    public function send(SamlMessage $message)
+    public function send(SamlMessage $message, ProviderInterface $provider)
     {
 
-        $parameters['RelayState'] = SerializeHelper::toBase64(Craft::$app->getUser()->getReturnUrl());
+        $parameters = [];
+        $parameters['destination'] = $message->getDestination();
         $parameters[MessageHelper::getParameterKeyByMessage($message)] = SerializeHelper::base64Message(
             $message
         );
 
-        $parameters['destination'] = $message->getDestination();
+        $parameters['RelayState'] = $this->getRelayStateForSend($message);
+
+        return $this->post($parameters);
+    }
+
+    /**
+     * @param array $parameters
+     * @throws \Throwable
+     * @throws \Twig_Error_Loader
+     * @throws \yii\base\Exception
+     */
+    public function post(array $parameters)
+    {
+
         $view = \Craft::$app->getView();
         $templateMode = $view->getTemplateMode();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-        Craft::$app->request->data = $view->renderTemplate(
+        Craft::$app->response->data = $view->renderTemplate(
             $this->getTemplatePath(),
             $parameters
         );
-        $view->setTemplateMode($templateMode);
-        Craft::$app->response->sendAndClose();
+        Craft::$app->response->send();
+        exit;
+    }
 
+
+    /**
+     * @param SamlMessage $message
+     * @return null|string
+     */
+    public function getRelayStateForSend(SamlMessage $message)
+    {
+        $relayState = $message->getRelayState();
+        if(MessageHelper::isRequest($message)) {
+            $relayState = SerializeHelper::toBase64(Craft::$app->getUser()->getReturnUrl());
+        }
+
+        return $relayState;
     }
 
     /**
@@ -69,10 +115,14 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
     public function receive(Request $request)
     {
 
+        $isRequest = true;
         $post = $request->getBodyParams();
         if (array_key_exists('SAMLRequest', $post)) {
+
+            $isRequest = true;
             $msg = $post['SAMLRequest'];
         } elseif (array_key_exists('SAMLResponse', $post)) {
+            $isRequest = false;
             $msg = $post['SAMLResponse'];
         } else {
             throw new LightSamlBindingException('Missing SAMLRequest or SAMLResponse parameter');
@@ -88,7 +138,16 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
         $issuer = $message->getIssuer();
         $provider = $this->getProviderByIssuer($issuer);
 
-        if(!$this->validSignature($message, $provider)){
+        if (
+            $provider->providerType === 'idp'
+        ) {
+            $key = $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor();
+        } else {
+            $key = $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getFirstKeyDescriptor();
+        }
+
+
+        if (! SecurityHelper::validSignature($message, $key)) {
             throw new InvalidSignature("Invalid request", 400);
         }
 

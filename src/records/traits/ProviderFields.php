@@ -31,11 +31,14 @@ trait ProviderFields
         ]);
     }
 
+    /**
+     * @return ActiveQuery
+     */
     public function getKeychain()
     {
         return $this->hasOne(KeyChainRecord::class, [
             'id' => 'keyChainId',
-        ])->viaTable(LinkRecord::tableName(),[
+        ])->viaTable(LinkRecord::tableName(), [
             'providerId' => 'id',
         ]);
     }
