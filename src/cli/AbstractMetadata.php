@@ -67,6 +67,9 @@ abstract class AbstractMetadata extends Controller
         );
     }
 
+    /**
+     * @inheritdoc
+     */
     public function optionAliases()
     {
         return array_merge(

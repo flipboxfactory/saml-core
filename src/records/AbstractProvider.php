@@ -61,4 +61,5 @@ abstract class AbstractProvider extends ActiveRecord
     {
         return $this->providerType;
     }
+
 }

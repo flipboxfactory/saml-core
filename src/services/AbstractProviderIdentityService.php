@@ -9,6 +9,7 @@
 namespace flipbox\saml\core\services;
 
 
+use craft\elements\User;
 use flipbox\saml\core\records\AbstractProviderIdentity;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
@@ -34,6 +35,17 @@ abstract class AbstractProviderIdentityService extends Component
         return $this->find([
             'nameId'     => $nameId,
             'providerId' => $provider->id,
+        ]);
+    }
+
+    /**
+     * @param User $user
+     * @return AbstractProviderIdentity|null
+     */
+    public function findByUser(User $user)
+    {
+        return $this->find([
+            'userId' => $user->getId(),
         ]);
     }
 

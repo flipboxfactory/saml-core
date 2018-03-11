@@ -12,4 +12,8 @@ namespace flipbox\saml\core\models;
 Interface SettingsInterface
 {
 
+    /**
+     * @return string
+     */
+    public function getEntityId();
 }

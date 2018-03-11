@@ -11,6 +11,7 @@ namespace flipbox\saml\core;
 
 use craft\base\Model;
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
 use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
 use flipbox\saml\core\services\messages\MetadataServiceInterface;
@@ -34,9 +35,9 @@ interface SamlPluginInterface
     public function getMetadata(): MetadataServiceInterface;
 
     /**
-     * @return Model
+     * @return SettingsInterface
      */
-    public function getSettings(): Model;
+    public function getSettings(): SettingsInterface;
 
     /**
      * BINDINGs

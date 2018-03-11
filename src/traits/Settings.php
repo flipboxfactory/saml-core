@@ -41,6 +41,7 @@ trait Settings
 
     /**
      * @return string
+     * @throws \craft\errors\SiteNotFoundException
      */
     public function getEntityId()
     {

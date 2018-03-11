@@ -15,6 +15,7 @@ use yii\db\ActiveRecordInterface;
  * Interface ProviderInterface
  * @package flipbox\saml\core\records
  * @property int $id
+ * @property int $userId
  * @property int $entityId
  * @property string $metadata
  * @property string $sha256
