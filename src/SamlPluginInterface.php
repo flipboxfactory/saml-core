@@ -20,11 +20,6 @@ use flipbox\saml\core\services\ProviderServiceInterface;
 interface SamlPluginInterface
 {
     /**
-     * @return KeyChain
-     */
-    public function getKeyChain(): KeyChain;
-
-    /**
      * @return ProviderServiceInterface
      */
     public function getProvider(): ProviderServiceInterface;

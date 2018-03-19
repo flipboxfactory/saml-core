@@ -12,15 +12,10 @@ namespace flipbox\saml\core\migrations;
 use craft\db\Migration;
 use craft\records\User;
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\keychain\traits\MigrateKeyChain;
 use flipbox\saml\core\records\LinkRecord;
-use flipbox\saml\core\records\ProviderIdentityInterface;
-use flipbox\saml\core\records\ProviderInterface;
 
 abstract class AbstractInstall extends Migration
 {
-
-    use MigrateKeyChain;
 
     const PROVIDER_AFTER_COLUMN = 'sha256';
 
@@ -34,13 +29,19 @@ abstract class AbstractInstall extends Migration
     public function safeUp()
     {
 
-        $this->safeUpKeyChain();
-
+        $this->installKeyChain();
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
 
         return true;
+    }
+
+    protected function installKeyChain()
+    {
+        if (! \Craft::$app->plugins->getPlugin('keychain')) {
+            \Craft::$app->plugins->installPlugin('keychain');
+        }
     }
 
     protected function getProviderFields()
@@ -107,7 +108,6 @@ abstract class AbstractInstall extends Migration
         $this->dropTableIfExists(static::getIdentityTableName());
         $this->dropTableIfExists(LinkRecord::tableName());
         $this->dropTableIfExists(static::getProviderTableName());
-        $this->safeDownKeyChain();
         return true;
     }
 
@@ -148,9 +148,9 @@ abstract class AbstractInstall extends Migration
             true
         );
         $this->createIndex(
-            $this->db->getIndexName(static::getIdentityTableName(), 'providerIdentity', false, true),
+            $this->db->getIndexName(static::getIdentityTableName(), 'nameId', false, true),
             static::getIdentityTableName(),
-            'providerIdentity',
+            'nameId',
             false
         );
     }

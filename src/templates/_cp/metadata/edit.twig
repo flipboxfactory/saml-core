@@ -1,0 +1,94 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set fullPageForm=1 %}
+
+{% block details %}
+    <div id="settings">
+
+        <div class="meta">
+            {{ forms.lightswitchField({
+                label: "Enable"|t(pluginHandle ),
+                id: 'enabled',
+                name: 'enabled',
+                on: provider.enabled,
+                errors: provider.getErrors('enabled')
+            }) }}
+            {{ forms.selectField({
+                label: "Type"|t(pluginHandle ),
+                id: 'Type',
+                name: 'Type',
+                value: provider.type,
+                errors: provider.getErrors('type'),
+                options: [{
+                    value: 'idp',
+                    label: 'idp',
+                },{
+                    value: 'sp',
+                    label: 'sp',
+                }],
+                required: true
+            }) }}
+
+            {% if keypair %}
+                {{ forms.selectField({
+                    label: "Key Pair"|t(pluginHandle ),
+                    id: 'keychain',
+                    name: 'keychain',
+                    value: keypair.id,
+                    errors: provider.getErrors('keychain'),
+                    options: allkeypairs,
+                    required: true
+                }) }}
+            {% endif %}
+        </div>
+        <hr>
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                <div class="value">{{ provider.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                <div class="value">{{ provider.dateUpdated|datetime('short') }}</div>
+            </div>
+        </div>
+    </div><!-- #settings -->
+
+{% endblock %}
+
+{% block content %}
+
+    <input type="hidden" name="action"
+           value="{{ baseActionPath }}/{% if provider.id %}update{% else %}create{% endif %}">
+    {{ redirectInput(baseCpPath) }}
+
+    {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
+
+    {{ forms.textField({
+        label: "Entity ID"|t(pluginHandle ),
+        instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+        name: "entityId",
+        id: 'entityId',
+        class: "code",
+        value: provider.entityId,
+        errors: provider.getErrors('entityId'),
+        readonly: true,
+        disabled: true
+    }) }}
+
+    {{ forms.textareaField({
+        label: "Metadata XML"|t(pluginHandle ),
+        instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
+        class: "code",
+        id: 'metadata',
+        name: 'metadata',
+        value: provider.metadata,
+        errors: provider.getErrors('metadata'),
+        required: true,
+        rows: 10
+    }) }}
+
+    <div class="item" data-position="right" data-colspan="1"></div>
+
+{% endblock %}

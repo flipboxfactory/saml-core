@@ -139,7 +139,7 @@ abstract class AbstractMetadata extends Controller
         if ($this->keyPairId === null && $this->createKeyPair) {
             $openSslConfig = $this->promptKeyPair();
             $keyPairRecord = $openSslConfig->create();
-            if (! \Craft::$app->getModule(KeyChain::MODULE_ID)->getService()->save($keyPairRecord)) {
+            if (! KeyChain::getInstance()->getService()->save($keyPairRecord)) {
                 $this->stderr(
                     sprintf('Failed to save new key pair to the database') . PHP_EOL
                     , Console::FG_RED);
