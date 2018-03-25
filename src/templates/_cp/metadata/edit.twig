@@ -5,7 +5,6 @@
 
 {% block details %}
     <div id="settings">
-
         <div class="meta">
             {{ forms.lightswitchField({
                 label: "Enable"|t(pluginHandle ),
@@ -15,44 +14,46 @@
                 errors: provider.getErrors('enabled')
             }) }}
             {{ forms.selectField({
-                label: "Type"|t(pluginHandle ),
-                id: 'Type',
-                name: 'Type',
+                label: "Provider Type"|t(pluginHandle ),
+                id: 'providerType',
+                name: 'providerType',
                 value: provider.type,
                 errors: provider.getErrors('type'),
                 options: [{
                     value: 'idp',
-                    label: 'idp',
+                    label: 'Identity (IDP)',
                 },{
                     value: 'sp',
-                    label: 'sp',
+                    label: 'Service (SP)',
                 }],
                 required: true
             }) }}
 
-            {% if keypair %}
+            {% if not provider.id and createType == myType %}
                 {{ forms.selectField({
-                    label: "Key Pair"|t(pluginHandle ),
+                    label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
                     id: 'keychain',
                     name: 'keychain',
-                    value: keypair.id,
+                    value: provider.keychain ? provider.keychain.id : '',
                     errors: provider.getErrors('keychain'),
                     options: allkeypairs,
                     required: true
                 }) }}
             {% endif %}
         </div>
-        <hr>
-        <div class="meta read-only">
-            <div class="data">
-                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                <div class="value">{{ provider.dateCreated|datetime('short') }}</div>
+        {% if provider.id %}
+            <hr>
+            <div class="meta read-only">
+                <div class="data">
+                    <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                    <div class="value">{{ provider.dateCreated|datetime('short') }}</div>
+                </div>
+                <div class="data">
+                    <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                    <div class="value">{{ provider.dateUpdated|datetime('short') }}</div>
+                </div>
             </div>
-            <div class="data">
-                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                <div class="value">{{ provider.dateUpdated|datetime('short') }}</div>
-            </div>
-        </div>
+        {% endif %}
     </div><!-- #settings -->
 
 {% endblock %}
@@ -60,8 +61,8 @@
 {% block content %}
 
     <input type="hidden" name="action"
-           value="{{ baseActionPath }}/{% if provider.id %}update{% else %}create{% endif %}">
-    {{ redirectInput(baseCpPath) }}
+           value="{{ baseActionPath }}/metadata/{% if createType == myType %}auto-create{% else %}save{% endif %}">
+    {{ redirectInput(baseCpPath ~ '/metadata') }}
 
     {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
 
@@ -77,18 +78,28 @@
         disabled: true
     }) }}
 
+    {% if provider.keychain and createType != myType %}
+        <p>
+            <a target="_blank"
+               href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
+                Download Certificate
+            </a>
+        </p>
+    {% endif %}
+
     {{ forms.textareaField({
         label: "Metadata XML"|t(pluginHandle ),
         instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
         class: "code",
         id: 'metadata',
         name: 'metadata',
-        value: provider.metadata,
+        value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
+        readonly: createType == myType ? true : false,
+        disabled: createType == myType ? true : false,
         errors: provider.getErrors('metadata'),
         required: true,
         rows: 10
     }) }}
-
     <div class="item" data-position="right" data-colspan="1"></div>
 
 {% endblock %}

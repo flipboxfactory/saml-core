@@ -43,7 +43,9 @@ abstract class AbstractController extends Controller
     protected function getBaseVariables()
     {
         return [
+            'title'              => $this->getSamlPlugin()->name,
             'pluginHandle'       => $this->getSamlPlugin()->handle,
+            'ownEntityId'        => $this->getSamlPlugin()->getSettings()->getEntityId(),
 
             // Set the "Continue Editing" URL
             'continueEditingUrl' => $this->getBaseCpPath(),

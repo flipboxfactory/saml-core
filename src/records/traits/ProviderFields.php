@@ -21,25 +21,4 @@ use yii\db\ActiveQuery;
 trait ProviderFields
 {
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getLink()
-    {
-        return $this->hasOne(LinkRecord::class, [
-            'providerId' => 'id',
-        ]);
-    }
-
-    /**
-     * @return ActiveQuery
-     */
-    public function getKeychain()
-    {
-        return $this->hasOne(KeyChainRecord::class, [
-            'id' => 'keyChainId',
-        ])->viaTable(LinkRecord::tableName(), [
-            'providerId' => 'id',
-        ]);
-    }
 }

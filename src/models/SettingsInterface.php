@@ -16,4 +16,5 @@ Interface SettingsInterface
      * @return string
      */
     public function getEntityId();
+
 }

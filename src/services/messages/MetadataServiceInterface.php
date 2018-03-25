@@ -23,6 +23,6 @@ interface MetadataServiceInterface
      * @throws InvalidMetadata
      * @throws \Exception
      */
-    public function create(KeyChainRecord $withKeyPair = null, $createKeyFromSettings = false): ProviderInterface;
+    public function create(KeyChainRecord $withKeyPair = null): ProviderInterface;
 
 }

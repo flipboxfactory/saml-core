@@ -49,4 +49,10 @@ interface ProviderServiceInterface
      * @return ProviderInterface
      */
     public function findByEntityId($entityId);
+
+
+    /**
+     * @return AbstractProvider
+     */
+    public function findOwn(): AbstractProvider;
 }

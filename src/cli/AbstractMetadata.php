@@ -161,10 +161,6 @@ abstract class AbstractMetadata extends Controller
         );
 
         if ($this->getSamlPlugin()->getProvider()->save($provider)) {
-            $this->getSamlPlugin()->getProvider()->linkToKey(
-                $provider,
-                $keyPairRecord
-            );
 
             $this->stdout(sprintf(
                     'Save for %s metadata was successful.',

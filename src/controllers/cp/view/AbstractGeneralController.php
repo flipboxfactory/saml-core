@@ -21,29 +21,24 @@ abstract class AbstractGeneralController extends AbstractController
 
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
 
+    /**
+     * @return \yii\web\Response
+     */
     public function actionIndex()
     {
-
+        return $this->actionSetup();
     }
 
-    public function actionMetadata()
+    public function actionSetup()
     {
-        $variables['crumbs'] = [
-            [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()),
-                'label' => 'SSO Provider'
-            ],
-            [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()) . '/metadata',
-                'label' => 'Metadata List'
-            ],
+        $variables = $this->getBaseVariables();
+        $variables['crumbs'][] = [
+            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()),
+            'label' => 'SSO Provider'
         ];
-        $variables['providers'] = $this->getProviderRecord()::find()->all();
-        $variables['pluginHandle'] = $this->getSamlPlugin()->getUniqueId();
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), $this->getSamlPlugin()->name);
         return $this->renderTemplate(
-            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'metadata',
+            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'setup',
             $variables
         );
     }

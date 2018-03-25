@@ -8,9 +8,11 @@
 
 namespace flipbox\saml\core\records;
 
-use flipbox\ember\helpers\ModelHelper;
 use flipbox\ember\records\ActiveRecord;
+use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\helpers\SerializeHelper;
 use LightSaml\Model\Metadata\EntityDescriptor;
+use yii\db\ActiveQuery;
 
 /**
  * Class AbstractProvider
@@ -21,6 +23,7 @@ abstract class AbstractProvider extends ActiveRecord
     const METADATA_HASH_ALGO = 'sha256';
 
     protected $metadataModel;
+    protected $cachedKeychain;
 
     /**
      * @param $insert
@@ -32,6 +35,8 @@ abstract class AbstractProvider extends ActiveRecord
             $this->entityId = $this->getEntityId();
         }
         $this->sha256 = hash(static::METADATA_HASH_ALGO, $this->metadata);
+
+        $this->metadata = SerializeHelper::toXml($this->getMetadataModel());
 
         return parent::beforeSave($insert);
     }
@@ -57,9 +62,52 @@ abstract class AbstractProvider extends ActiveRecord
         return $this->metadataModel;
     }
 
+    /**
+     * @param EntityDescriptor $descriptor
+     * @return $this
+     */
+    public function setMetadataModel(EntityDescriptor $descriptor)
+    {
+        $this->metadataModel = $descriptor;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getType(): string
     {
         return $this->providerType;
     }
 
+    /**
+     * @return ActiveQuery
+     */
+    public function getLink()
+    {
+        return $this->hasOne(LinkRecord::class, [
+            'providerId' => 'id',
+        ]);
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getKeychain()
+    {
+        return $this->hasOne(KeyChainRecord::class, [
+            'id' => 'keyChainId',
+        ])->viaTable(LinkRecord::tableName(), [
+            'providerId' => 'id',
+        ]);
+    }
+
+    /**
+     * @param KeyChainRecord $keyChain
+     * @return AbstractProvider
+     */
+    public function setKeychain(KeyChainRecord $keyChain)
+    {
+        return $this->populateRelation('keychain', $keyChain);
+    }
 }

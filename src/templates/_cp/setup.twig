@@ -1,0 +1,40 @@
+{% extends "_layouts/cp" %}
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            <li class="heading"><span>Menu</span></li>
+            <li>
+                <a href="{{ cpUrl(pluginHandle) }}" class="sel">
+                    <span class="label">Setup</span>
+                </a>
+                <a href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}">
+                    <span class="label">My Provider</span>
+                </a>
+                <a href="{{ cpUrl(pluginHandle ~ '/metadata') }}">
+                    <span class="label">Provider List</span>
+                </a>
+                <a href="{{ cpUrl(pluginHandle ~ '/keychain') }}" class="">
+                    <span class="label">Keychain</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h4>Getting Started</h4>
+    <p>Do the following to get started:</p>
+    <ol>
+        <li>
+            Create a key pair.
+            <ul>
+                <li> - Install your own key <a href="{{ cpUrl(baseCpPath ~ '/keychain/new') }}">HERE</a>.</li>
+                <li> - Use OpenSSL to create one <a href="{{ cpUrl(baseCpPath ~ '/keychain/new-openssl') }}">HERE</a>.
+                </li>
+            </ul>
+        </li>
+        <li>Create your provider's metadata <a href="{{ cpUrl(baseCpPath ~ '/metadata/auto-create') }}">HERE</a>.</li>
+        <li>Install the Remote provider's metadata <a href="{{ cpUrl(baseCpPath ~ '/metadata/new') }}">HERE</a>.</li>
+    </ol>
+{% endblock %}

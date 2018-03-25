@@ -12,11 +12,14 @@ namespace flipbox\saml\core\helpers;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\records\ProviderInterface;
 use LightSaml\Credential\KeyHelper;
+use LightSaml\Error\LightSamlSecurityException;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Credential\X509Certificate;
 use LightSaml\Credential\KeyHelper as LightSamlKeyHelper;
 use LightSaml\Model\XmlDSig\SignatureWriter;
+use LightSaml\Model\XmlDSig\SignatureXmlReader;
+use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class SecurityHelper
 {
@@ -38,7 +41,7 @@ class SecurityHelper
 
     /**
      * @param SamlMessage $message
-     * @param ProviderInterface $provider
+     * @param KeyDescriptor $keyDescriptor
      * @return bool
      */
     public static function validSignature(SamlMessage $message, KeyDescriptor $keyDescriptor)
@@ -46,9 +49,11 @@ class SecurityHelper
 
         /** @var \LightSaml\Model\XmlDSig\SignatureXmlReader $signatureReader */
         $signatureReader = $message->getSignature();
-//        try {
 
-            if ($signatureReader->validate(
+        try {
+
+            if (static::validate(
+                $signatureReader,
                 KeyHelper::createPublicKey(
                     $keyDescriptor->getCertificate()
                 )
@@ -57,10 +62,67 @@ class SecurityHelper
             } else {
                 return false;
             }
-//        } catch (\Exception $e) {
-//            return false;
-//        }
+        } catch (\Exception $e) {
+            return false;
+        }
 
 
+    }
+
+
+    /**
+     * @param SignatureXmlReader $reader
+     * @param XMLSecurityKey $key
+     * @return bool
+     * @throws \Exception
+     */
+    public static function validate(SignatureXmlReader $reader, XMLSecurityKey $key)
+    {
+        if (null == $reader->getSignature()) {
+            return false;
+        }
+
+        if (false == $reader->getSignature()->validateReference()) {
+            throw new LightSamlSecurityException('Digest validation failed');
+        }
+
+        $key = static::castKeyIfNecessary($key, $reader);
+
+        /**
+         * @see \RobRichards\XMLSecLibs\XMLSecurityDSig::verify
+         * NOTE: be very careful when checking the int return value, because in
+         * PHP, -1 will be cast to True when in boolean context. Always check the
+         * return value in a strictly typed way, e.g. "$obj->verify(...) === 1".
+         */
+        if (1 !== $reader->getSignature()->verify($key)) {
+            throw new LightSamlSecurityException('Unable to verify Signature');
+        }
+
+        return true;
+    }
+
+    /**
+     * @param XMLSecurityKey $key
+     *
+     * @return XMLSecurityKey
+     */
+    protected static function castKeyIfNecessary(XMLSecurityKey $key, SignatureXmlReader $reader)
+    {
+        $algorithm = $reader->getAlgorithm();
+
+        if (!in_array($algorithm, [
+            XMLSecurityKey::RSA_SHA1,
+            XMLSecurityKey::RSA_SHA256,
+            XMLSecurityKey::RSA_SHA384,
+            XMLSecurityKey::RSA_SHA512,
+        ])) {
+            throw new LightSamlSecurityException(sprintf('Unsupported signing algorithm: "%s"', $algorithm));
+        }
+
+        if ($algorithm != $key->type) {
+            $key = KeyHelper::castKey($key, $algorithm);
+        }
+
+        return $key;
     }
 }

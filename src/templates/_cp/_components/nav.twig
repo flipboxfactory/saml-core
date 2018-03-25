@@ -1,0 +1,28 @@
+{% macro sidebar(pluginHandle, currentPage) %}
+    {% set items = {
+        setup: {
+            url: cpUrl(pluginHandle),
+            label: "Setup",
+        },
+        providers: {
+            url: cpUrl(pluginHandle ~ '/metadata'),
+            label: "Providers",
+        },
+        keychain: {
+            url: cpUrl(pluginHandle ~ '/keychain'),
+            label: "Keychain",
+        },
+    } %}
+    <nav>
+        <ul>
+            <li class="heading"><span>Menu</span></li>
+            {% for key,value in items %}
+            <li>
+                <a href="{{ value.url }}" class="{% if key == currentPage %}sel{% endif %}">
+                    <span class="label">{{ value.label }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endmacro %}

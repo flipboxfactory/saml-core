@@ -27,21 +27,6 @@ trait Metadata
     ];
 
     /**
-     * @return string
-     */
-    abstract public function getLogoutResponseLocation();
-
-    /**
-     * @return string
-     */
-    abstract public function getLogoutRequestLocation();
-
-    /**
-     * @return string
-     */
-    abstract public function getLoginLocation();
-
-    /**
      * @return array
      */
     abstract public function getSupportedBindings();

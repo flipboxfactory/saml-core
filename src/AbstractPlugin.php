@@ -6,16 +6,31 @@
  * Time: 9:01 PM
  */
 
-namespace flipbox\saml\core\traits;
+namespace flipbox\saml\core;
 
 
+use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\web\View;
-use flipbox\saml\core\Saml;
 use yii\base\Event;
+use flipbox\saml\sp\Saml as SamlSp;
 
-trait SamlCore
+abstract class AbstractPlugin extends Plugin
 {
+
+    /**
+     * Saml Constants
+     */
+    const SP = 'sp';
+    const IDP = 'idp';
+
+    public function init()
+    {
+        parent::init();
+
+        $this->initCore();
+    }
+
     /**
      *
      */
@@ -56,5 +71,28 @@ trait SamlCore
                 }
             }
         );
+    }
+
+    /**
+     * @return string
+     */
+    public function getMyType()
+    {
+        $type = static::IDP;
+        if ($this instanceof SamlSp) {
+            $type = static::SP;
+        }
+
+        return $type;
+    }
+
+    public function getRemoteType()
+    {
+        $type = static::SP;
+        if ($this->getMyType() === static::SP) {
+            $type = static::IDP;
+        }
+
+        return $type;
     }
 }

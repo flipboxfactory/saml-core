@@ -9,12 +9,17 @@
 namespace flipbox\saml\core\controllers;
 
 
-use craft\web\Controller;
+use Craft;
+use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\controllers\cp\view\AbstractController;
+use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
+use yii\web\NotFoundHttpException;
 
-abstract class AbstractMetadataController extends Controller
+abstract class AbstractMetadataController extends AbstractController
 {
 
     use EnsureSamlPlugin;
@@ -33,9 +38,9 @@ abstract class AbstractMetadataController extends Controller
             $this->getSamlPlugin()->getSettings()->getEntityId()
         );
 
-        if($provider) {
+        if ($provider) {
             $metadata = $provider->getMetadataModel();
-        }else{
+        } else {
             throw new InvalidMetadata('Metadata for this server is missing. Please configure this plugin.');
         }
 
@@ -43,4 +48,108 @@ abstract class AbstractMetadataController extends Controller
         return SerializeHelper::toXml($metadata);
     }
 
+    public function actionAutoCreate()
+    {
+
+        $record = $this->processSaveAction();
+
+        $provider = $this->getSamlPlugin()->getMetadata()->create(
+            $record->keychain
+        );
+
+        $record->entityId = $provider->getEntityId();
+        $record->metadata = $provider->metadata;
+        $record->setMetadataModel($provider->getMetadataModel());
+
+
+        if (! $this->getSamlPlugin()->getProvider()->save($record)) {
+            return $this->renderTemplate(
+                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                array_merge(
+                    [
+                        'provider' => $record,
+                        'keychain' => $record->keychain ?: new KeyChainRecord(),
+                    ],
+                    $this->getBaseVariables()
+                )
+            );
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    public function actionSave()
+    {
+        $record = $this->processSaveAction();
+        $record->metadata = Craft::$app->request->getBodyParam('metadata');
+        if (! $this->getSamlPlugin()->getProvider()->save($record)) {
+            return $this->renderTemplate(
+                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                array_merge(
+                    [
+                        'provider' => $record,
+                        'keychain' => $record->keychain ?: new KeyChainRecord(),
+                    ],
+                    $this->getBaseVariables()
+                )
+            );
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * @return ProviderInterface
+     * @throws \yii\web\BadRequestHttpException
+     */
+    protected function processSaveAction()
+    {
+        $this->requirePostRequest();
+        $providerId = Craft::$app->request->getBodyParam('identifier');
+        $keyId = Craft::$app->request->getBodyParam('keychain');
+        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+        /** @var ProviderInterface $record */
+        if ($providerId) {
+            $record = $recordClass::find()->where([
+                'id' => $providerId,
+            ])->one();
+        } else {
+            $record = new $recordClass();
+        }
+
+        if ($keyId) {
+            /** @var KeyChainRecord $keychain */
+            if ($keychain = KeyChainRecord::find()->where([
+                'id' => $keyId,
+            ])->one()) {
+                $record->setKeychain(
+                    $keychain
+                );
+            }
+        }
+
+        Craft::configure(
+            $record,
+            [
+                'enabled'      => Craft::$app->request->getBodyParam('enabled') ?: false,
+                'providerType' => Craft::$app->request->getBodyParam('providerType'),
+            ]
+        );
+
+        return $record;
+    }
+
+    public function actionDownloadCertificate($keyId)
+    {
+        $this->requireAdmin();
+
+        /** @var KeyChainRecord $keychain */
+        if (!$keychain = KeyChainRecord::find()->where([
+            'id' => $keyId,
+        ])->one()) {
+            throw new NotFoundHttpException('Key not found');
+        }
+
+        return Craft::$app->response->sendContentAsFile($keychain->getDecryptedCertificate(),'certificate.crt');
+    }
 }

@@ -6,27 +6,19 @@
  * Time: 9:26 PM
  */
 
-namespace flipbox\saml\core\traits;
+namespace flipbox\saml\core\models;
 
 
+use craft\base\Model;
 use craft\helpers\UrlHelper;
 
-trait Settings
+class AbstractSettings extends Model
 {
-    /**
-     * @var string
-     */
-    public $keyPath;
 
     /**
      * @var string
      */
-    public $certPath;
-
-    /**
-     * @var string
-     */
-    public $entityId;
+    protected $entityId;
 
     /**
      * @param $entityId
@@ -49,8 +41,8 @@ trait Settings
             $this->entityId = UrlHelper::baseUrl();
         }
 
-
         return $this->entityId;
     }
+
 
 }

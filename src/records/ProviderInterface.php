@@ -8,7 +8,9 @@
 
 namespace flipbox\saml\core\records;
 
+use flipbox\keychain\records\KeyChainRecord;
 use LightSaml\Model\Metadata\EntityDescriptor;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecordInterface;
 
 /**
@@ -40,4 +42,16 @@ interface ProviderInterface extends ActiveRecordInterface
      * @return string either idp or sp
      */
     public function getType(): string;
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getKeyChain();
+
+    /**
+     * @param KeyChainRecord $keyChain
+     * @return $this
+     */
+    public function setKeychain(KeyChainRecord $keyChain);
+
 }

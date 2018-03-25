@@ -113,6 +113,13 @@ abstract class AbstractProviderService extends Component
             throw new \Exception(Json::encode($record->getErrors()));
         }
 
+        if ($record->keychain) {
+            $this->linkToKey(
+                $record,
+                $record->keychain
+            );
+        }
+
         return $record;
     }
 
@@ -135,11 +142,16 @@ abstract class AbstractProviderService extends Component
         }
         $linkAttributes = [
             'providerId' => $provider->id,
-            'keyChainId' => $keyChain->id,
         ];
         if (! $link = LinkRecord::find()->where($linkAttributes)->one()) {
             $link = new LinkRecord($linkAttributes);
         }
+
+        $linkAttributes['keyChainId'] = $keyChain->id;
+        \Craft::configure(
+            $link,
+            $linkAttributes
+        );
         if (! $link->save($runValidation, $attributeNames)) {
             throw new \Exception(Json::encode($record->getErrors()));
         }
