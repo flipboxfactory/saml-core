@@ -9,10 +9,12 @@
 namespace flipbox\saml\core\helpers;
 
 
+use flipbox\keychain\keypair\KeyPairInterface;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\records\ProviderInterface;
 use LightSaml\Credential\KeyHelper;
 use LightSaml\Error\LightSamlSecurityException;
+use LightSaml\Model\Assertion\EncryptedAssertionReader;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Credential\X509Certificate;
@@ -69,6 +71,20 @@ class SecurityHelper
 
     }
 
+    /**
+     * @param KeyChainRecord $chainRecord
+     * @return \LightSaml\Credential\X509Credential
+     */
+    public static function createCredential(KeyChainRecord $chainRecord)
+    {
+        $credential = new X509Certificate();
+        $credential->loadPem($chainRecord->getDecryptedCertificate());
+
+        return new \LightSaml\Credential\X509Credential(
+            $credential,
+            \LightSaml\Credential\KeyHelper::createPrivateKey($chainRecord->getDecryptedKey(), '', false)
+        );
+    }
 
     /**
      * @param SignatureXmlReader $reader
@@ -110,7 +126,7 @@ class SecurityHelper
     {
         $algorithm = $reader->getAlgorithm();
 
-        if (!in_array($algorithm, [
+        if (! in_array($algorithm, [
             XMLSecurityKey::RSA_SHA1,
             XMLSecurityKey::RSA_SHA256,
             XMLSecurityKey::RSA_SHA384,
