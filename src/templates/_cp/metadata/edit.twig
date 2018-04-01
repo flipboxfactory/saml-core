@@ -29,7 +29,7 @@
                 required: true
             }) }}
 
-            {% if not provider.id and createType == myType %}
+            {% if createType == myType %}
                 {{ forms.selectField({
                     label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
                     id: 'keychain',
@@ -78,7 +78,61 @@
         disabled: true
     }) }}
 
-    {% if provider.keychain and createType != myType %}
+    {% if provider.id %}
+        {% if singleSignOnServices %}
+            {% for binding, singleSignOnService in singleSignOnServices %}
+                {{ forms.textField({
+                    label: "Single Signon Service: SSO"|t(pluginHandle ),
+                    instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                    name: "acs",
+                    id: 'acs',
+                    class: "acs",
+                    value: singleSignOnService,
+                    errors: provider.getErrors('acs'),
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endfor %}
+
+        {% endif %}
+
+        {% if assertionConsumerServices %}
+            {% for binding, assertionConsumerService in assertionConsumerServices %}
+                {{ forms.textField({
+                    label: "Assertion Consumer Service: ACS"|t(pluginHandle ),
+                    instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                    name: "acs",
+                    id: 'acs',
+                    class: "acs",
+                    value: assertionConsumerService,
+                    errors: provider.getErrors('acs'),
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endfor %}
+
+        {% endif %}
+
+
+        {% if singleLogoutServices %}
+            {% for binding, singleLogoutService in singleLogoutServices %}
+                {{ forms.textField({
+                    label: "Single Logout Service: SLO"|t(pluginHandle ),
+                    instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                    name: "acs",
+                    id: 'acs',
+                    class: "acs",
+                    value: singleLogoutService,
+                    errors: provider.getErrors('acs'),
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endfor %}
+
+        {% endif %}
+    {% endif %}
+
+    {% if provider.keychain and createType == myType %}
         <p>
             <a target="_blank"
                href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">

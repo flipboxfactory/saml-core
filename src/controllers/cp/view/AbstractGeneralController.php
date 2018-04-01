@@ -16,6 +16,10 @@ use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\Saml;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 
+/**
+ * Class AbstractGeneralController
+ * @package flipbox\saml\core\controllers\cp\view
+ */
 abstract class AbstractGeneralController extends AbstractController
 {
 
@@ -29,6 +33,9 @@ abstract class AbstractGeneralController extends AbstractController
         return $this->actionSetup();
     }
 
+    /**
+     * @return \yii\web\Response
+     */
     public function actionSetup()
     {
         $variables = $this->getBaseVariables();

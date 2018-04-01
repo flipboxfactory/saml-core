@@ -9,13 +9,14 @@
 namespace flipbox\saml\core\controllers\cp\view;
 
 
-use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\Saml;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 
+/**
+ * Class AbstractController
+ * @package flipbox\saml\core\controllers\cp\view
+ */
 abstract class AbstractController extends Controller
 {
     use EnsureSamlPlugin;

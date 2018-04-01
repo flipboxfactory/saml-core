@@ -12,17 +12,15 @@ namespace flipbox\saml\core\services\messages;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\exceptions\InvalidMetadata;
+use LightSaml\Model\Metadata\EntityDescriptor;
 
 interface MetadataServiceInterface
 {
 
     /**
      * @param KeyChainRecord|null $withKeyPair
-     * @param bool $createKeyFromSettings
-     * @return ProviderInterface
-     * @throws InvalidMetadata
-     * @throws \Exception
+     * @return EntityDescriptor
      */
-    public function create(KeyChainRecord $withKeyPair = null): ProviderInterface;
+    public function create(KeyChainRecord $withKeyPair = null): EntityDescriptor;
 
 }

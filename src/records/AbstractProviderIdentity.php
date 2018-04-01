@@ -15,16 +15,8 @@ use yii\db\ActiveQuery;
 /**
  * Class AbstractProviderIdentity
  * @package flipbox\saml\core\records
- * @property int $providerId
- * @property int $userId
- * @property string $nameId
- * @property string $sessionId
- * @property bool $enabled
- * @property \DateTime $lastLoginDate
- * @property \DateTime $dateCreated
- * @property \DateTime $dateUpdated
  */
-abstract class AbstractProviderIdentity extends ActiveRecord
+abstract class AbstractProviderIdentity extends ActiveRecord implements ProviderIdentityInterface
 {
     /**
      * @var \craft\elements\User

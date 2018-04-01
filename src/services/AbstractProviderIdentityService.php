@@ -11,13 +11,13 @@ namespace flipbox\saml\core\services;
 
 use craft\elements\User;
 use flipbox\saml\core\records\AbstractProviderIdentity;
+use flipbox\saml\core\records\ProviderIdentityInterface;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
-use flipbox\saml\sp\records\ProviderIdentityRecord;
 use yii\base\Component;
 use yii\helpers\Json;
 
-abstract class AbstractProviderIdentityService extends Component
+abstract class AbstractProviderIdentityService extends Component implements ProviderIdentityServiceInterface
 {
     use EnsureSamlPlugin;
 
@@ -28,9 +28,10 @@ abstract class AbstractProviderIdentityService extends Component
 
     /**
      * @param string $nameId
-     * @return null|AbstractProviderIdentity
+     * @param ProviderInterface $provider
+     * @return ProviderIdentityInterface
      */
-    public function findByNameId(string $nameId, ProviderInterface $provider)
+    public function findByNameId(string $nameId, ProviderInterface $provider): ProviderIdentityInterface
     {
         return $this->find([
             'nameId'     => $nameId,
@@ -40,9 +41,9 @@ abstract class AbstractProviderIdentityService extends Component
 
     /**
      * @param User $user
-     * @return AbstractProviderIdentity|null
+     * @return ProviderIdentityInterface
      */
-    public function findByUser(User $user)
+    public function findByUser(User $user): ProviderIdentityInterface
     {
         return $this->find([
             'userId' => $user->getId(),
@@ -51,9 +52,9 @@ abstract class AbstractProviderIdentityService extends Component
 
     /**
      * @param array $condition
-     * @return null|AbstractProviderIdentity
+     * @return ProviderIdentityInterface
      */
-    public function find($condition = [])
+    public function find($condition = []): ProviderIdentityInterface
     {
         /** @var AbstractProviderIdentity $class */
         $class = $this->getRecordClass();
@@ -65,11 +66,13 @@ abstract class AbstractProviderIdentityService extends Component
     }
 
     /**
-     * @param ProviderIdentityRecord $record
-     * @return ProviderIdentityRecord
+     * @param ProviderIdentityInterface $record
+     * @param bool $runValidation
+     * @param null $attributeNames
+     * @return ProviderIdentityInterface
      * @throws \Exception
      */
-    public function save(ProviderIdentityRecord $record, $runValidation = true, $attributeNames = null)
+    public function save(ProviderIdentityInterface $record, $runValidation = true, $attributeNames = null): ProviderIdentityInterface
     {
 
         if (! $record->save($runValidation, $attributeNames)) {

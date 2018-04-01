@@ -1,15 +1,12 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 1/9/18
- * Time: 12:25 PM
+ * @copyright  Copyright (c) Flipbox Digital Limited
  */
 
 namespace flipbox\saml\core\helpers;
 
 use craft\web\Response;
-use flipbox\saml\core\models\Transport;
 use LightSaml\Error\LightSamlBindingException;
 use LightSaml\Model\Context\SerializationContext;
 use LightSaml\Model\AbstractSamlModel;
@@ -29,7 +26,7 @@ class SerializeHelper
     {
 
         $xml = static::toXml($message);
-        if($deflate){
+        if ($deflate) {
             $xml = gzdeflate($xml);
         }
 
@@ -80,6 +77,11 @@ class SerializeHelper
     }
 
 
+    /**
+     * @param SamlMessage $message
+     * @param $destination
+     * @return string
+     */
     public static function getRedirectURL(SamlMessage $message, $destination)
     {
         $signature = $message->getSignature();
@@ -100,7 +102,7 @@ class SerializeHelper
 
     /**
      * @param SamlMessage $message
-     * @param string      $xml
+     * @param string $xml
      *
      * @return string
      */
@@ -117,18 +119,18 @@ class SerializeHelper
     }
 
     /**
-     * @param string      $msg
+     * @param string $msg
      * @param SamlMessage $message
      */
     protected static function addRelayStateToUrl(&$msg, SamlMessage $message)
     {
         if ($message->getRelayState() !== null) {
-            $msg .= '&RelayState='.urlencode($message->getRelayState());
+            $msg .= '&RelayState=' . urlencode($message->getRelayState());
         }
     }
 
     /**
-     * @param string               $msg
+     * @param string $msg
      * @param SignatureWriter|null $signature
      */
     protected static function addSignatureToUrl(&$msg, SignatureWriter $signature = null)
@@ -137,14 +139,14 @@ class SerializeHelper
         $key = $signature ? $signature->getXmlSecurityKey() : null;
 
         if (null != $key) {
-            $msg .= '&SigAlg='.urlencode($key->type);
+            $msg .= '&SigAlg=' . urlencode($key->type);
             $signature = $key->signData($msg);
-            $msg .= '&Signature='.urlencode(base64_encode($signature));
+            $msg .= '&Signature=' . urlencode(base64_encode($signature));
         }
     }
 
     /**
-     * @param string      $msg
+     * @param string $msg
      * @param SamlMessage $message
      * @param string|null $destination
      *
@@ -154,9 +156,9 @@ class SerializeHelper
     {
         $destination = $message->getDestination() ? $message->getDestination() : $destination;
         if (strpos($destination, '?') === false) {
-            $destination .= '?'.$msg;
+            $destination .= '?' . $msg;
         } else {
-            $destination .= '&'.$msg;
+            $destination .= '&' . $msg;
         }
 
         return $destination;

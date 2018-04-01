@@ -12,12 +12,17 @@ namespace flipbox\saml\core\services;
 use craft\base\Component;
 use craft\helpers\Json;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
 use flipbox\saml\core\records\ProviderInterface;
+use flipbox\saml\core\traits\EnsureSamlPlugin;
+use LightSaml\Model\Metadata\EntityDescriptor;
 
-abstract class AbstractProviderService extends Component
+abstract class AbstractProviderService extends Component implements ProviderServiceInterface
 {
+
+    use EnsureSamlPlugin;
     /**
      * @var ProviderInterface[]
      */
@@ -56,7 +61,7 @@ abstract class AbstractProviderService extends Component
     /**
      * @return AbstractProvider
      */
-    public function findByIdp()
+    public function findByIdp(): ProviderInterface
     {
         return $this->findByType('idp');
     }
@@ -64,7 +69,7 @@ abstract class AbstractProviderService extends Component
     /**
      * @return AbstractProvider
      */
-    public function findBySp()
+    public function findBySp(): ProviderInterface
     {
         return $this->findByType('sp');
     }
@@ -93,6 +98,28 @@ abstract class AbstractProviderService extends Component
         return $this->find([
             'entityId' => $entityId,
         ]);
+    }
+
+    public function create(EntityDescriptor $entityDescriptor, KeyChainRecord $keyChainRecord = null): ProviderInterface
+    {
+
+        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+
+        /** @var ProviderInterface $provider */
+        $provider = (new $recordClass())
+            ->loadDefaultValues();
+
+
+        $provider->providerType = $this->getSamlPlugin()->getMyType();
+
+        \Craft::configure($provider, [
+            'entityId' => $entityDescriptor->getEntityID(),
+            'metadata' => SerializeHelper::toXml($entityDescriptor),
+        ]);
+
+        $provider->setKeychain($keyChainRecord);
+
+        return $provider;
     }
 
     /**

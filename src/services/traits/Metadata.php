@@ -32,11 +32,6 @@ trait Metadata
     abstract public function getSupportedBindings();
 
     /**
-     * @return SamlPluginInterface
-     */
-    abstract protected function getSamlPlugin(): SamlPluginInterface;
-
-    /**
      * @param AbstractProvider $provider
      * @return bool
      */

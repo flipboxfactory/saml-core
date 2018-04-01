@@ -12,24 +12,28 @@ namespace flipbox\saml\core\services\messages;
 use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\AbstractPlugin;
-use flipbox\saml\core\helpers\SerializeHelper;
-use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\traits\Metadata as MetadataTrait;
 use craft\helpers\UrlHelper;
+use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Model\Metadata\IdpSsoDescriptor;
 use LightSaml\Model\Metadata\SingleLogoutService;
 use LightSaml\Model\Metadata\SingleSignOnService;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
+use LightSaml\Model\Metadata\SSODescriptor;
 use LightSaml\SamlConstants;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
+/**
+ * Class AbstractMetadata
+ * @package flipbox\saml\core\services\messages
+ */
 abstract class AbstractMetadata extends Component implements MetadataServiceInterface
 {
-    use MetadataTrait;
+    use MetadataTrait, EnsureSamlPlugin;
 
     const EVENT_SAML_MODEL_CREATED = 'eventSamlModelCreated';
 
@@ -59,26 +63,6 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     public static function getLoginLocation()
     {
         return UrlHelper::actionUrl(static::LOGIN_LOCATION);
-    }
-
-    /**
-     * @param ProviderInterface $provider
-     * @param KeyChainRecord $keychain
-     */
-    public function updateKeychain(ProviderInterface $provider, KeyChainRecord $keychain)
-    {
-        foreach ($provider->getMetadataModel()->getAllEndpoints() as $endpoint) {
-            if ($this->useEncryption($provider)) {
-                $this->setEncrypt($endpoint->getDescriptor(), $keychain);
-            }
-
-            if ($this->useSigning($provider)) {
-                $this->setSign($endpoint->getDescriptor(), $keychain);
-            }
-
-        }
-
-        $provider->setKeychain($keychain);
     }
 
     /**
@@ -167,40 +151,30 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
 
     /**
      * @param KeyChainRecord|null $withKeyPair
-     * @return ProviderInterface
+     * @return EntityDescriptor
      * @throws InvalidConfigException
      */
-    public function create(KeyChainRecord $withKeyPair = null): ProviderInterface
+    public function create(KeyChainRecord $withKeyPair = null): EntityDescriptor
     {
-
 
         $entityDescriptor = new EntityDescriptor(
             $this->getSamlPlugin()->getSettings()->getEntityId()
         );
 
         foreach ($this->getSupportedBindings() as $binding) {
+
             $entityDescriptor->addItem(
-                $this->createDescriptor($binding)
+                $descriptor = $this->createDescriptor($binding)
             );
+
+            /**
+             * Add security settings
+             */
+            if ($withKeyPair) {
+                $this->setEncrypt($descriptor, $withKeyPair);
+                $this->setSign($descriptor, $withKeyPair);
+            }
         }
-
-        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
-
-        /** @var ProviderInterface $provider */
-        $provider = (new $recordClass())
-            ->loadDefaultValues();
-
-        $provider->providerType = 'sp';
-
-        \Craft::configure($provider, [
-            'entityId' => $entityDescriptor->getEntityID(),
-            'metadata' => SerializeHelper::toXml($entityDescriptor),
-        ]);
-
-        $this->updateKeychain(
-            $provider,
-            $withKeyPair
-        );
 
         /**
          * After event for Metadata creation
@@ -213,6 +187,6 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
             $event
         );
 
-        return $provider;
+        return $entityDescriptor;
     }
 }

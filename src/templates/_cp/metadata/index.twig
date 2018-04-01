@@ -43,7 +43,7 @@
                         <td data-title="entityid">
                             <div class="element small hasstatus "
                                  data-status="active"
-                                    {% if myProvider is defined and myProvider.id == provider.id %}
+                                    {% if myProvider and myProvider.id == provider.id %}
                                         data-url="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
                                     {% else %}
                                         data-url="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"

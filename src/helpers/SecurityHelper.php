@@ -9,12 +9,9 @@
 namespace flipbox\saml\core\helpers;
 
 
-use flipbox\keychain\keypair\KeyPairInterface;
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\saml\core\records\ProviderInterface;
 use LightSaml\Credential\KeyHelper;
 use LightSaml\Error\LightSamlSecurityException;
-use LightSaml\Model\Assertion\EncryptedAssertionReader;
 use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Credential\X509Certificate;

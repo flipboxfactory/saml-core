@@ -21,7 +21,8 @@ use yii\db\ActiveRecordInterface;
  * @property int $entityId
  * @property string $metadata
  * @property string $sha256
- * @property string $propertyType
+ * @property string $providerType
+ * @property KeyChainRecord|null $keychain
  * @property bool $enabled
  * @property \DateTime $dateCreated
  * @property \DateTime $dateUpdated

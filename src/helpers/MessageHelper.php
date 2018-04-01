@@ -1,20 +1,20 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 1/30/18
- * Time: 9:39 PM
+ * @copyright  Copyright (c) Flipbox Digital Limited
  */
 
 namespace flipbox\saml\core\helpers;
 
 
-use flipbox\saml\core\Saml;
 use LightSaml\Model\Protocol\AbstractRequest;
-use LightSaml\Model\Protocol\AuthnRequest;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\Protocol\StatusResponse;
 
+/**
+ * Class MessageHelper
+ * @package flipbox\saml\core\helpers
+ */
 class MessageHelper
 {
     const REQUEST_PARAMETER = 'SAMLRequest';

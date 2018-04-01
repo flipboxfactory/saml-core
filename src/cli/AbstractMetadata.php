@@ -155,8 +155,12 @@ abstract class AbstractMetadata extends Controller
                 return ExitCode::DATAERR;
             }
         }
+        $entityDescriptor = $this->getSamlPlugin()->getMetadata()->create(
+            $keyPairRecord ? $keyPairRecord : null
+        );
 
-        $provider = $this->getSamlPlugin()->getMetadata()->create(
+        $provider = $this->getSamlPlugin()->getProvider()->create(
+            $entityDescriptor,
             $keyPairRecord ? $keyPairRecord : null
         );
 

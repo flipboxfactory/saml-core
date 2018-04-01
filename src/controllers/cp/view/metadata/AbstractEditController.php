@@ -10,17 +10,22 @@ namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
 use flipbox\keychain\KeyChain;
-use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\sp\Saml as SamlSp;
-use flipbox\saml\idp\Saml as SamlIdp;
 
+/**
+ * Class AbstractEditController
+ * @package flipbox\saml\core\controllers\cp\view\metadata
+ */
 abstract class AbstractEditController extends AbstractController
 {
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
 
+    /**
+     * @param null $providerId
+     * @return \yii\web\Response
+     */
     public function actionIndex($providerId = null)
     {
         $variables = $this->prepVariables($providerId);
@@ -34,12 +39,20 @@ abstract class AbstractEditController extends AbstractController
         );
     }
 
+    /**
+     * @return \yii\web\Response
+     */
     public function actionMyProvider()
     {
         $variables = $this->prepVariables();
 
         if ($provider = $this->getSamlPlugin()->getProvider()->findOwn()) {
             $variables['provider'] = $provider;
+
+            $variables = array_merge(
+                $variables,
+                $this->addUrls($provider)
+            );
         } else {
             $variables['provider']->entityId = $this->getSamlPlugin()->getSettings()->getEntityId();
             $variables['provider']->providerType = $this->getSamlPlugin()->getMyType();
@@ -55,6 +68,9 @@ abstract class AbstractEditController extends AbstractController
         );
     }
 
+    /**
+     * @return array
+     */
     protected function getBaseVariables()
     {
         return array_merge(
@@ -67,12 +83,22 @@ abstract class AbstractEditController extends AbstractController
         );
     }
 
+    /**
+     * @param null $providerId
+     * @return array
+     */
     protected function prepVariables($providerId = null)
     {
         $variables = $this->getBaseVariables();
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), $this->getSamlPlugin()->name);
+        $variables['title'] = Craft::t(
+            $this->getSamlPlugin()->getUniqueId(),
+            $this->getSamlPlugin()->name
+        );
 
+        /**
+         * TYPES
+         */
         $variables['myType'] = $this->getSamlPlugin()->getMyType();
         $variables['remoteType'] = $this->getSamlPlugin()->getRemoteType();
 
@@ -80,24 +106,34 @@ abstract class AbstractEditController extends AbstractController
             /**
              * @var ProviderInterface $provider
              */
-            $provider = $this->getProviderRecord()::find()->where([
+            $variables['provider'] = $provider = $this->getProviderRecord()::find()->where([
                 'id' => $providerId,
             ])->one();
-            $variables['provider'] = $provider;
+
             $variables['title'] .= ': Edit';
+
             $crumb = [
                 'url'   => UrlHelper::cpUrl(
                     $this->getSamlPlugin()->getUniqueId() . '/' . $providerId
                 ),
                 'label' => $variables['provider']->entityId,
             ];
+
             $variables['keypair'] = $provider->getKeyChain()->one();
+
+            $variables = array_merge(
+                $variables,
+                $this->addUrls($provider)
+            );
         } else {
             $record = $this->getProviderRecord();
+
             $variables['provider'] = new $record([
                 'providerType' => 'idp',
             ]);
+
             $variables['title'] .= ': Create';
+
             $crumb = [
                 'url'   => UrlHelper::cpUrl(
                     $this->getSamlPlugin()->getUniqueId() . '/new'
@@ -107,7 +143,9 @@ abstract class AbstractEditController extends AbstractController
         }
 
         $variables['allkeypairs'] = [];
+
         $keypairs = KeyChain::getInstance()->getService()->findByPlugin($this->getSamlPlugin())->all();
+
         foreach ($keypairs as $keypair) {
             $variables['allkeypairs'][] = [
                 'label' => $keypair->description,
@@ -126,4 +164,63 @@ abstract class AbstractEditController extends AbstractController
         return $variables;
     }
 
+    /**
+     * @param ProviderInterface $provider
+     * @param array $variables
+     * @return array
+     */
+    protected function addUrls(ProviderInterface $provider)
+    {
+
+        $variables = [];
+        $variables['assertionConsumerServices'] = null;
+        $variables['singleLogoutServices'] = null;
+        $variables['singleSignOnServices'] = null;
+
+        if(!$provider->getMetadataModel()) {
+            return $variables;
+        }
+
+        $plugin = $this->getSamlPlugin();
+
+        /**
+         * Add SP URLs
+         */
+        if ($provider->getType() === $plugin::SP) {
+            foreach (
+                $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllSingleLogoutServices()
+                as $singleLogoutService
+            ) {
+                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] = $singleLogoutService->getLocation();
+            }
+
+            foreach (
+                $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllAssertionConsumerServices()
+                as $assertionConsumerService
+            ) {
+                $variables['assertionConsumerServices'][$assertionConsumerService->getBinding()] = $assertionConsumerService->getLocation();
+            }
+        }
+
+        /**
+         * Add IDP URLs
+         */
+        if ($provider->getType() === $plugin::IDP) {
+            foreach (
+                $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getAllSingleLogoutServices()
+                as $singleLogoutService
+            ) {
+                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] = $singleLogoutService->getLocation();
+            }
+
+            foreach (
+                $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getAllSingleSignOnServices()
+                as $signOnService
+            ) {
+                $variables['singleLogoutServices'][$signOnService->getBinding()] = $signOnService->getLocation();
+            }
+        }
+
+        return $variables;
+    }
 }

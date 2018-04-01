@@ -48,12 +48,21 @@ abstract class AbstractMetadataController extends AbstractController
         return SerializeHelper::toXml($metadata);
     }
 
+    /**
+     * @return \yii\web\Response
+     * @throws \Exception
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionAutoCreate()
     {
 
         $record = $this->processSaveAction();
 
-        $provider = $this->getSamlPlugin()->getMetadata()->create(
+        $entityDescriptor = $this->getSamlPlugin()->getMetadata()->create(
+            $record->keychain
+        );
+        $provider = $this->getSamlPlugin()->getProvider()->create(
+            $entityDescriptor,
             $record->keychain
         );
 
@@ -78,6 +87,11 @@ abstract class AbstractMetadataController extends AbstractController
         return $this->redirectToPostedUrl();
     }
 
+    /**
+     * @return \yii\web\Response
+     * @throws \Exception
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionSave()
     {
         $record = $this->processSaveAction();
@@ -94,6 +108,8 @@ abstract class AbstractMetadataController extends AbstractController
                 )
             );
         }
+
+        Craft::$app->getSession()->setNotice(Craft::t($this->getSamlPlugin()->getUniqueId(), 'Provider saved.'));
 
         return $this->redirectToPostedUrl();
     }
@@ -139,17 +155,24 @@ abstract class AbstractMetadataController extends AbstractController
         return $record;
     }
 
+    /**
+     * @param $keyId
+     * @return static
+     * @throws NotFoundHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     * @throws \yii\web\HttpException
+     */
     public function actionDownloadCertificate($keyId)
     {
         $this->requireAdmin();
 
         /** @var KeyChainRecord $keychain */
-        if (!$keychain = KeyChainRecord::find()->where([
+        if (! $keychain = KeyChainRecord::find()->where([
             'id' => $keyId,
         ])->one()) {
             throw new NotFoundHttpException('Key not found');
         }
 
-        return Craft::$app->response->sendContentAsFile($keychain->getDecryptedCertificate(),'certificate.crt');
+        return Craft::$app->response->sendContentAsFile($keychain->getDecryptedCertificate(), 'certificate.crt');
     }
 }

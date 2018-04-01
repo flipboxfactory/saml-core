@@ -15,6 +15,9 @@ use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
 use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
 use flipbox\saml\core\services\messages\MetadataServiceInterface;
+use flipbox\saml\core\services\messages\SamlRequestInterface;
+use flipbox\saml\core\services\messages\SamlResponseInterface;
+use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
 
 interface SamlPluginInterface
@@ -24,10 +27,22 @@ interface SamlPluginInterface
      */
     public function getProvider(): ProviderServiceInterface;
 
+    public function getProviderIdentity(): ProviderIdentityServiceInterface;
+
     /**
      * @return MetadataServiceInterface
      */
     public function getMetadata(): MetadataServiceInterface;
+
+    /**
+     * @return SamlRequestInterface
+     */
+    public function getLogoutRequest(): SamlRequestInterface;
+
+    /**
+     * @return SamlResponseInterface
+     */
+    public function getLogoutResponse(): SamlResponseInterface;
 
     /**
      * @return SettingsInterface
@@ -47,4 +62,18 @@ interface SamlPluginInterface
      * @return AbstractHttpRedirect
      */
     public function getHttpRedirect();
+
+    /**
+     * Utility Methods
+     */
+
+    /**
+     * @return string
+     */
+    public function getMyType();
+
+    /**
+     * @return string
+     */
+    public function getRemoteType();
 }

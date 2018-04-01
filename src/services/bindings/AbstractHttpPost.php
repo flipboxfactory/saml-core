@@ -12,6 +12,7 @@ namespace flipbox\saml\core\services\bindings;
 use Craft;
 use craft\base\Component;
 use craft\web\Request;
+use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\exceptions\InvalidIssuer;
 use flipbox\saml\core\exceptions\InvalidSignature;
 use flipbox\saml\core\helpers\MessageHelper;
@@ -99,7 +100,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
     public function getRelayStateForSend(SamlMessage $message)
     {
         $relayState = $message->getRelayState();
-        if(MessageHelper::isRequest($message)) {
+        if (MessageHelper::isRequest($message)) {
             $relayState = SerializeHelper::toBase64(Craft::$app->getUser()->getReturnUrl());
         }
 
@@ -115,14 +116,13 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
     public function receive(Request $request)
     {
 
-        $isRequest = true;
-        $post = $request->getBodyParams();
-        if (array_key_exists('SAMLRequest', $post)) {
+        $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn();
 
-            $isRequest = true;
+        $post = $request->getBodyParams();
+
+        if (array_key_exists('SAMLRequest', $post)) {
             $msg = $post['SAMLRequest'];
         } elseif (array_key_exists('SAMLResponse', $post)) {
-            $isRequest = false;
             $msg = $post['SAMLResponse'];
         } else {
             throw new LightSamlBindingException('Missing SAMLRequest or SAMLResponse parameter');
@@ -136,10 +136,15 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
 
         /** @var Issuer $issuer */
         $issuer = $message->getIssuer();
+
+        /** @var ProviderInterface $provider */
         $provider = $this->getProviderByIssuer($issuer);
 
+        /**
+         * Find the first key descriptor
+         */
         if (
-            $provider->providerType === 'idp'
+            $provider->providerType === AbstractPlugin::IDP
         ) {
             $key = $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor();
         } else {
@@ -147,10 +152,16 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
         }
 
 
-        if (! SecurityHelper::validSignature($message, $key)) {
+        /**
+         * Validate Signature
+         */
+        if ($message->getSignature() && ! SecurityHelper::validSignature($message, $key)) {
             throw new InvalidSignature("Invalid request", 400);
         }
 
+        /**
+         * Set Relay State
+         */
         if (array_key_exists('RelayState', $post)) {
             $message->setRelayState($post['RelayState']);
         }

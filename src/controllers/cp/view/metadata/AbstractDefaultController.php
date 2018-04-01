@@ -11,11 +11,18 @@ use Craft;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 
+/**
+ * Class AbstractDefaultController
+ * @package flipbox\saml\core\controllers\cp\view\metadata
+ */
 abstract class AbstractDefaultController extends AbstractController
 {
 
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
 
+    /**
+     * @return \yii\web\Response
+     */
     public function actionIndex()
     {
 
@@ -30,9 +37,10 @@ abstract class AbstractDefaultController extends AbstractController
             ],
         ];
         $variables['myProvider'] = null;
+
         foreach ($this->getProviderRecord()::find()->all() as $provider) {
             $variables['providers'][] = $provider;
-            if ($provider->enabled && $provider->getEntityId() == $this->getSamlPlugin()->getSettings()->getEntityId()) {
+            if ($provider->getEntityId() == $this->getSamlPlugin()->getSettings()->getEntityId()) {
                 $variables['myProvider'] = $provider;
             }
         }

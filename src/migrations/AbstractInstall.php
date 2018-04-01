@@ -153,6 +153,21 @@ abstract class AbstractInstall extends Migration
             'nameId',
             false
         );
+
+        $this->createIndex(
+            $this->db->getIndexName(static::getIdentityTableName(),
+                [
+                    'providerId',
+                    'userId',
+                ],
+                true),
+            static::getIdentityTableName(),
+            [
+                'providerId',
+                'userId',
+            ],
+            true
+        );
     }
 
     /**
