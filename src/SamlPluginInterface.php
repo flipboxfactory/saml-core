@@ -19,6 +19,7 @@ use flipbox\saml\core\services\messages\SamlRequestInterface;
 use flipbox\saml\core\services\messages\SamlResponseInterface;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
+use flipbox\saml\core\services\Session;
 
 interface SamlPluginInterface
 {
@@ -76,4 +77,9 @@ interface SamlPluginInterface
      * @return string
      */
     public function getRemoteType();
+
+    /**
+     * @return Session
+     */
+    public function getSession();
 }

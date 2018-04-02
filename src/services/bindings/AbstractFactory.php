@@ -80,6 +80,8 @@ abstract class AbstractFactory
             $binding = static::determineBindingToSp($message, $provider);
         }
 
+//        InResponseTo
+
         return static::getService($binding)->send($message,  $provider);
     }
 

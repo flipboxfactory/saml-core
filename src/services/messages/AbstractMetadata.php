@@ -35,7 +35,7 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
 {
     use MetadataTrait, EnsureSamlPlugin;
 
-    const EVENT_SAML_MODEL_CREATED = 'eventSamlModelCreated';
+    const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     const LOGOUT_RESPONSE_LOCATION = '';
     const LOGOUT_REQUEST_LOCATION = '';
@@ -177,15 +177,14 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
         }
 
         /**
-         * After event for Metadata creation
+         * Kick off event here so people can manipulate this object if needed
          */
         $event = new Event();
+        /**
+         * response
+         */
         $event->data = $entityDescriptor;
-
-        $this->trigger(
-            static::EVENT_SAML_MODEL_CREATED,
-            $event
-        );
+        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
 
         return $entityDescriptor;
     }

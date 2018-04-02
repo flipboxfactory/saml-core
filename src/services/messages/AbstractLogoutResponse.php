@@ -20,10 +20,13 @@ use LightSaml\Model\Protocol\LogoutRequest as LogoutRequestModel;
 use LightSaml\Model\Protocol\LogoutResponse;
 use LightSaml\Model\Protocol\StatusResponse;
 use LightSaml\SamlConstants;
+use yii\base\Event;
 
 abstract class AbstractLogoutResponse extends AbstractLogout implements SamlResponseInterface
 {
     use EnsureSamlPlugin;
+
+    const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     /**
      * @inheritdoc
@@ -55,13 +58,13 @@ abstract class AbstractLogoutResponse extends AbstractLogout implements SamlResp
                  * We only support post right now
                  */
                     SamlConstants::BINDING_SAML2_HTTP_POST
-                ) :
+                )->getLocation() :
                 $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstSingleLogoutService(
                 /**
                  * We only support post right now
                  */
                     SamlConstants::BINDING_SAML2_HTTP_POST
-                )
+                )->getLocation()
         );
 
         /**
@@ -86,6 +89,20 @@ abstract class AbstractLogoutResponse extends AbstractLogout implements SamlResp
         if ($ownProvider->keychain) {
             SecurityHelper::signMessage($logout, $ownProvider->keychain);
         }
+
+        /**
+         * Kick off event here so people can manipulate this object if needed
+         */
+        $event = new Event();
+        /**
+         * request
+         */
+        $event->sender = $samlMessage;
+        /**
+         * response
+         */
+        $event->data = $logout;
+        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
 
         return $logout;
     }

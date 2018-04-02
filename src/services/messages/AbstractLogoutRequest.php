@@ -11,16 +11,20 @@ use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
+use LightSaml\Helper;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Assertion\NameID;
 use LightSaml\Model\Protocol\AbstractRequest;
 use LightSaml\Model\Protocol\LogoutRequest as LogoutRequestModel;
 use LightSaml\SamlConstants;
+use yii\base\Event;
 
 abstract class AbstractLogoutRequest extends AbstractLogout implements SamlRequestInterface
 {
     use EnsureSamlPlugin;
 
+
+    const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     /**
      * @inheritdoc
@@ -52,25 +56,43 @@ abstract class AbstractLogoutRequest extends AbstractLogout implements SamlReque
                  * We only support post right now
                  */
                     SamlConstants::BINDING_SAML2_HTTP_POST
-                ) :
+                )->getLocation() :
                 $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstSingleLogoutService(
                 /**
                  * We only support post right now
                  */
                     SamlConstants::BINDING_SAML2_HTTP_POST
-                )
+                )->getLocation()
         );
+        /**
+         * Generate the request id
+         */
+        $logout->setID(
+            Helper::generateID()
+        );
+
 
         /**
          * Set session id
          */
         $logout->setSessionIndex($providerIdentity->sessionId);
 
+        $logout->setNotOnOrAfter(
+            new \DateTime('+5 minutes')
+        )->setReason(
+            SamlConstants::LOGOUT_REASON_USER
+        )->setIssueInstant(
+            new \DateTime()
+        )->setConsent(
+            SamlConstants::CONSENT_UNSPECIFIED
+        );
+
+
         /**
          * Set NameId
          */
         $logout->setNameID(
-            $nameId = new NameID($providerIdentity->nameId)
+            $nameId = new NameID($providerIdentity->nameId, SamlConstants::NAME_ID_FORMAT_EMAIL)
         );
 
         /**
@@ -88,6 +110,17 @@ abstract class AbstractLogoutRequest extends AbstractLogout implements SamlReque
         if ($ownProvider->keychain) {
             SecurityHelper::signMessage($logout, $ownProvider->keychain);
         }
+
+
+        /**
+         * Kick off event here so people can manipulate this object if needed
+         */
+        $event = new Event();
+        /**
+         * response
+         */
+        $event->data = $logout;
+        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
 
         return $logout;
     }

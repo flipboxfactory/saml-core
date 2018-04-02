@@ -9,6 +9,7 @@ namespace flipbox\saml\core\controllers\messages;
 
 use craft\web\Controller;
 use craft\web\Request;
+use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Model\Assertion\Issuer;
@@ -17,6 +18,7 @@ use LightSaml\Model\Protocol\LogoutResponse;
 use LightSaml\Model\Protocol\LogoutRequest;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\Protocol\StatusResponse;
+use yii\web\HttpException;
 
 abstract class AbstractLogoutController extends Controller
 {
@@ -57,15 +59,22 @@ abstract class AbstractLogoutController extends Controller
         return parent::beforeAction($action);
     }
 
+
     /**
+     * @return \yii\web\Response
+     * @throws HttpException
      * @throws \flipbox\saml\core\exceptions\InvalidIssuer
      */
     public function actionIndex()
     {
         $message = $this->receive(\Craft::$app->request);
 
-        $isRequest = ! $message instanceof LogoutRequest;
-        $isResponse = ! $message instanceof LogoutResponse;
+        $isRequest = $message instanceof LogoutRequest;
+        $isResponse = $message instanceof LogoutResponse;
+
+        if ($isResponse && $this->getSamlPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
+            throw new HttpException(400, "Invalid request");
+        }
 
         /**
          * I guess we shouldn't be here. Just follow the normal logout.
@@ -85,7 +94,13 @@ abstract class AbstractLogoutController extends Controller
         if ($isRequest) {
             /** @var AbstractRequest $message */
             $response = $this->getSamlPlugin()->getLogoutResponse()->create($message);
-            \Craft::$app->getUser()->logout();
+
+            /**
+             * Add the request id to the the response.
+             */
+            $response->setInResponseTo($message->getID());
+
+//            \Craft::$app->getUser()->logout();
             $this->send($response, $provider);
             exit;
         }
@@ -104,7 +119,16 @@ abstract class AbstractLogoutController extends Controller
 
         $logoutRequest = $this->getSamlPlugin()->getLogoutRequest()->create($provider);
 
-        \Craft::$app->getUser()->logout();
+//        SerializeHelper::xmlContentType();
+//        echo SerializeHelper::toXml($logoutRequest);
+//        exit;
+
+        /**
+         * Save id to session so we can validate the response.
+         */
+        $this->getSamlPlugin()->getSession()->setRequestId($logoutRequest->getID());
+
+//        \Craft::$app->getUser()->logout();
 
         $this->send($logoutRequest, $provider);
         exit;
