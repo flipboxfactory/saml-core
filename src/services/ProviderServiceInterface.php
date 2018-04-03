@@ -61,15 +61,15 @@ interface ProviderServiceInterface
     /**
      * @return AbstractProvider
      */
-    public function findOwn(): AbstractProvider;
+    public function findOwn();
 
     /**
      * @return AbstractProvider
      */
-    public function findByIdp(): ProviderInterface;
+    public function findByIdp();
 
     /**
      * @return AbstractProvider
      */
-    public function findBySp(): ProviderInterface;
+    public function findBySp();
 }

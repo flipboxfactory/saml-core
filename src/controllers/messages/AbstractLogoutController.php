@@ -100,7 +100,6 @@ abstract class AbstractLogoutController extends Controller
              */
             $response->setInResponseTo($message->getID());
 
-//            \Craft::$app->getUser()->logout();
             $this->send($response, $provider);
             exit;
         }
@@ -119,16 +118,10 @@ abstract class AbstractLogoutController extends Controller
 
         $logoutRequest = $this->getSamlPlugin()->getLogoutRequest()->create($provider);
 
-//        SerializeHelper::xmlContentType();
-//        echo SerializeHelper::toXml($logoutRequest);
-//        exit;
-
         /**
          * Save id to session so we can validate the response.
          */
         $this->getSamlPlugin()->getSession()->setRequestId($logoutRequest->getID());
-
-//        \Craft::$app->getUser()->logout();
 
         $this->send($logoutRequest, $provider);
         exit;

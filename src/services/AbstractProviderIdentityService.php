@@ -27,11 +27,9 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     abstract public function getRecordClass();
 
     /**
-     * @param string $nameId
-     * @param ProviderInterface $provider
-     * @return ProviderIdentityInterface
+     * @inheritdoc
      */
-    public function findByNameId(string $nameId, ProviderInterface $provider): ProviderIdentityInterface
+    public function findByNameId(string $nameId, ProviderInterface $provider)
     {
         return $this->find([
             'nameId'     => $nameId,
@@ -40,10 +38,9 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     }
 
     /**
-     * @param User $user
-     * @return ProviderIdentityInterface
+     * @inheritdoc
      */
-    public function findByUser(User $user): ProviderIdentityInterface
+    public function findByUser(User $user)
     {
         return $this->find([
             'userId' => $user->getId(),
@@ -51,10 +48,9 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     }
 
     /**
-     * @param array $condition
-     * @return ProviderIdentityInterface
+     * @inheritdoc
      */
-    public function find($condition = []): ProviderIdentityInterface
+    public function find($condition = [])
     {
         /** @var AbstractProviderIdentity $class */
         $class = $this->getRecordClass();

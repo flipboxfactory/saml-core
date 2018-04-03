@@ -41,12 +41,18 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     const LOGOUT_REQUEST_LOCATION = '';
     const LOGIN_LOCATION = '';
 
+    protected static function actionUrl($path)
+    {
+        return preg_replace('#' . \Craft::$app->getConfig()->getGeneral()->cpTrigger . '/#',
+            '', UrlHelper::actionUrl($path));
+    }
+
     /**
      * @return string
      */
     public static function getLogoutResponseLocation()
     {
-        return UrlHelper::actionUrl(static::LOGOUT_RESPONSE_LOCATION);
+        return static::actionUrl(static::LOGOUT_RESPONSE_LOCATION);
     }
 
     /**
@@ -54,7 +60,7 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
      */
     public static function getLogoutRequestLocation()
     {
-        return UrlHelper::actionUrl(static::LOGOUT_REQUEST_LOCATION);
+        return static::actionUrl(static::LOGOUT_REQUEST_LOCATION);
     }
 
     /**
@@ -62,7 +68,7 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
      */
     public static function getLoginLocation()
     {
-        return UrlHelper::actionUrl(static::LOGIN_LOCATION);
+        return static::actionUrl(static::LOGIN_LOCATION);
     }
 
     /**

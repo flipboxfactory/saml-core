@@ -10,7 +10,7 @@
                 label: "Enable"|t(pluginHandle ),
                 id: 'enabled',
                 name: 'enabled',
-                on: provider.enabled,
+                on: provider.id ? provider.enabled : true,
                 errors: provider.getErrors('enabled')
             }) }}
             {{ forms.selectField({

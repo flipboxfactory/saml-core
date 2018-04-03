@@ -36,11 +36,11 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @return AbstractProvider
      */
-    abstract public function findOwn(): AbstractProvider;
+    abstract public function findOwn();
 
     /**
      * @param array $condition
-     * @return AbstractProvider
+     * @return AbstractProvider|ProviderInterface|null
      */
     public function find($condition = [])
     {
@@ -52,7 +52,9 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         }
 
         /** @var AbstractProvider $provider */
-        $provider = $class::find()->where($condition)->one();
+        if (! $provider = $class::find()->where($condition)->one()) {
+            return null;
+        }
 
         $this->cache[$provider->getEntityId()] = $provider;
         return $provider;
@@ -61,7 +63,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @return AbstractProvider
      */
-    public function findByIdp(): ProviderInterface
+    public function findByIdp()
     {
         return $this->findByType('idp');
     }
@@ -69,7 +71,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @return AbstractProvider
      */
-    public function findBySp(): ProviderInterface
+    public function findBySp()
     {
         return $this->findByType('sp');
     }

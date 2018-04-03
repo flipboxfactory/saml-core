@@ -177,7 +177,7 @@ abstract class AbstractEditController extends AbstractController
         $variables['singleLogoutServices'] = null;
         $variables['singleSignOnServices'] = null;
 
-        if(!$provider->getMetadataModel()) {
+        if (! $provider->getMetadataModel()) {
             return $variables;
         }
 
@@ -191,7 +191,7 @@ abstract class AbstractEditController extends AbstractController
                 $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllSingleLogoutServices()
                 as $singleLogoutService
             ) {
-                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] = $singleLogoutService->getLocation();
+                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] = $singleLogoutService->getResponseLocation();
             }
 
             foreach (

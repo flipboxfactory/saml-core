@@ -18,21 +18,21 @@ interface ProviderIdentityServiceInterface
     /**
      * @param string $nameId
      * @param ProviderInterface $provider
-     * @return ProviderIdentityInterface
+     * @return ProviderIdentityInterface|null
      */
-    public function findByNameId(string $nameId, ProviderInterface $provider): ProviderIdentityInterface;
+    public function findByNameId(string $nameId, ProviderInterface $provider);
 
     /**
      * @param User $user
-     * @return ProviderIdentityInterface
+     * @return ProviderIdentityInterface|null
      */
-    public function findByUser(User $user): ProviderIdentityInterface;
+    public function findByUser(User $user);
 
     /**
      * @param array $condition
-     * @return ProviderIdentityInterface
+     * @return ProviderIdentityInterface|null
      */
-    public function find($condition = []): ProviderIdentityInterface;
+    public function find($condition = []);
 
     /**
      * @param ProviderIdentityInterface $record
