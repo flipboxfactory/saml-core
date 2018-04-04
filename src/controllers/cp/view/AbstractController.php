@@ -52,6 +52,9 @@ abstract class AbstractController extends Controller
             'continueEditingUrl' => $this->getBaseCpPath(),
             'baseActionPath'     => $this->getBaseCpPath(),
             'baseCpPath'         => $this->getBaseCpPath(),
+            'templateIndex'      => $this->getTemplateIndex(),
+
+            'actions' => [],
         ];
     }
 

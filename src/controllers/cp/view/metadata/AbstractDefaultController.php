@@ -26,6 +26,8 @@ abstract class AbstractDefaultController extends AbstractController
     public function actionIndex()
     {
 
+        $variables = $this->getBaseVariables();
+
         $variables['crumbs'] = [
             [
                 'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()),
@@ -37,6 +39,7 @@ abstract class AbstractDefaultController extends AbstractController
             ],
         ];
         $variables['myProvider'] = null;
+        $variables['providers'] = [];
 
         foreach ($this->getProviderRecord()::find()->all() as $provider) {
             $variables['providers'][] = $provider;

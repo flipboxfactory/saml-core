@@ -1,26 +1,25 @@
 {% extends "_layouts/cp" %}
 
 {% block actionButton %}
-    <div class="btngroup submit first">
-        <a class="btn submit add icon" href="{{ cpUrl(pluginHandle ~ '/metadata/new') }}"></a>
+    <div class="btngroup">
+        <a class="btn submit" href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}">Edit My Provider</a>
+        <div class="btn submit menubtn"></div>
+        <div class="menu">
+            <ul>
+                <li><a class="add icon"
+                       href="{{ cpUrl(pluginHandle ~ '/metadata/new') }}">{{ "Add Remote Provider"|t('app') }}</a>
+                </li>
+            </ul>
+        </div>
     </div>
 
 {% endblock %}
 
 {% block sidebar %}
-    <nav>
-        <ul>
-            <li class="heading"><span>Menu</span></li>
-            <li>
-                <a href="{{ cpUrl(pluginHandle) }}" class="sel">
-                    <span class="label">Provider List</span>
-                </a>
-                <a href="{{ cpUrl(pluginHandle ~ '/keychain') }}" class="">
-                    <span class="label">Keychain</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+    {% include templateIndex ~ '/_cp/_components/nav.twig' with {
+        pluginHandle: pluginHandle,
+        sel: 'metadata'
+    } %}
 {% endblock %}
 
 {% block content %}
@@ -29,7 +28,6 @@
             <table class="data fullwidth">
                 <thead>
                 <tr>
-                    <td scope="col" data-attribute="id">ID</td>
                     <td scope="col" data-attribute="entityid">EntityId</td>
                     <td scope="col" data-attribute="type">Type</td>
                     <td scope="col" data-attribute="dateCreated">Date Created</td>
@@ -39,7 +37,6 @@
                 <tbody>
                 {% for provider in providers %}
                     <tr data-id="">
-                        <td data-title="ID">{{ provider.id }}</td>
                         <td data-title="entityid">
                             <div class="element small hasstatus "
                                  data-status="active"
@@ -53,12 +50,16 @@
                                 <div class="label">
                                     <span class="title">
                                         <a
-                                                {% if myProvider is defined and myProvider.id == provider.id %}
+                                                {% if myProvider and myProvider.id == provider.id %}
                                                     href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
                                                 {% else %}
                                                     href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
                                                 {% endif %}
-                                        >{{ provider.entityId }}</a>
+                                        >{{ provider.entityId }}
+                                        </a>
+                                        {% if myProvider and myProvider.id == provider.id %}
+                                            (My Provider)
+                                        {% endif %}
                                     </span>
                                 </div>
                             </div>

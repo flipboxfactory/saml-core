@@ -39,6 +39,12 @@ interface ProviderServiceInterface
     public function save(AbstractProvider $record, $runValidation = true, $attributeNames = null);
 
     /**
+     * @param ProviderInterface $provider
+     * @return bool|int
+     */
+    public function delete(ProviderInterface $record);
+
+    /**
      * @param AbstractProvider $provider
      * @param KeyChainRecord $keyChain
      * @param bool $runValidation

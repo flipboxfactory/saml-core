@@ -55,6 +55,7 @@ abstract class AbstractMetadataController extends AbstractController
      */
     public function actionAutoCreate()
     {
+        $this->requireAdmin();
 
         $record = $this->processSaveAction();
 
@@ -94,6 +95,9 @@ abstract class AbstractMetadataController extends AbstractController
      */
     public function actionSave()
     {
+
+        $this->requireAdmin();
+
         $record = $this->processSaveAction();
         $record->metadata = Craft::$app->request->getBodyParam('metadata');
         if (! $this->getSamlPlugin()->getProvider()->save($record)) {
@@ -115,6 +119,82 @@ abstract class AbstractMetadataController extends AbstractController
     }
 
     /**
+     * Actions
+     */
+
+    /**
+     * @return \yii\web\Response
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionChangeStatus()
+    {
+
+        $this->requireAdmin();
+
+        $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
+
+        /** @var string $recordClass */
+        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+
+        /** @var ProviderInterface $record */
+        $record = $recordClass::find()->where([
+            'id' => $providerId,
+        ])->one();
+
+        $record->enabled = ! $record->enabled;
+
+        if (! $this->getSamlPlugin()->getProvider()->save($record)) {
+            return $this->renderTemplate(
+                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                array_merge(
+                    [
+                        'provider' => $record,
+                        'keychain' => $record->keychain ?: new KeyChainRecord(),
+                    ],
+                    $this->getBaseVariables()
+                )
+            );
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * @return \yii\web\Response
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionDelete()
+    {
+        $this->requireAdmin();
+        $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
+
+        /** @var string $recordClass */
+        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+
+        /** @var ProviderInterface $record */
+        $record = $recordClass::find()->where([
+            'id' => $providerId,
+        ])->one();
+
+        if (! $this->getSamlPlugin()->getProvider()->delete($record)) {
+            return $this->renderTemplate(
+                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                array_merge(
+                    [
+                        'provider' => $record,
+                        'keychain' => $record->keychain ?: new KeyChainRecord(),
+                    ],
+                    $this->getBaseVariables()
+                )
+            );
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
      * @return ProviderInterface
      * @throws \yii\web\BadRequestHttpException
      */
@@ -131,6 +211,7 @@ abstract class AbstractMetadataController extends AbstractController
             ])->one();
         } else {
             $record = new $recordClass();
+            $record->enabled = true;
         }
 
         if ($keyId) {
@@ -147,7 +228,6 @@ abstract class AbstractMetadataController extends AbstractController
         Craft::configure(
             $record,
             [
-                'enabled'      => Craft::$app->request->getBodyParam('enabled') ?: false,
                 'providerType' => Craft::$app->request->getBodyParam('providerType'),
             ]
         );

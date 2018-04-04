@@ -119,7 +119,8 @@ abstract class AbstractProviderService extends Component implements ProviderServ
             'metadata' => SerializeHelper::toXml($entityDescriptor),
         ]);
 
-        $provider->setKeychain($keyChainRecord);
+        if($keyChainRecord)
+            $provider->setKeychain($keyChainRecord);
 
         return $provider;
     }
@@ -186,4 +187,13 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         }
     }
 
+
+    /**
+     * @param ProviderInterface $provider
+     * @return bool|int
+     */
+    public function delete(ProviderInterface $provider)
+    {
+        return $provider->delete();
+    }
 }

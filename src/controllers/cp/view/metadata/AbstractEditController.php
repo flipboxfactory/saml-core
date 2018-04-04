@@ -33,6 +33,15 @@ abstract class AbstractEditController extends AbstractController
         $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), 'Remote Provider (' . strtoupper($variables['remoteType']) . ')');
         $variables['createType'] = $variables['remoteType'];
 
+        if (isset($variables['provider'])) {
+
+            /**
+             * Actions
+             */
+            $variables['actions'] = $this->getActions($variables['provider']);
+
+        }
+
         return $this->renderTemplate(
             $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
@@ -54,10 +63,19 @@ abstract class AbstractEditController extends AbstractController
                 $this->addUrls($provider)
             );
         } else {
+            $provider = $variables['provider'];
             $variables['provider']->entityId = $this->getSamlPlugin()->getSettings()->getEntityId();
             $variables['provider']->providerType = $this->getSamlPlugin()->getMyType();
         }
 
+        /**
+         * Actions
+         */
+        $variables['actions'] = $this->getActions($provider);
+
+        /**
+         * Edit Title
+         */
         $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), 'My Provider (' . strtoupper($variables['provider']->providerType) . ')');
 
         $variables['createType'] = $variables['myType'];
@@ -69,17 +87,44 @@ abstract class AbstractEditController extends AbstractController
     }
 
     /**
+     * @param ProviderInterface $provider
+     * @return array
+     */
+    protected function getActions(ProviderInterface $provider)
+    {
+        $actions = [];
+
+        if ($provider->id) {
+            $actions = [
+                [
+                    //action list 1
+                    [
+                        'action' => $this->getSamlPlugin()->getUniqueId() . '/metadata/change-status',
+                        'label'  => $provider->enabled ? 'Disable' : 'Enable',
+                    ],
+                    [
+                        'action' => $this->getSamlPlugin()->getUniqueId() . '/metadata/delete',
+                        'label'  => 'Delete',
+                    ],
+                ],
+            ];
+        }
+        return $actions;
+    }
+
+    /**
      * @return array
      */
     protected function getBaseVariables()
     {
+
         return array_merge(
+            parent::getBaseVariables(),
             [
                 'autoCreate' => false,
                 'myEntityId' => $this->getSamlPlugin()->getSettings()->getEntityId(),
-                'myType'     => $this->getSamlPlugin()->getSettings()
-            ],
-            parent::getBaseVariables()
+                'myType'     => $this->getSamlPlugin()->getSettings(),
+            ]
         );
     }
 
@@ -119,7 +164,7 @@ abstract class AbstractEditController extends AbstractController
                 'label' => $variables['provider']->entityId,
             ];
 
-            $variables['keypair'] = $provider->getKeyChain()->one();
+            $variables['keypair'] = $provider->keychain;
 
             $variables = array_merge(
                 $variables,
@@ -223,4 +268,5 @@ abstract class AbstractEditController extends AbstractController
 
         return $variables;
     }
+
 }

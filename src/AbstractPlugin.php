@@ -11,6 +11,8 @@ namespace flipbox\saml\core;
 
 use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\web\UrlManager;
 use craft\web\View;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
 use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
@@ -80,6 +82,7 @@ abstract class AbstractPlugin extends Plugin
                 }
             }
         );
+
     }
 
     /**
