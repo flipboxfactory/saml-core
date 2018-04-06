@@ -56,6 +56,7 @@ abstract class AbstractMetadataController extends AbstractController
     public function actionAutoCreate()
     {
         $this->requireAdmin();
+        $this->requirePostRequest();
 
         $record = $this->processSaveAction();
 
@@ -97,6 +98,7 @@ abstract class AbstractMetadataController extends AbstractController
     {
 
         $this->requireAdmin();
+        $this->requirePostRequest();
 
         $record = $this->processSaveAction();
         $record->metadata = Craft::$app->request->getBodyParam('metadata');
@@ -131,6 +133,7 @@ abstract class AbstractMetadataController extends AbstractController
     {
 
         $this->requireAdmin();
+        $this->requirePostRequest();
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
@@ -168,6 +171,8 @@ abstract class AbstractMetadataController extends AbstractController
     public function actionDelete()
     {
         $this->requireAdmin();
+        $this->requirePostRequest();
+
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
         /** @var string $recordClass */
@@ -200,7 +205,7 @@ abstract class AbstractMetadataController extends AbstractController
      */
     protected function processSaveAction()
     {
-        $this->requirePostRequest();
+
         $providerId = Craft::$app->request->getBodyParam('identifier');
         $keyId = Craft::$app->request->getBodyParam('keychain');
         $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
