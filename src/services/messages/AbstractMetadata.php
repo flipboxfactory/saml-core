@@ -125,7 +125,7 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     protected function createSpDescriptor(string $binding)
     {
         $descriptor = new SpSsoDescriptor();
-        $descriptor->setWantAssertionsSigned($this->getSamlPlugin()->getSettings()->signAssertions);
+        $descriptor->setWantAssertionsSigned($this->getSamlPlugin()->getSettings()->wantsSignedAssertions);
 
         //ASC
         $acs = new AssertionConsumerService();
