@@ -32,22 +32,16 @@ trait Metadata
     abstract public function getSupportedBindings();
 
     /**
-     * @param AbstractProvider $provider
      * @return bool
      */
-    abstract protected function useSigning(AbstractProvider $provider);
-
-    /**
-     * @param AbstractProvider $provider
-     * @return bool
-     */
-    abstract protected function useEncryption(AbstractProvider $provider);
-
     protected function supportsRedirect()
     {
         return in_array(SamlConstants::BINDING_SAML2_HTTP_REDIRECT, $this->getSupportedBindings());
     }
 
+    /**
+     * @return bool
+     */
     protected function supportsPost()
     {
         return in_array(SamlConstants::BINDING_SAML2_HTTP_POST, $this->getSupportedBindings());
