@@ -64,13 +64,14 @@ abstract class AbstractLogoutController extends Controller
      * @return \yii\web\Response
      * @throws HttpException
      * @throws \flipbox\saml\core\exceptions\InvalidIssuer
+     * @throws \yii\base\ExitException
      */
     public function actionIndex()
     {
         /** @var Request $request */
         $request = \Craft::$app->request;
 
-        if(false === ($request instanceof Request)) {
+        if (false === ($request instanceof Request)) {
             throw new HttpException(400, 'Must be a web request.');
         }
         $message = $this->receive($request);
@@ -107,7 +108,7 @@ abstract class AbstractLogoutController extends Controller
             $response->setInResponseTo($message->getID());
 
             $this->send($response, $provider);
-            exit;
+            \Craft::$app->end();
         }
 
         return $this->redirect(
@@ -116,6 +117,9 @@ abstract class AbstractLogoutController extends Controller
     }
 
 
+    /**
+     * @throws \yii\base\ExitException
+     */
     public function actionRequest()
     {
 
@@ -130,7 +134,7 @@ abstract class AbstractLogoutController extends Controller
         $this->getSamlPlugin()->getSession()->setRequestId($logoutRequest->getID());
 
         $this->send($logoutRequest, $provider);
-        exit;
+        \Craft::$app->end();
     }
 
 }

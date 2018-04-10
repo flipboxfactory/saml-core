@@ -17,6 +17,11 @@ use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\base\Component;
 use yii\helpers\Json;
 
+/**
+ * Class AbstractProviderIdentityService
+ * @package flipbox\saml\core\services
+ * @property \DateTime $lastLoginDate
+ */
 abstract class AbstractProviderIdentityService extends Component implements ProviderIdentityServiceInterface
 {
     use EnsureSamlPlugin;

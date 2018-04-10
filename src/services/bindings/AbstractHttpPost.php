@@ -75,9 +75,9 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
 
     /**
      * @param array $parameters
-     * @throws \Throwable
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
+     * @throws \yii\base\ExitException
      */
     public function post(array $parameters)
     {
@@ -90,7 +90,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
             $parameters
         );
         Craft::$app->response->send();
-        exit;
+        Craft::$app->end();
     }
 
 
