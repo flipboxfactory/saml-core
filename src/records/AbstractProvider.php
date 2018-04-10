@@ -20,6 +20,7 @@ use yii\db\ActiveQuery;
  * @property string $entityId
  * @property string $sha256
  * @property string $metadata
+ * @property KeyChainRecord|null $keychain
  */
 abstract class AbstractProvider extends ActiveRecord
 {

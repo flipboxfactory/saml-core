@@ -23,8 +23,14 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
      */
     private $user;
 
+    /**
+     * @return \craft\elements\User|null
+     */
     public function getUser()
     {
+        if(! $this->userId) {
+            return null;
+        }
         if (! $this->user) {
             $this->user = \Craft::$app->getUsers()->getUserById(
                 $this->userId
