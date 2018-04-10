@@ -64,7 +64,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     /**
      * @param ProviderIdentityInterface $record
      * @param bool $runValidation
-     * @param null $attributeNames
+     * @param array|null $attributeNames
      * @return ProviderIdentityInterface
      * @throws \Exception
      */

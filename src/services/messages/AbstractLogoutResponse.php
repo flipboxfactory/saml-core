@@ -43,6 +43,7 @@ abstract class AbstractLogoutResponse extends AbstractLogout implements SamlResp
             $request->getIssuer()
         );
 
+        /** @var ProviderInterface $ownProvider */
         $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn();
 
         $logout = new LogoutResponse();

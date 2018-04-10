@@ -11,7 +11,6 @@ namespace flipbox\saml\core\services\bindings;
 
 use craft\base\Component;
 use craft\web\Request;
-use flipbox\saml\core\models\Transport;
 use flipbox\saml\core\records\AbstractProvider;
 use LightSaml\Error\LightSamlBindingException;
 use LightSaml\Model\Context\DeserializationContext;
@@ -26,19 +25,20 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
     /**
      * @param SamlMessage $message
      * @param AbstractProvider $provider
-     * @return Transport
      */
     public function send(SamlMessage $message, AbstractProvider $provider)
     {
 
         if ($signature = $message->getSignature()) {
             $message->setSignature(null);
-            $destination = SerializeHelper::redirectUrl($message->getDestination(), SerializeHelper::addSignatureToUrl($parameters, $signature));
+            SerializeHelper::addSignatureToUrl($parameters, $signature);
+            $destination = SerializeHelper::redirectUrl($message->getDestination(), $parameters);
         } else {
             $destination = SerializeHelper::redirectUrl($message->getDestination(), $parameters);
         }
 
-        return $transport;
+        \Craft::$app->response->redirect($destination);
+
     }
 
     /**
@@ -57,7 +57,7 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
         $message = SamlMessage::fromXML($messageString, new DeserializationContext());
 
         if ($request->getQueryParam('RelayState')) {
-            $message->setRelayState($request->getQueryParam('RelayState'));
+            $message->setRelayState((string)$request->getQueryParam('RelayState'));
         }
 
         $queryData = $this->getSignedQuery($data);
@@ -66,6 +66,7 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
         return $message;
 
     }
+
     protected function parseQuery(Request $request)
     {
         /*
@@ -81,24 +82,24 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
             switch ($name) {
                 case 'SAMLRequest':
                 case 'SAMLResponse':
-                    $sigQuery = $name.'='.$value;
+                    $sigQuery = $name . '=' . $value;
                     break;
                 case 'RelayState':
-                    $relayState = '&RelayState='.$value;
+                    $relayState = '&RelayState=' . $value;
                     break;
                 case 'SigAlg':
-                    $sigAlg = '&SigAlg='.$value;
+                    $sigAlg = '&SigAlg=' . $value;
                     break;
             }
         }
-        $result['SignedQuery'] = $sigQuery.$relayState.$sigAlg;
+        $result['SignedQuery'] = $sigQuery . $relayState . $sigAlg;
 
         return $result;
     }
 
     /**
      * @param string $queryString
-     * @param bool   $urlDecodeValues
+     * @param bool $urlDecodeValues
      *
      * @return array
      */

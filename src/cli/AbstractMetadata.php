@@ -106,7 +106,7 @@ abstract class AbstractMetadata extends Controller
                 ) . PHP_EOL
             );
 
-            $this->keyPairId = $this->select(
+            $this->keyPairId = (int)$this->select(
                 'Which key',
                 $keys
             );
@@ -121,11 +121,8 @@ abstract class AbstractMetadata extends Controller
     }
 
     /**
-     * @param null $file
      * @return int
      * @throws \Exception
-     * @throws \yii\base\InvalidRouteException
-     * @throws \yii\console\Exception
      */
     public function actionCreate()
     {
@@ -213,15 +210,4 @@ abstract class AbstractMetadata extends Controller
         return ExitCode::UNSPECIFIED_ERROR;
     }
 
-    public function actionDelete($entityId)
-    {
-        if (! Saml::getInstance()->getProvider()->delete(new Provider([
-            'entityId' => $entityId,
-        ]))) {
-            $this->stderr("Couldn't delete provider {$entityId}", Console::FG_RED);
-        }
-
-
-        $this->stdout("Successfully deleted provider {$entityId}" . PHP_EOL, Console::FG_GREEN);
-    }
 }

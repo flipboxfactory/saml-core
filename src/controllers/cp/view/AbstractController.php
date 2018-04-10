@@ -45,7 +45,7 @@ abstract class AbstractController extends Controller
     {
         return [
             'title'              => $this->getSamlPlugin()->name,
-            'pluginHandle'       => $this->getSamlPlugin()->handle,
+            'pluginHandle'       => $this->getSamlPlugin()->getHandle(),
             'ownEntityId'        => $this->getSamlPlugin()->getSettings()->getEntityId(),
 
             // Set the "Continue Editing" URL
@@ -63,6 +63,6 @@ abstract class AbstractController extends Controller
      */
     protected function getBaseCpPath(): string
     {
-        return $this->getSamlPlugin()->getUniqueId();
+        return $this->getSamlPlugin()->getHandle();
     }
 }

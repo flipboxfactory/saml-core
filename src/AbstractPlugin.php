@@ -11,20 +11,15 @@ namespace flipbox\saml\core;
 
 use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\events\RegisterUrlRulesEvent;
-use craft\web\UrlManager;
 use craft\web\View;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
 use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
-use flipbox\saml\core\services\messages\AbstractLogoutRequest;
-use flipbox\saml\core\services\messages\AbstractLogoutResponse;
 use flipbox\saml\core\services\messages\MetadataServiceInterface;
 use flipbox\saml\core\services\messages\SamlRequestInterface;
 use flipbox\saml\core\services\messages\SamlResponseInterface;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
 use yii\base\Event;
-use flipbox\saml\sp\Saml as SamlSp;
 
 abstract class AbstractPlugin extends Plugin
 {
@@ -61,9 +56,9 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @return Saml
+     * @return Saml|null
      */
-    public function getCore(): Saml
+    public function getCore()
     {
         return \Craft::$app->getModule(Saml::MODULE_ID);
     }
@@ -91,7 +86,7 @@ abstract class AbstractPlugin extends Plugin
     public function getMyType()
     {
         $type = static::IDP;
-        if ($this instanceof SamlSp) {
+        if ($this instanceof \flipbox\saml\sp\Saml) {
             $type = static::SP;
         }
 
@@ -118,7 +113,7 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @returns ProviderServiceInterface
      */
-    public function getProvider(): ProviderServiceInterface
+    public function getProvider()
     {
         return $this->get('provider');
     }
@@ -126,7 +121,7 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @returns ProviderIdentityServiceInterface
      */
-    public function getProviderIdentity(): ProviderIdentityServiceInterface
+    public function getProviderIdentity()
     {
         return $this->get('providerIdentity');
     }
@@ -134,7 +129,7 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @return MetadataServiceInterface
      */
-    public function getMetadata(): MetadataServiceInterface
+    public function getMetadata()
     {
         return $this->get('metadata');
     }
@@ -143,7 +138,7 @@ abstract class AbstractPlugin extends Plugin
      * @return SamlRequestInterface
      * @throws \yii\base\InvalidConfigException
      */
-    public function getLogoutRequest(): SamlRequestInterface
+    public function getLogoutRequest()
     {
         return $this->get('logoutRequest');
     }
@@ -152,7 +147,7 @@ abstract class AbstractPlugin extends Plugin
      * @return SamlResponseInterface
      * @throws \yii\base\InvalidConfigException
      */
-    public function getLogoutResponse(): SamlResponseInterface
+    public function getLogoutResponse()
     {
         return $this->get('logoutResponse');
     }

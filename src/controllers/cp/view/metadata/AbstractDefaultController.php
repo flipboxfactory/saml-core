@@ -30,11 +30,11 @@ abstract class AbstractDefaultController extends AbstractController
 
         $variables['crumbs'] = [
             [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()),
+                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
                 'label' => 'SSO Provider'
             ],
             [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()) . '/metadata',
+                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()) . '/metadata',
                 'label' => 'Metadata List'
             ],
         ];
@@ -47,9 +47,9 @@ abstract class AbstractDefaultController extends AbstractController
                 $variables['myProvider'] = $provider;
             }
         }
-        $variables['pluginHandle'] = $this->getSamlPlugin()->getUniqueId();
+        $variables['pluginHandle'] = $this->getSamlPlugin()->getHandle();
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), $this->getSamlPlugin()->name);
+        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name);
         return $this->renderTemplate(
             $this->getTemplateIndex() . static::TEMPLATE_INDEX,
             $variables

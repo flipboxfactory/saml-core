@@ -7,6 +7,7 @@
  */
 
 namespace flipbox\saml\core\records;
+use yii\db\ActiveRecordInterface;
 
 
 /**
@@ -20,8 +21,9 @@ namespace flipbox\saml\core\records;
  * @property \DateTime $lastLoginDate
  * @property \DateTime $dateCreated
  * @property \DateTime $dateUpdated
+ * @method array getErrors($attribute = null)
  */
-interface ProviderIdentityInterface
+interface ProviderIdentityInterface extends ActiveRecordInterface
 {
 
 }

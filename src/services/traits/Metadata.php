@@ -48,16 +48,6 @@ trait Metadata
     }
 
     /**
-     * @param AbstractProvider $record
-     * @return AbstractProvider
-     * @throws \Exception
-     */
-    public function saveProvider(AbstractProvider $record)
-    {
-        return $this->getSamlPlugin()->getProvider()->save($record);
-    }
-
-    /**
      * @param SSODescriptor $ssoDescriptor
      * @param KeyChainRecord $keyChainRecord
      */

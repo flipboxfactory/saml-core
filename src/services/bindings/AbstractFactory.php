@@ -68,19 +68,16 @@ abstract class AbstractFactory
     /**
      * @param SamlMessage $message
      * @param ProviderInterface $provider
-     * @return \flipbox\saml\core\models\Transport
+     * @return mixed
      * @throws InvalidMetadata
      */
     public static function send(SamlMessage $message, ProviderInterface $provider)
     {
-        $binding = SamlConstants::BINDING_SAML2_HTTP_POST;
         if ($provider->getType() === $provider::TYPE_IDP) {
             $binding = static::determineBindingToIdp($message, $provider);
         } else {
             $binding = static::determineBindingToSp($message, $provider);
         }
-
-//        InResponseTo
 
         return static::getService($binding)->send($message,  $provider);
     }

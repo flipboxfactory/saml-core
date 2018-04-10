@@ -23,17 +23,17 @@ abstract class AbstractEditController extends AbstractController
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
 
     /**
-     * @param null $providerId
+     * @param string|null $providerId
      * @return \yii\web\Response
      */
     public function actionIndex($providerId = null)
     {
         $variables = $this->prepVariables($providerId);
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), 'Remote Provider (' . strtoupper($variables['remoteType']) . ')');
+        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(), 'Remote Provider (' . strtoupper($variables['remoteType']) . ')');
         $variables['createType'] = $variables['remoteType'];
 
-        if (isset($variables['provider'])) {
+        if (isset($variables['provider']) && $variables['provider'] instanceof ProviderInterface) {
 
             /**
              * Actions
@@ -76,7 +76,7 @@ abstract class AbstractEditController extends AbstractController
         /**
          * Edit Title
          */
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getUniqueId(), 'My Provider (' . strtoupper($variables['provider']->providerType) . ')');
+        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(), 'My Provider (' . strtoupper($variables['provider']->providerType) . ')');
 
         $variables['createType'] = $variables['myType'];
 
@@ -99,11 +99,11 @@ abstract class AbstractEditController extends AbstractController
                 [
                     //action list 1
                     [
-                        'action' => $this->getSamlPlugin()->getUniqueId() . '/metadata/change-status',
+                        'action' => $this->getSamlPlugin()->getHandle() . '/metadata/change-status',
                         'label'  => $provider->enabled ? 'Disable' : 'Enable',
                     ],
                     [
-                        'action' => $this->getSamlPlugin()->getUniqueId() . '/metadata/delete',
+                        'action' => $this->getSamlPlugin()->getHandle() . '/metadata/delete',
                         'label'  => 'Delete',
                     ],
                 ],
@@ -129,7 +129,7 @@ abstract class AbstractEditController extends AbstractController
     }
 
     /**
-     * @param null $providerId
+     * @param string|null $providerId
      * @return array
      */
     protected function prepVariables($providerId = null)
@@ -137,7 +137,7 @@ abstract class AbstractEditController extends AbstractController
         $variables = $this->getBaseVariables();
 
         $variables['title'] = Craft::t(
-            $this->getSamlPlugin()->getUniqueId(),
+            $this->getSamlPlugin()->getHandle(),
             $this->getSamlPlugin()->name
         );
 
@@ -159,7 +159,7 @@ abstract class AbstractEditController extends AbstractController
 
             $crumb = [
                 'url'   => UrlHelper::cpUrl(
-                    $this->getSamlPlugin()->getUniqueId() . '/' . $providerId
+                    $this->getSamlPlugin()->getHandle() . '/' . $providerId
                 ),
                 'label' => $variables['provider']->entityId,
             ];
@@ -181,7 +181,7 @@ abstract class AbstractEditController extends AbstractController
 
             $crumb = [
                 'url'   => UrlHelper::cpUrl(
-                    $this->getSamlPlugin()->getUniqueId() . '/new'
+                    $this->getSamlPlugin()->getHandle() . '/new'
                 ),
                 'label' => 'New',
             ];
@@ -200,8 +200,8 @@ abstract class AbstractEditController extends AbstractController
 
         $variables['crumbs'] = [
             [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()),
-                'label' => Craft::t($this->getSamlPlugin()->getUniqueId(), $this->getSamlPlugin()->name),
+                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
+                'label' => Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name),
             ],
             $crumb,
         ];

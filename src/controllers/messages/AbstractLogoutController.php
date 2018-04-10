@@ -67,7 +67,10 @@ abstract class AbstractLogoutController extends Controller
      */
     public function actionIndex()
     {
-        $message = $this->receive(\Craft::$app->request);
+        /** @var Request $request */
+        $request = \Craft::$app->request;
+
+        $message = $this->receive($request);
 
         $isRequest = $message instanceof LogoutRequest;
         $isResponse = $message instanceof LogoutResponse;

@@ -40,7 +40,7 @@ abstract class AbstractGeneralController extends AbstractController
     {
         $variables = $this->getBaseVariables();
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getUniqueId()),
+            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
             'label' => 'SSO Provider'
         ];
 

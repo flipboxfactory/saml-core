@@ -15,6 +15,7 @@ use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\services\traits\Metadata as MetadataTrait;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
+use flipbox\saml\sp\Saml as SamlSp;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Model\Metadata\IdpSsoDescriptor;
@@ -100,10 +101,6 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     {
         $descriptor = new IdpSsoDescriptor();
 
-        $descriptor->setWantAuthnRequestsSigned(
-            $this->getSamlPlugin()->getSettings()->signAuthnRequest
-        );
-
         $singleLogout = new SingleLogoutService();
         $singleLogout->setLocation(static::getLogoutRequestLocation())
             ->setResponseLocation(static::getLogoutResponseLocation())
@@ -125,7 +122,9 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     protected function createSpDescriptor(string $binding)
     {
         $descriptor = new SpSsoDescriptor();
-        $descriptor->setWantAssertionsSigned($this->getSamlPlugin()->getSettings()->wantsSignedAssertions);
+        if ($this->getSamlPlugin()->getSettings() instanceof SamlSp) {
+            $descriptor->setWantAssertionsSigned($this->getSamlPlugin()->getSettings()->wantsSignedAssertions);
+        }
 
         //ASC
         $acs = new AssertionConsumerService();

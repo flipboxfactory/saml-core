@@ -115,7 +115,7 @@ abstract class AbstractMetadataController extends AbstractController
             );
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t($this->getSamlPlugin()->getUniqueId(), 'Provider saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t($this->getSamlPlugin()->getHandle(), 'Provider saved.'));
 
         return $this->redirectToPostedUrl();
     }

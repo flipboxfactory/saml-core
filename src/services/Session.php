@@ -19,7 +19,7 @@ class Session extends Component
      */
     public function setRequestId($id)
     {
-        return \Craft::$app->session->set(
+        \Craft::$app->session->set(
             $this->getName(static::REQUEST_ID_KEY),
             $id
         );

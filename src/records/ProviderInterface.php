@@ -40,9 +40,15 @@ interface ProviderInterface extends ActiveRecordInterface
     public function getMetadataModel(): EntityDescriptor;
 
     /**
+     * @param EntityDescriptor $descriptor
+     * @return $this
+     */
+    public function setMetadataModel(EntityDescriptor $descriptor);
+
+    /**
      * @return string either idp or sp
      */
-    public function getType(): string;
+    public function getType();
 
     /**
      * @return ActiveQuery
@@ -54,5 +60,11 @@ interface ProviderInterface extends ActiveRecordInterface
      * @return $this
      */
     public function setKeychain(KeyChainRecord $keyChain);
+
+
+    /**
+     * @return string
+     */
+    public function getEntityId();
 
 }

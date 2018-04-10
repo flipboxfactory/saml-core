@@ -69,7 +69,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
 
         $parameters['RelayState'] = $this->getRelayStateForSend($message);
 
-        return $this->post($parameters);
+        $this->post($parameters);
     }
 
     /**

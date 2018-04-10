@@ -10,6 +10,7 @@ namespace flipbox\saml\core;
 
 
 use craft\base\Model;
+use craft\base\PluginInterface;
 use flipbox\keychain\KeyChain;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
@@ -21,34 +22,42 @@ use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
 use flipbox\saml\core\services\Session;
 
-interface SamlPluginInterface
+/**
+ * Interface SamlPluginInterface
+ * @package flipbox\saml\core
+ * @property string $name
+ */
+interface SamlPluginInterface extends PluginInterface
 {
     /**
      * @return ProviderServiceInterface
      */
-    public function getProvider(): ProviderServiceInterface;
+    public function getProvider();
 
-    public function getProviderIdentity(): ProviderIdentityServiceInterface;
+    /**
+     * @return ProviderIdentityServiceInterface
+     */
+    public function getProviderIdentity();
 
     /**
      * @return MetadataServiceInterface
      */
-    public function getMetadata(): MetadataServiceInterface;
+    public function getMetadata();
 
     /**
      * @return SamlRequestInterface
      */
-    public function getLogoutRequest(): SamlRequestInterface;
+    public function getLogoutRequest();
 
     /**
      * @return SamlResponseInterface
      */
-    public function getLogoutResponse(): SamlResponseInterface;
+    public function getLogoutResponse();
 
     /**
      * @return SettingsInterface
      */
-    public function getSettings(): SettingsInterface;
+    public function getSettings();
 
     /**
      * BINDINGs

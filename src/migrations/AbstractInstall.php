@@ -19,9 +19,9 @@ abstract class AbstractInstall extends Migration
 
     const PROVIDER_AFTER_COLUMN = 'sha256';
 
-    abstract protected function getIdentityTableName();
+    abstract static protected function getIdentityTableName();
 
-    abstract protected function getProviderTableName();
+    abstract static protected function getProviderTableName();
 
     /**
      * @inheritdoc

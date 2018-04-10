@@ -17,6 +17,9 @@ use yii\db\ActiveQuery;
 /**
  * Class AbstractProvider
  * @package flipbox\saml\core\records
+ * @property int $entityId
+ * @property string $sha256
+ * @property string $metadata
  */
 abstract class AbstractProvider extends ActiveRecord
 {
@@ -75,7 +78,7 @@ abstract class AbstractProvider extends ActiveRecord
     /**
      * @return string
      */
-    public function getType(): string
+    public function getType()
     {
         return $this->providerType;
     }
@@ -108,6 +111,7 @@ abstract class AbstractProvider extends ActiveRecord
      */
     public function setKeychain(KeyChainRecord $keyChain)
     {
-        return $this->populateRelation('keychain', $keyChain);
+        $this->populateRelation('keychain', $keyChain);
+        return $this;
     }
 }

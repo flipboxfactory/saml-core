@@ -32,7 +32,7 @@ interface ProviderServiceInterface
     /**
      * @param AbstractProvider $record
      * @param bool $runValidation
-     * @param null $attributeNames
+     * @param array|null $attributeNames
      * @return AbstractProvider
      * @throws \Exception
      */
@@ -48,7 +48,7 @@ interface ProviderServiceInterface
      * @param AbstractProvider $provider
      * @param KeyChainRecord $keyChain
      * @param bool $runValidation
-     * @param null $attributeNames
+     * @param array|null $attributeNames
      * @throws \Exception
      */
     public function linkToKey(
@@ -60,7 +60,7 @@ interface ProviderServiceInterface
 
     /**
      * @param string $entityId
-     * @return ProviderInterface
+     * @return AbstractProvider
      */
     public function findByEntityId($entityId);
 

@@ -40,7 +40,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
 
     /**
      * @param array $condition
-     * @return AbstractProvider|ProviderInterface|null
+     * @return AbstractProvider|null
      */
     public function find($condition = [])
     {
@@ -51,11 +51,11 @@ abstract class AbstractProviderService extends Component implements ProviderServ
             return $this->cache[$condition['entityId']];
         }
 
-        /** @var AbstractProvider $provider */
         if (! $provider = $class::find()->where($condition)->one()) {
             return null;
         }
 
+        /** @var AbstractProvider $provider */
         $this->cache[$provider->getEntityId()] = $provider;
         return $provider;
     }
@@ -128,7 +128,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @param AbstractProvider $record
      * @param bool $runValidation
-     * @param null $attributeNames
+     * @param array|null $attributeNames
      * @return AbstractProvider
      * @throws \Exception
      */
@@ -157,7 +157,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
      * @param AbstractProvider $provider
      * @param KeyChainRecord $keyChain
      * @param bool $runValidation
-     * @param null $attributeNames
+     * @param array|null $attributeNames
      * @throws \Exception
      */
     public function linkToKey(
@@ -173,6 +173,8 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         $linkAttributes = [
             'providerId' => $provider->id,
         ];
+
+        /** @var LinkRecord $link */
         if (! $link = LinkRecord::find()->where($linkAttributes)->one()) {
             $link = new LinkRecord($linkAttributes);
         }

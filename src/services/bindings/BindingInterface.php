@@ -12,8 +12,6 @@ namespace flipbox\saml\core\services\bindings;
 use craft\web\Request;
 use flipbox\saml\core\exceptions\InvalidIssuer;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\models\Transport;
-use flipbox\saml\core\records\AbstractProvider;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Protocol\SamlMessage;
 
