@@ -49,6 +49,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
             );
         }
 
+        /** @var ProviderInterface $provider */
         return $provider;
     }
 

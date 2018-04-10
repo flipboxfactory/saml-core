@@ -30,6 +30,12 @@ abstract class AbstractPlugin extends Plugin
     const SP = 'sp';
     const IDP = 'idp';
 
+
+    /**
+     * @return string
+     */
+    abstract public function getMyType();
+
     public function init()
     {
         parent::init();
@@ -78,19 +84,6 @@ abstract class AbstractPlugin extends Plugin
             }
         );
 
-    }
-
-    /**
-     * @return string
-     */
-    public function getMyType()
-    {
-        $type = static::IDP;
-        if ($this instanceof \flipbox\saml\sp\Saml) {
-            $type = static::SP;
-        }
-
-        return $type;
     }
 
     /**

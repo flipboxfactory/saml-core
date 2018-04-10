@@ -15,7 +15,6 @@ use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\services\traits\Metadata as MetadataTrait;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
-use flipbox\saml\sp\Saml as SamlSp;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Model\Metadata\IdpSsoDescriptor;
@@ -122,7 +121,10 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     protected function createSpDescriptor(string $binding)
     {
         $descriptor = new SpSsoDescriptor();
-        if ($this->getSamlPlugin()->getSettings() instanceof SamlSp) {
+        if (
+            property_exists($this->getSamlPlugin()->getSettings(), 'wantsSignedAssertions') &&
+            is_bool($this->getSamlPlugin()->getSettings()->wantsSignedAssertions)
+        ) {
             $descriptor->setWantAssertionsSigned($this->getSamlPlugin()->getSettings()->wantsSignedAssertions);
         }
 

@@ -60,22 +60,22 @@ interface ProviderServiceInterface
 
     /**
      * @param string $entityId
-     * @return AbstractProvider
+     * @return AbstractProvider|null
      */
     public function findByEntityId($entityId);
 
     /**
-     * @return AbstractProvider
+     * @return AbstractProvider|null
      */
     public function findOwn();
 
     /**
-     * @return AbstractProvider
+     * @return AbstractProvider|null
      */
     public function findByIdp();
 
     /**
-     * @return AbstractProvider
+     * @return AbstractProvider|null
      */
     public function findBySp();
 }

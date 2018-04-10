@@ -24,7 +24,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
 
     use EnsureSamlPlugin;
     /**
-     * @var ProviderInterface[]
+     * @var AbstractProvider[]
      */
     private $cache = [];
 
@@ -34,13 +34,12 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     abstract public function getRecordClass();
 
     /**
-     * @return AbstractProvider
+     * @inheritdoc
      */
     abstract public function findOwn();
 
     /**
-     * @param array $condition
-     * @return AbstractProvider|null
+     * @inheritdoc
      */
     public function find($condition = [])
     {
@@ -61,7 +60,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     }
 
     /**
-     * @return AbstractProvider
+     * @inheritdoc
      */
     public function findByIdp()
     {
@@ -69,7 +68,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     }
 
     /**
-     * @return AbstractProvider
+     * @inheritdoc
      */
     public function findBySp()
     {
@@ -77,8 +76,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     }
 
     /**
-     * @param $type
-     * @return AbstractProvider
+     * @inheritdoc
      */
     protected function findByType($type)
     {
@@ -92,8 +90,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     }
 
     /**
-     * @param $entityId
-     * @return AbstractProvider
+     * @inheritdoc
      */
     public function findByEntityId($entityId)
     {
@@ -102,6 +99,9 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function create(EntityDescriptor $entityDescriptor, KeyChainRecord $keyChainRecord = null): ProviderInterface
     {
 
@@ -119,18 +119,14 @@ abstract class AbstractProviderService extends Component implements ProviderServ
             'metadata' => SerializeHelper::toXml($entityDescriptor),
         ]);
 
-        if($keyChainRecord)
+        if ($keyChainRecord)
             $provider->setKeychain($keyChainRecord);
 
         return $provider;
     }
 
     /**
-     * @param AbstractProvider $record
-     * @param bool $runValidation
-     * @param array|null $attributeNames
-     * @return AbstractProvider
-     * @throws \Exception
+     * @inheritdoc
      */
     public function save(AbstractProvider $record, $runValidation = true, $attributeNames = null)
     {
@@ -154,11 +150,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     }
 
     /**
-     * @param AbstractProvider $provider
-     * @param KeyChainRecord $keyChain
-     * @param bool $runValidation
-     * @param array|null $attributeNames
-     * @throws \Exception
+     * @inheritdoc
      */
     public function linkToKey(
         AbstractProvider $provider,
@@ -191,8 +183,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
 
 
     /**
-     * @param ProviderInterface $provider
-     * @return bool|int
+     * @inheritdoc
      */
     public function delete(ProviderInterface $provider)
     {

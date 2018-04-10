@@ -70,6 +70,9 @@ abstract class AbstractLogoutController extends Controller
         /** @var Request $request */
         $request = \Craft::$app->request;
 
+        if(false === ($request instanceof Request)) {
+            throw new HttpException(400, 'Must be a web request.');
+        }
         $message = $this->receive($request);
 
         $isRequest = $message instanceof LogoutRequest;

@@ -103,7 +103,7 @@ abstract class AbstractMetadata extends Controller
             $this->stdout(
                 sprintf(
                     'A key must be created or chosen from this list. Choose one of the following or use \'?\' for help.'
-                ) . PHP_EOL
+                ) . PHP_EOL, Console::FG_CYAN
             );
 
             $this->keyPairId = (int)$this->select(

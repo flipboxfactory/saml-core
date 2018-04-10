@@ -17,7 +17,7 @@ use yii\db\ActiveQuery;
 /**
  * Class AbstractProvider
  * @package flipbox\saml\core\records
- * @property int $entityId
+ * @property string $entityId
  * @property string $sha256
  * @property string $metadata
  */
