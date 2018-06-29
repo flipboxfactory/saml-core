@@ -11,6 +11,7 @@ namespace flipbox\saml\core\models;
 
 use craft\base\Model;
 use craft\helpers\UrlHelper;
+use LightSaml\SamlConstants;
 
 class AbstractSettings extends Model
 {

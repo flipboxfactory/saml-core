@@ -30,7 +30,8 @@ abstract class AbstractEditController extends AbstractController
     {
         $variables = $this->prepVariables($providerId);
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(), 'Remote Provider (' . strtoupper($variables['remoteType']) . ')');
+        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(),
+            'Remote Provider (' . strtoupper($variables['remoteType']) . ')');
         $variables['createType'] = $variables['remoteType'];
 
         if (isset($variables['provider']) && $variables['provider'] instanceof ProviderInterface) {
@@ -76,7 +77,8 @@ abstract class AbstractEditController extends AbstractController
         /**
          * Edit Title
          */
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(), 'My Provider (' . strtoupper($variables['provider']->providerType) . ')');
+        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(),
+            'My Provider (' . strtoupper($variables['provider']->providerType) . ')');
 
         $variables['createType'] = $variables['myType'];
 
@@ -236,14 +238,16 @@ abstract class AbstractEditController extends AbstractController
                 $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllSingleLogoutServices()
                 as $singleLogoutService
             ) {
-                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] = $singleLogoutService->getResponseLocation();
+                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] =
+                    $singleLogoutService->getResponseLocation();
             }
 
             foreach (
                 $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllAssertionConsumerServices()
                 as $assertionConsumerService
             ) {
-                $variables['assertionConsumerServices'][$assertionConsumerService->getBinding()] = $assertionConsumerService->getLocation();
+                $variables['assertionConsumerServices'][$assertionConsumerService->getBinding()] =
+                    $assertionConsumerService->getLocation();
             }
         }
 

@@ -52,16 +52,8 @@ abstract class AbstractLogoutRequest extends AbstractLogout implements SamlReque
         $logout->setDestination(
             $provider->getType() === AbstractPlugin::SP ?
                 $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getFirstSingleLogoutService(
-                /**
-                 * We only support post right now
-                 */
-                    SamlConstants::BINDING_SAML2_HTTP_POST
                 )->getLocation() :
                 $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstSingleLogoutService(
-                /**
-                 * We only support post right now
-                 */
-                    SamlConstants::BINDING_SAML2_HTTP_POST
                 )->getLocation()
         );
         /**

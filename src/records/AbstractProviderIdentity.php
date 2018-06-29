@@ -15,6 +15,9 @@ use yii\db\ActiveQuery;
 /**
  * Class AbstractProviderIdentity
  * @package flipbox\saml\core\records
+ * @property int $userId
+ * @property bool $enabled
+ * @property string $sessionId
  */
 abstract class AbstractProviderIdentity extends ActiveRecord implements ProviderIdentityInterface
 {

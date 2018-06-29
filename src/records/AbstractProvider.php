@@ -38,11 +38,41 @@ abstract class AbstractProvider extends ActiveRecord
         if (! $this->entityId) {
             $this->entityId = $this->getEntityId();
         }
+
+        /**
+         * Remove the signature if it exists.
+         */
+        if($this->getMetadataModel()->getSignature()) {
+            $this->removeSignature();
+        }
+
         $this->sha256 = hash(static::METADATA_HASH_ALGO, $this->metadata);
 
         $this->metadata = SerializeHelper::toXml($this->getMetadataModel());
 
         return parent::beforeSave($insert);
+    }
+
+    /**
+     * We don't want to save the signature on the metadata and
+     * errors were being thrown during serialization so we
+     * will just remove it here, manually from the xml
+     * and overwrite the metadata and metadataModel
+     *
+     * @return void
+     */
+    protected function removeSignature()
+    {
+        if($this->getMetadataModel()->getSignature()) {
+            $doc = new \DOMDocument('1.0', 'UTF-8');
+            $doc->loadXML($this->metadata);
+            $doc->documentElement->removeChild(
+                $doc->documentElement->getElementsByTagName('Signature')->item(0)
+            );
+
+            $this->metadata = $doc->saveXML();
+            $this->metadataModel = null;
+        }
     }
 
     /**

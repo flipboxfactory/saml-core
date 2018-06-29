@@ -12,6 +12,7 @@ namespace flipbox\saml\core\services\bindings;
 use craft\base\Component;
 use craft\web\Request;
 use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\ProviderInterface;
 use LightSaml\Error\LightSamlBindingException;
 use LightSaml\Model\Context\DeserializationContext;
 use LightSaml\Model\Protocol\SamlMessage;
@@ -26,7 +27,7 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
      * @param SamlMessage $message
      * @param AbstractProvider $provider
      */
-    public function send(SamlMessage $message, AbstractProvider $provider)
+    public function send(SamlMessage $message, ProviderInterface $provider)
     {
 
         if ($signature = $message->getSignature()) {
