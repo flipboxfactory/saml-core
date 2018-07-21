@@ -14,6 +14,9 @@
             <a href="{{ cpUrl(pluginHandle ~ '/keychain') }}" class="">
                 <span class="label">Keychain</span>
             </a>
+            <a href="{{ cpUrl(pluginHandle ~ '/settings') }}" {% if sel == 'settings' %}class="sel"{% endif %}>
+                <span class="label">Settings</span>
+            </a>
         </li>
     </ul>
 </nav>

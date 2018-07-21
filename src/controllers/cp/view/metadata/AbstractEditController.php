@@ -149,6 +149,8 @@ abstract class AbstractEditController extends AbstractController
         $variables['myType'] = $this->getSamlPlugin()->getMyType();
         $variables['remoteType'] = $this->getSamlPlugin()->getRemoteType();
 
+        $variables['environment'] = CRAFT_ENVIRONMENT;
+
         if ($providerId) {
             /**
              * @var ProviderInterface $provider
@@ -210,67 +212,4 @@ abstract class AbstractEditController extends AbstractController
 
         return $variables;
     }
-
-    /**
-     * @param ProviderInterface $provider
-     * @param array $variables
-     * @return array
-     */
-    protected function addUrls(ProviderInterface $provider)
-    {
-
-        $variables = [];
-        $variables['assertionConsumerServices'] = null;
-        $variables['singleLogoutServices'] = null;
-        $variables['singleSignOnServices'] = null;
-
-        if (! $provider->getMetadataModel()) {
-            return $variables;
-        }
-
-        $plugin = $this->getSamlPlugin();
-
-        /**
-         * Add SP URLs
-         */
-        if ($provider->getType() === $plugin::SP) {
-            foreach (
-                $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllSingleLogoutServices()
-                as $singleLogoutService
-            ) {
-                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] =
-                    $singleLogoutService->getResponseLocation();
-            }
-
-            foreach (
-                $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllAssertionConsumerServices()
-                as $assertionConsumerService
-            ) {
-                $variables['assertionConsumerServices'][$assertionConsumerService->getBinding()] =
-                    $assertionConsumerService->getLocation();
-            }
-        }
-
-        /**
-         * Add IDP URLs
-         */
-        if ($provider->getType() === $plugin::IDP) {
-            foreach (
-                $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getAllSingleLogoutServices()
-                as $singleLogoutService
-            ) {
-                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] = $singleLogoutService->getLocation();
-            }
-
-            foreach (
-                $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getAllSingleSignOnServices()
-                as $signOnService
-            ) {
-                $variables['singleLogoutServices'][$signOnService->getBinding()] = $signOnService->getLocation();
-            }
-        }
-
-        return $variables;
-    }
-
 }

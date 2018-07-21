@@ -13,6 +13,7 @@ use craft\base\Model;
 use craft\base\PluginInterface;
 use flipbox\keychain\KeyChain;
 use flipbox\saml\core\models\SettingsInterface;
+use flipbox\saml\core\services\AbstractCp;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
 use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
 use flipbox\saml\core\services\messages\MetadataServiceInterface;
@@ -58,6 +59,16 @@ interface SamlPluginInterface extends PluginInterface
      * @return SettingsInterface
      */
     public function getSettings();
+
+    /**
+     * @return AbstractCp
+     */
+    public function getCp();
+
+    /**
+     * @return string
+     */
+    public function getPluginVariableHandle();
 
     /**
      * BINDINGs

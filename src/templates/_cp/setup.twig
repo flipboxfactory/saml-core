@@ -1,14 +1,20 @@
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 
-{% block sidebar %}
-    {% include templateIndex ~ '/_cp/_components/nav.twig' with {
-        pluginHandle: pluginHandle,
-        sel: 'setup',
-    } %}
-{% endblock %}
+{#{% block sidebar %}#}
+    {#{% include templateIndex ~ '/_cp/_components/nav.twig' with {#}
+        {#pluginHandle: pluginHandle,#}
+        {#sel: 'setup',#}
+    {#} %}#}
+{#{% endblock %}#}
 
 {% block content %}
-    <h4>Getting Started</h4>
+
+    <div class="readable">
+        <h1>Setup</h1>
+    </div>
+    <hr/>
+    <h2>Getting Started</h2>
     <p>Do the following to get started:</p>
     <ol>
         <li>
@@ -22,4 +28,72 @@
         <li>Create your provider's metadata <a href="{{ cpUrl(baseCpPath ~ '/metadata/my-provider') }}">HERE</a>.</li>
         <li>Install the Remote provider's metadata <a href="{{ cpUrl(baseCpPath ~ '/metadata/new') }}">HERE</a>.</li>
     </ol>
+    <hr/>
+    <h2>Environments</h2>
+    <p>Here is a list of all of the environments configured. Edit environment configurations here.</p>
+    <p>For more information on environments, go here.</p>
+    <h2>Your Provider Configuration</h2>
+    {{ forms.textField({
+        label: "Entity ID"|t(pluginHandle ),
+        name: "entityId",
+        id: 'entityId',
+        class: "code",
+        value: ownProvider.entityId,
+        errors: ownProvider.getErrors('entityId'),
+        readonly: true,
+        disabled: true
+    }) }}
+    {% if ownProvider.id %}
+        {% if singleSignOnServices %}
+            {% for binding, singleSignOnService in singleSignOnServices %}
+                {{ forms.textField({
+                    label: "Single Signon Service (SSO) "|t(pluginHandle ),
+                    instructions: "Binding: " ~ binding|t(pluginHandle ),
+                    name: "acs",
+                    id: 'acs',
+                    class: "acs",
+                    value: singleSignOnService,
+                    errors: ownProvider.getErrors('acs'),
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endfor %}
+
+        {% endif %}
+
+        {% if assertionConsumerServices %}
+            {% for binding, assertionConsumerService in assertionConsumerServices %}
+                {{ forms.textField({
+                    label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
+                    instructions: "Binding: " ~ binding|t(pluginHandle ),
+                    name: "acs",
+                    id: 'acs',
+                    class: "acs",
+                    value: assertionConsumerService,
+                    errors: ownProvider.getErrors('acs'),
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endfor %}
+
+        {% endif %}
+
+
+        {% if singleLogoutServices %}
+            {% for binding, singleLogoutService in singleLogoutServices %}
+                {{ forms.textField({
+                    label: "Single Logout Service (SLO)" |t(pluginHandle ),
+                    instructions: "Binding: " ~ binding|t(pluginHandle ),
+                    name: "acs",
+                    id: 'acs',
+                    class: "acs",
+                    value: singleLogoutService,
+                    errors: ownProvider.getErrors('acs'),
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endfor %}
+
+        {% endif %}
+    {% endif %}
 {% endblock %}

@@ -1,0 +1,59 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{#{% block sidebar %}#}
+    {#{% include templateIndex ~ '/_cp/_components/nav.twig' with {#}
+        {#pluginHandle: pluginHandle,#}
+        {#sel: 'settings',#}
+    {#} %}#}
+{#{% endblock %}#}
+
+{% block content %}
+    <input type="hidden" name="action" value="{{ baseActionPath }}/save">
+    {{ redirectInput(baseCpPath) }}
+
+    <div class="readable">
+        <h2>Settings</h2>
+    </div>
+    <hr>
+    {% set cols = {
+        'value' : {
+            type: 'singleline',
+            heading: 'Value',
+            width: '50'
+        }} %}
+
+    {% set rows = [] %}
+    {% for environment in settings.environments %}
+        {% set rows = rows|merge([{value: environment}]) %}
+    {% endfor %}
+    {{ forms.editableTableField({
+        label: "Environments"|t(pluginHandle),
+        instructions: "Enter each environment on a new row."|t(pluginHandle),
+        id: 'environments',
+        name: 'environments',
+        addRowLabel: "Add an environment"|t('patron'),
+        cols: cols,
+        rows: rows,
+        errors: settings.getErrors('environments')
+    }) }}
+    <h3>Endpoints</h3>
+    <hr>
+    {{ forms.textField({
+        label: "Login Request Endpoint"|t(pluginHandle ),
+        instructions: "This initiates login. Set the CraftCMS general config `loginPath` to the following value.",
+        class: "code",
+        value: craft.samlSp.settings.logoutRequestEndpoint,
+        readonly: true,
+        disabled: true
+    }) }}
+    {{ forms.textField({
+        label: "Logout Request Endpoint"|t(pluginHandle ),
+        instructions: "This initiates logout. Use the following link as the logout anchor link href or use" ~
+            " the variable `{{ craft." ~ pluginVariable ~ ".settings.logoutRequestEndpoint }}`",
+        class: "code",
+        value: craft.samlSp.settings.logoutRequestEndpoint,
+        readonly: true,
+        disabled: true
+    }) }}
+{% endblock %}

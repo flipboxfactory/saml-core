@@ -63,6 +63,8 @@
                     required: true
                 }) }}
             {% endif %}
+
+            {# Environments here #}
         </div>
         {% if provider.id %}
             <hr>
@@ -105,8 +107,8 @@
         {% if singleSignOnServices %}
             {% for binding, singleSignOnService in singleSignOnServices %}
                 {{ forms.textField({
-                    label: "Single Signon Service: SSO"|t(pluginHandle ),
-                    instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                    label: "Single Signon Service (SSO) "|t(pluginHandle ),
+                    instructions: "Binding: " ~ binding|t(pluginHandle ),
                     name: "acs",
                     id: 'acs',
                     class: "acs",
@@ -122,8 +124,8 @@
         {% if assertionConsumerServices %}
             {% for binding, assertionConsumerService in assertionConsumerServices %}
                 {{ forms.textField({
-                    label: "Assertion Consumer Service: ACS"|t(pluginHandle ),
-                    instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                    label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
+                    instructions: "Binding: " ~ binding|t(pluginHandle ),
                     name: "acs",
                     id: 'acs',
                     class: "acs",
@@ -140,8 +142,8 @@
         {% if singleLogoutServices %}
             {% for binding, singleLogoutService in singleLogoutServices %}
                 {{ forms.textField({
-                    label: "Single Logout Service: SLO"|t(pluginHandle ),
-                    instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                    label: "Single Logout Service (SLO)" |t(pluginHandle ),
+                    instructions: "Binding: " ~ binding|t(pluginHandle ),
                     name: "acs",
                     id: 'acs',
                     class: "acs",

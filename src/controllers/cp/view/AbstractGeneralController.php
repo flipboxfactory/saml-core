@@ -11,10 +11,7 @@ namespace flipbox\saml\core\controllers\cp\view;
 
 use Craft;
 use craft\helpers\UrlHelper;
-use craft\web\Controller;
-use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\Saml;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
+use flipbox\saml\core\controllers\cp\actions\AbstractUpdate;
 
 /**
  * Class AbstractGeneralController
@@ -48,6 +45,55 @@ abstract class AbstractGeneralController extends AbstractController
             $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'setup',
             $variables
         );
+    }
+
+
+    /**
+     * @return \yii\web\Response
+     */
+    public function actionSettings()
+    {
+        $variables = $this->getBaseVariables();
+
+        // Breadcrumbs
+        $variables['crumbs'][] = [
+            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
+            'label' => 'SSO Provider'
+        ];
+        $variables['crumbs'][] = [
+            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle() . '/settings'),
+            'label' => 'Settings'
+        ];
+
+        /**
+         * base action path
+         * @see AbstractUpdate
+         */
+        $variables['baseActionPath'] = $this->getBaseActionPath();
+
+        // tell craft to make it a form
+        $variables['fullPageForm'] = true;
+
+        return $this->renderTemplate(
+            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'settings',
+            $variables
+        );
+    }
+
+    /**
+     * Piece together the action url
+     * @return string
+     */
+    private function getBaseActionPath()
+    {
+        return implode(
+            '/',
+            [
+                $this->getSamlPlugin()->getHandle(),
+                'settings',
+            ]
+        );
+
     }
 
 }
