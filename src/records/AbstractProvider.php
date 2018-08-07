@@ -8,6 +8,8 @@
 
 namespace flipbox\saml\core\records;
 
+use flipbox\ember\helpers\ObjectHelper;
+use flipbox\ember\helpers\QueryHelper;
 use flipbox\ember\records\ActiveRecord;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\SerializeHelper;
@@ -31,6 +33,11 @@ abstract class AbstractProvider extends ActiveRecord
     protected $cachedKeychain;
 
     /**
+     * @return string
+     */
+    abstract public function getEnvironmentRecordClass();
+
+    /**
      * @param $insert
      * @return bool
      */
@@ -43,7 +50,7 @@ abstract class AbstractProvider extends ActiveRecord
         /**
          * Remove the signature if it exists.
          */
-        if($this->getMetadataModel()->getSignature()) {
+        if ($this->getMetadataModel()->getSignature()) {
             $this->removeSignature();
         }
 
@@ -64,7 +71,7 @@ abstract class AbstractProvider extends ActiveRecord
      */
     protected function removeSignature()
     {
-        if($this->getMetadataModel()->getSignature()) {
+        if ($this->getMetadataModel()->getSignature()) {
             $doc = new \DOMDocument('1.0', 'UTF-8');
             $doc->loadXML($this->metadata);
             $doc->documentElement->removeChild(
@@ -145,5 +152,67 @@ abstract class AbstractProvider extends ActiveRecord
     {
         $this->populateRelation('keychain', $keyChain);
         return $this;
+    }
+
+    /**
+     * Get all of the associated environments.
+     *
+     * @param array $config
+     * @return \yii\db\ActiveQuery
+     */
+    public function getEnvironments(array $config = [])
+    {
+        $query = $this->hasMany(
+            $this->getEnvironmentRecordClass(),
+            ['providerId' => 'id']
+        )->indexBy('environment');
+
+        if (! empty($config)) {
+            QueryHelper::configure(
+                $query,
+                $config
+            );
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param array $environments
+     * @return $this
+     */
+    public function setEnvironments(array $environments = [])
+    {
+        $records = [];
+        foreach (array_filter($environments) as $key => $environment) {
+            $records[] = $this->resolveEnvironment($key, $environment);
+        }
+
+        $this->populateRelation('environments', $records);
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @param $environment
+     * @return AbstractProviderEnvironment
+     */
+    protected function resolveEnvironment(string $key, $environment): AbstractProviderEnvironment
+    {
+        $recordClass = $this->getEnvironmentRecordClass();
+
+        if (! $record = $this->environments[$key] ?? null) {
+            $record = new $recordClass;
+        }
+
+        if (! is_array($environment)) {
+            $environment = ['environment' => $environment];
+        }
+
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return ObjectHelper::populate(
+            $record,
+            $environment
+        );
     }
 }

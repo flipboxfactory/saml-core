@@ -67,4 +67,8 @@ interface ProviderInterface extends ActiveRecordInterface
      */
     public function getEntityId();
 
+    /**
+     * @return string
+     */
+    public function getEnvironmentRecordClass();
 }

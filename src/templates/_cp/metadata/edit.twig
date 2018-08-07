@@ -65,6 +65,26 @@
             {% endif %}
 
             {# Environments here #}
+            <div id="environments" class="meta">
+                <h4 class="heading">{{ "Environments"|t('app') }}</h4>
+                {% set availableEnvironments = settings.environments %}
+                {% set environments = [] %}
+                {% for env in provider.environments %}
+                    {% set environments = environments|merge([env.environment]) %}
+                {% endfor %}
+                {% namespace 'environments' %}
+                    {% for environment in availableEnvironments %}
+                        {{ forms.lightswitchField({
+                            label: environment|t('app'),
+                            id: environment,
+                            name: environment,
+                            value: environment,
+                            small: true,
+                            on: environment in environments
+                        }) }}
+                    {% endfor %}
+                {% endnamespace %}
+            </div>
         </div>
         {% if provider.id %}
             <hr>
