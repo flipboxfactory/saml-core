@@ -100,9 +100,21 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
      */
     public function getRelayStateForSend(SamlMessage $message)
     {
+        /**
+         * It may already be there so grab and go
+         */
         $relayState = $message->getRelayState();
-        if (MessageHelper::isRequest($message)) {
-            $relayState = SerializeHelper::toBase64(Craft::$app->getUser()->getReturnUrl());
+
+        /**
+         * Use craft to get it
+         */
+        if (! $relayState && MessageHelper::isRequest($message)) {
+            /**
+             * base64 encode it
+             */
+            $relayState = SerializeHelper::toBase64(
+                Craft::$app->getUser()->getReturnUrl()
+            );
         }
 
         return $relayState;

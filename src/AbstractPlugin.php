@@ -164,4 +164,38 @@ abstract class AbstractPlugin extends Plugin
     {
         return $this->get('httpRedirect');
     }
+
+
+    /**
+     * Log Functions
+     */
+
+    /**
+     * @param $message
+     */
+    public static function error($message)
+    {
+        \Craft::error($message, static::getInstance()->getHandle());
+    }
+    /**
+     * @param $message
+     */
+    public static function warning($message)
+    {
+        \Craft::warning($message, static::getInstance()->getHandle());
+    }
+    /**
+     * @param $message
+     */
+    public static function info($message)
+    {
+        \Craft::info($message, static::getInstance()->getHandle());
+    }
+    /**
+     * @param $message
+     */
+    public static function debug($message)
+    {
+        \Craft::debug($message, static::getInstance()->getHandle());
+    }
 }
