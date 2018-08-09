@@ -1,71 +1,28 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% do view.registerAssetBundle("flipbox\\saml\\core\\web\\assets\\bundles\\ProviderEnvironmentStatus") %}
+
 {% set fullPageForm=1 %}
 
 {% block details %}
     <div id="settings">
         <div class="meta">
-
             <div class="data first">
-                <h5 class="heading">{{ "Status"|t('app') }}</h5>
+                <h5 class="heading">{{ "Enabled"|t('app') }}</h5>
                 <div class="value flex">
                     <div class="flex-grow">
-                        <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
-                        {% if provider.enabled %}Enabled{% else %}Disabled{% endif %}
+                        {{ forms.lightswitchField({
+                            id: 'enabled',
+                            name: 'enabled',
+                            value: provider.enabled,
+                            on: provider.enabled,
+                        }) }}
                     </div>
-                    {% if actions|length %}
-                        <div>
-                            <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
-                            <div class="menu">
-                                {% for actionList in actions %}
-                                    {% if not loop.first %}<hr>{% endif %}
-                                    <ul>
-                                        {% for actionItem in actionList %}
-                                            <li><a
-                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
-                                                        {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
-                                                >{{ actionItem.label }}</a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endfor %}
-                            </div>
-                            <div id="action-spinner" class="spinner hidden"></div>
-                        </div>
-                    {% endif %}
                 </div>
             </div>
-            {{ forms.selectField({
-                label: "Provider Type"|t(pluginHandle ),
-                id: 'providerType',
-                name: 'providerType',
-                value: provider.type,
-                errors: provider.getErrors('type'),
-                options: [{
-                    value: 'idp',
-                    label: 'Identity (IDP)',
-                },{
-                    value: 'sp',
-                    label: 'Service (SP)',
-                }],
-                required: true
-            }) }}
-
-            {% if createType == myType %}
-                {{ forms.selectField({
-                    label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
-                    id: 'keychain',
-                    name: 'keychain',
-                    value: provider.keychain ? provider.keychain.id : '',
-                    errors: provider.getErrors('keychain'),
-                    options: allkeypairs|merge([{label:'None',value:null}]),
-                    required: true
-                }) }}
-            {% endif %}
-
             {# Environments here #}
-            <div id="environments" class="meta">
+            <div id="environments" class="meta read-only" >
                 <h4 class="heading">{{ "Environments"|t('app') }}</h4>
                 {% set availableEnvironments = settings.environments %}
                 {% set environments = [] %}
@@ -86,6 +43,35 @@
                 {% endnamespace %}
             </div>
         </div>
+        <div class="meta">
+            {{ forms.selectField({
+                label: "Provider Type"|t(pluginHandle ),
+                id: 'providerType',
+                name: 'providerType',
+                value: provider.type,
+                errors: provider.getErrors('type'),
+                options: [{
+                    value: 'idp',
+                    label: 'Identity (IDP)',
+                },{
+                    value: 'sp',
+                    label: 'Service (SP)',
+                }],
+                required: true
+            }) }}
+        </div>
+
+        {% if createType == myType %}
+            {{ forms.selectField({
+                label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
+                id: 'keychain',
+                name: 'keychain',
+                value: provider.keychain ? provider.keychain.id : '',
+                errors: provider.getErrors('keychain'),
+                options: allkeypairs|merge([{label:'None',value:null}]),
+                required: true
+            }) }}
+        {% endif %}
         {% if provider.id %}
             <hr>
             <div class="meta read-only">
@@ -100,7 +86,6 @@
             </div>
         {% endif %}
     </div><!-- #settings -->
-
 {% endblock %}
 
 {% block content %}
@@ -202,3 +187,7 @@
     <div class="item" data-position="right" data-colspan="1"></div>
 
 {% endblock %}
+
+{% js %}
+    new Craft.ProviderStatus($('#enabled'), $('#environments'));
+{% endjs %}

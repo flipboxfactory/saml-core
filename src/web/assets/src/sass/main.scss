@@ -1,3 +1,15 @@
-#my-provider {
-  color: #f0f0f0;
+#environments {
+  opacity: 1;
+  -webkit-transition: visibility 1s, opacity 1s, height 3s;
+  -moz-transition: visibility 1s, opacity 1s, height 3s;
+  -ms-transition: visibility 1s, opacity 1s, height 3s;
+  -o-transition: visibility 1s, opacity 1s, height 3s;
+  transition: visibility 1s, opacity 1s, height 3s;
+  visibility: inherit;
+  height: initial;
+  &.hide {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+  }
 }

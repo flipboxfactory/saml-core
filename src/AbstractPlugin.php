@@ -63,6 +63,8 @@ abstract class AbstractPlugin extends Plugin
      */
     public function initCore()
     {
+        \Craft::setAlias('@flipbox/saml/core', __DIR__);
+
         /**
          * Register Core Module on Craft
          */

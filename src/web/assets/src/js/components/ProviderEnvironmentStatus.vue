@@ -1,19 +1,17 @@
 <template>
     <div>
-
+        This is inside the component {{ count }}
     </div>
+
 </template>
 
 <script>
     export default {
-        name: "ProviderEnvironmentStatus",
-        components: {
-
-        },
-        data: (providerId) => {
+        name: "env-status",
+        data: () =>{
             return {
-
-            };
+                count: 0
+            }
         }
     }
 </script>
