@@ -28,17 +28,10 @@ use yii\db\ActiveQuery;
  */
 abstract class AbstractProvider extends ActiveRecord
 {
-    use EnsureSamlPlugin;
-
     const METADATA_HASH_ALGO = 'sha256';
 
     protected $metadataModel;
     protected $cachedKeychain;
-
-    /**
-     * @return string
-     */
-    abstract public function getEnvironmentRecordClass();
 
     /**
      * @inheritdoc
@@ -61,15 +54,6 @@ abstract class AbstractProvider extends ActiveRecord
         $this->metadata = SerializeHelper::toXml($this->getMetadataModel());
 
         return parent::beforeSave($insert);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave($insert, $changedAttributes)
-    {
-        $this->getSamlPlugin()->getProvider()->saveEnvironments($this);
-        parent::afterSave($insert, $changedAttributes);
     }
 
     /**
@@ -165,65 +149,4 @@ abstract class AbstractProvider extends ActiveRecord
         return $this;
     }
 
-    /**
-     * Get all of the associated environments.
-     *
-     * @param array $config
-     * @return \yii\db\ActiveQuery
-     */
-    public function getEnvironments(array $config = [])
-    {
-        $query = $this->hasMany(
-            $this->getEnvironmentRecordClass(),
-            ['providerId' => 'id']
-        )->indexBy('environment');
-
-        if (! empty($config)) {
-            QueryHelper::configure(
-                $query,
-                $config
-            );
-        }
-
-        return $query;
-    }
-
-    /**
-     * @param array $environments
-     * @return $this
-     */
-    public function setEnvironments(array $environments = [])
-    {
-        $records = [];
-        foreach (array_filter($environments) as $key => $environment) {
-            $records[] = $this->resolveEnvironment($key, $environment);
-        }
-
-        $this->populateRelation('environments', $records);
-        return $this;
-    }
-
-    /**
-     * @param string $key
-     * @param $environment
-     * @return AbstractProviderEnvironment
-     */
-    protected function resolveEnvironment(string $key, $environment): AbstractProviderEnvironment
-    {
-        $recordClass = $this->getEnvironmentRecordClass();
-
-        if (! $record = $this->environments[$key] ?? null) {
-            $record = new $recordClass;
-        }
-
-        if (! is_array($environment)) {
-            $environment = ['environment' => $environment];
-        }
-
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return ObjectHelper::populate(
-            $record,
-            $environment
-        );
-    }
 }

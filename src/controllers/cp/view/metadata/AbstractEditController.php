@@ -149,8 +149,6 @@ abstract class AbstractEditController extends AbstractController
         $variables['myType'] = $this->getSamlPlugin()->getMyType();
         $variables['remoteType'] = $this->getSamlPlugin()->getRemoteType();
 
-        $variables['environment'] = CRAFT_ENVIRONMENT;
-
         if ($providerId) {
             /**
              * @var ProviderInterface $provider

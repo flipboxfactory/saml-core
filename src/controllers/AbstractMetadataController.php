@@ -242,10 +242,6 @@ abstract class AbstractMetadataController extends AbstractController
             }
         }
 
-        if ($environments = Craft::$app->request->getParam('environments')) {
-            $record->setEnvironments($environments);
-        }
-
         Craft::configure(
             $record,
             [

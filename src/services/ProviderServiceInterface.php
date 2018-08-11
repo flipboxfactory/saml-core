@@ -62,14 +62,6 @@ interface ProviderServiceInterface
     );
 
     /**
-     * @param AbstractProvider $provider
-     * @return bool
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     */
-    public function saveEnvironments(AbstractProvider $provider);
-
-    /**
      * @param string $entityId
      * @return AbstractProvider|null
      */

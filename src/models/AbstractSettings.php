@@ -22,21 +22,6 @@ class AbstractSettings extends Model
     protected $entityId;
 
     /**
-     * @var array
-     */
-    private $environments = [];
-
-    /**
-     * @var string
-     */
-    private $environment = null;
-
-    /**
-     * @var array
-     */
-    private $defaultEnvironments = [];
-
-    /**
      * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
      * @see GeneralConfig::$loginPath
      *
@@ -61,9 +46,6 @@ class AbstractSettings extends Model
             parent::attributes(),
             [
                 'entityId',
-                'defaultEnvironments',
-                'environments',
-                'environment'
             ]
         );
     }
@@ -95,79 +77,4 @@ class AbstractSettings extends Model
 
         return $this->entityId;
     }
-
-
-    /*******************************************
-     * ENVIRONMENTS
-     *******************************************/
-
-    /**
-     * @return string
-     */
-    public function getEnvironment(): string
-    {
-        if ($this->environment === null) {
-            $this->environment = \Craft::$app->getConfig()->env;
-        }
-
-        return $this->environment;
-    }
-
-    /**
-     * @param string $environment
-     * @return $this
-     */
-    public function setEnvironment(string $environment)
-    {
-        $this->environment = $environment;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getEnvironments(): array
-    {
-        if (empty($this->environments)) {
-            $this->environments[] = \Craft::$app->getConfig()->env;
-        }
-
-        return $this->environments;
-    }
-
-    /**
-     * @param array $environments
-     * @return $this
-     */
-    public function setEnvironments(array $environments)
-    {
-        $this->environments = $environments;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getDefaultEnvironments(): array
-    {
-        if (empty($this->defaultEnvironments)) {
-            $this->defaultEnvironments[] = \Craft::$app->getConfig()->env;
-        }
-
-        return array_intersect(
-            $this->getEnvironments(),
-            $this->defaultEnvironments
-        );
-    }
-
-    /**
-     * @param array $environments
-     * @return $this
-     */
-    public function setDefaultEnvironments(array $environments)
-    {
-        $this->defaultEnvironments = $environments;
-        return $this;
-    }
-
 }

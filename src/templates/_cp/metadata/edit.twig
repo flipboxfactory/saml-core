@@ -5,27 +5,6 @@
 
 {% set fullPageForm=1 %}
 
-{% block actionButton %}
-    <div class="btngroup">
-        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-        <div class="btn submit menubtn"></div>
-        <div class="menu">
-            {% for actionList in actions %}
-                {% if not loop.first %}<hr>{% endif %}
-                <ul>
-                    {% for actionItem in actionList %}
-                        <li><a
-                                    {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
-                                    {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
-                            >{{ actionItem.label }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endfor %}
-        </div>
-    </div>
-{% endblock %}
-
 {% block details %}
     <div id="settings">
         <div class="meta">
@@ -33,35 +12,32 @@
                 <h5 class="heading">{{ "Enabled"|t('app') }}</h5>
                 <div class="value flex">
                     <div class="flex-grow">
-                        {{ forms.lightswitchField({
-                            id: 'enabled',
-                            name: 'enabled',
-                            value: '1',
-                            on: provider.enabled,
-                        }) }}
+                        <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
+                        {% if provider.enabled %}Enabled{% else %}Disabled{% endif %}
                     </div>
+                    {% if actions|length %}
+                        <div>
+                            <div id="action-menubtn" class="btn menubtn" data-icon="settings"
+                                 title="{{ 'Actions'|t('app') }}"></div>
+                            <div class="menu">
+                                {% for actionList in actions %}
+                                    {% if not loop.first %}
+                                        <hr>{% endif %}
+                                    <ul>
+                                        {% for actionItem in actionList %}
+                                            <li><a
+                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+                                                        {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
+                                                >{{ actionItem.label }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endfor %}
+                            </div>
+                            <div id="action-spinner" class="spinner hidden"></div>
+                        </div>
+                    {% endif %}
                 </div>
-            </div>
-            {# Environments here #}
-            <div id="environments" class="meta read-only" >
-                <h4 class="heading">{{ "Environments"|t('app') }}</h4>
-                {% set availableEnvironments = settings.environments %}
-                {% set environments = [] %}
-                {% for env in provider.environments %}
-                    {% set environments = environments|merge([env.environment]) %}
-                {% endfor %}
-                {% namespace 'environments' %}
-                    {% for environment in availableEnvironments %}
-                        {{ forms.lightswitchField({
-                            label: environment|t('app'),
-                            id: environment,
-                            name: environment,
-                            value: environment,
-                            small: true,
-                            on: environment in environments
-                        }) }}
-                    {% endfor %}
-                {% endnamespace %}
             </div>
         </div>
         <div class="meta">
@@ -109,106 +85,103 @@
     </div><!-- #settings -->
 {% endblock %}
 
-{% block content %}
+    {% block content %}
 
-    <input type="hidden" name="action"
-           value="{{ baseActionPath }}/metadata/{% if createType == myType %}auto-create{% else %}save{% endif %}">
-    {{ redirectInput(baseCpPath ~ '/metadata') }}
+        <input type="hidden" name="action"
+               value="{{ baseActionPath }}/metadata/{% if createType == myType %}auto-create{% else %}save{% endif %}">
+        {{ redirectInput(baseCpPath ~ '/metadata') }}
 
-    {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
+        {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
 
-    {{ forms.textField({
-        label: "Entity ID"|t(pluginHandle ),
-        instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
-        name: "entityId",
-        id: 'entityId',
-        class: "code",
-        value: provider.entityId,
-        errors: provider.getErrors('entityId'),
-        readonly: true,
-        disabled: true
-    }) }}
+        {{ forms.textField({
+            label: "Entity ID"|t(pluginHandle ),
+            instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+            name: "entityId",
+            id: 'entityId',
+            class: "code",
+            value: provider.entityId,
+            errors: provider.getErrors('entityId'),
+            readonly: true,
+            disabled: true
+        }) }}
 
-    {% if provider.id %}
-        {% if singleSignOnServices %}
-            {% for binding, singleSignOnService in singleSignOnServices %}
-                {{ forms.textField({
-                    label: "Single Signon Service (SSO) "|t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: singleSignOnService,
-                    errors: provider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
+        {% if provider.id %}
+            {% if singleSignOnServices %}
+                {% for binding, singleSignOnService in singleSignOnServices %}
+                    {{ forms.textField({
+                        label: "Single Signon Service (SSO) "|t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: singleSignOnService,
+                        errors: provider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
 
+            {% endif %}
+
+            {% if assertionConsumerServices %}
+                {% for binding, assertionConsumerService in assertionConsumerServices %}
+                    {{ forms.textField({
+                        label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: assertionConsumerService,
+                        errors: provider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
+
+            {% endif %}
+
+
+            {% if singleLogoutServices %}
+                {% for binding, singleLogoutService in singleLogoutServices %}
+                    {{ forms.textField({
+                        label: "Single Logout Service (SLO)" |t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: singleLogoutService,
+                        errors: provider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
+
+            {% endif %}
         {% endif %}
 
-        {% if assertionConsumerServices %}
-            {% for binding, assertionConsumerService in assertionConsumerServices %}
-                {{ forms.textField({
-                    label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: assertionConsumerService,
-                    errors: provider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
-
+        {% if provider.keychain and createType == myType %}
+            <p>
+                <a target="_blank"
+                   href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
+                    Download Certificate
+                </a>
+            </p>
         {% endif %}
 
+        {{ forms.textareaField({
+            label: "Metadata XML"|t(pluginHandle ),
+            instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
+            class: "code",
+            id: 'metadata',
+            name: 'metadata',
+            value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
+            readonly: createType == myType ? true : false,
+            disabled: createType == myType ? true : false,
+            errors: provider.getErrors('metadata'),
+            required: true,
+            rows: 10
+        }) }}
+        <div class="item" data-position="right" data-colspan="1"></div>
 
-        {% if singleLogoutServices %}
-            {% for binding, singleLogoutService in singleLogoutServices %}
-                {{ forms.textField({
-                    label: "Single Logout Service (SLO)" |t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: singleLogoutService,
-                    errors: provider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
+    {% endblock %}
 
-        {% endif %}
-    {% endif %}
-
-    {% if provider.keychain and createType == myType %}
-        <p>
-            <a target="_blank"
-               href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
-                Download Certificate
-            </a>
-        </p>
-    {% endif %}
-
-    {{ forms.textareaField({
-        label: "Metadata XML"|t(pluginHandle ),
-        instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
-        class: "code",
-        id: 'metadata',
-        name: 'metadata',
-        value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
-        readonly: createType == myType ? true : false,
-        disabled: createType == myType ? true : false,
-        errors: provider.getErrors('metadata'),
-        required: true,
-        rows: 10
-    }) }}
-    <div class="item" data-position="right" data-colspan="1"></div>
-
-{% endblock %}
-
-{% js %}
-    new Craft.ProviderStatus($('#enabled'), $('#environments'));
-{% endjs %}

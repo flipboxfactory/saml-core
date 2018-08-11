@@ -23,22 +23,9 @@
             width: '50'
         }} %}
 
-    {% set rows = [] %}
-    {% for environment in settings.environments %}
-        {% set rows = rows|merge([{value: environment}]) %}
-    {% endfor %}
-    {{ forms.editableTableField({
-        label: "Environments"|t(pluginHandle),
-        instructions: "Enter each environment on a new row."|t(pluginHandle),
-        id: 'environments',
-        name: 'environments',
-        addRowLabel: "Add an environment"|t('patron'),
-        cols: cols,
-        rows: rows,
-        errors: settings.getErrors('environments')
-    }) }}
-    <h3>Endpoints</h3>
-    <hr>
+    <div class="readable">
+        <h3>Endpoints</h3>
+    </div>
     {{ forms.textField({
         label: "Login Request Endpoint"|t(pluginHandle ),
         instructions: "This initiates login. Set the CraftCMS general config `loginPath` to the following value.",
@@ -50,7 +37,7 @@
     {{ forms.textField({
         label: "Logout Request Endpoint"|t(pluginHandle ),
         instructions: "This initiates logout. Use the following link as the logout anchor link href or use" ~
-            " the variable `{{ craft." ~ pluginVariable ~ ".settings.logoutRequestEndpoint }}`",
+        " the variable `{{ craft." ~ pluginVariable ~ ".settings.logoutRequestEndpoint }}`",
         class: "code",
         value: craft.samlSp.settings.logoutRequestEndpoint,
         readonly: true,

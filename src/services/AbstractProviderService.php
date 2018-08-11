@@ -10,12 +10,10 @@ namespace flipbox\saml\core\services;
 
 
 use craft\base\Component;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\AbstractProviderEnvironment;
 use flipbox\saml\core\records\LinkRecord;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
@@ -34,11 +32,6 @@ abstract class AbstractProviderService extends Component implements ProviderServ
      * @return string
      */
     abstract public function getRecordClass();
-
-    /**
-     * @return string
-     */
-    abstract public function getEnvironmentRecordClass();
 
     /**
      * @inheritdoc
@@ -186,82 +179,6 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         if (! $link->save($runValidation, $attributeNames)) {
             throw new \Exception(Json::encode($record->getErrors()));
         }
-    }
-
-    /**
-     * @param AbstractProvider $provider
-     * @return bool
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     */
-    public function saveEnvironments(AbstractProvider $provider)
-    {
-        $successful = true;
-
-        /** @var AbstractProviderEnvironment[] $allRecords */
-        $allRecords = $provider->getEnvironments()
-            ->all();
-
-        foreach ($this->resolveEnvironments($provider) as $model) {
-            ArrayHelper::remove($allRecords, $model->environment);
-            $model->providerId = $provider->id;
-
-            if (! $model->save()) {
-                $successful = false;
-                // Log the errors
-                $error = \Craft::t(
-                    'patron',
-                    "Couldn't save environment due to validation errors:"
-                );
-                foreach ($model->getFirstErrors() as $attributeError) {
-                    $error .= "\n- " . \Craft::t('patron', $attributeError);
-                }
-
-                $provider->addError('sites', $error);
-            }
-        }
-
-        // Delete old records
-        foreach ($allRecords as $record) {
-            $record->delete();
-        }
-
-        return $successful;
-    }
-
-    /**
-     * @param AbstractProvider $provider
-     * @return AbstractProviderEnvironment[]
-     */
-    protected function defaultEnvironments(AbstractProvider $provider): array
-    {
-        $environments = [];
-
-        $environmentRecordClass = $this->getEnvironmentRecordClass();
-
-        foreach ($this->getSamlPlugin()->getSettings()->getDefaultEnvironments() as $environment) {
-            $environments[$environment] = new $environmentRecordClass([
-                'providerId'  => $provider->id,
-                'environment' => $environment
-            ]);
-        }
-
-        return $environments;
-    }
-
-    /**
-     * @param AbstractProvider $provider
-     * @return array
-     */
-    protected function resolveEnvironments(AbstractProvider $provider): array
-    {
-        $environments = $provider->environments;
-
-        if (empty($environments)) {
-            $environments = $this->defaultEnvironments($provider);
-        }
-
-        return $environments;
     }
 
     /**
