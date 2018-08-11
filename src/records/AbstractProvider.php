@@ -13,6 +13,7 @@ use flipbox\ember\helpers\QueryHelper;
 use flipbox\ember\records\ActiveRecord;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use yii\db\ActiveQuery;
 
@@ -22,11 +23,13 @@ use yii\db\ActiveQuery;
  * @property string $entityId
  * @property string $sha256
  * @property string $metadata
- * @property string $environment
+ * @property array $environments
  * @property KeyChainRecord|null $keychain
  */
 abstract class AbstractProvider extends ActiveRecord
 {
+    use EnsureSamlPlugin;
+
     const METADATA_HASH_ALGO = 'sha256';
 
     protected $metadataModel;
@@ -38,8 +41,7 @@ abstract class AbstractProvider extends ActiveRecord
     abstract public function getEnvironmentRecordClass();
 
     /**
-     * @param $insert
-     * @return bool
+     * @inheritdoc
      */
     public function beforeSave($insert)
     {
@@ -59,6 +61,15 @@ abstract class AbstractProvider extends ActiveRecord
         $this->metadata = SerializeHelper::toXml($this->getMetadataModel());
 
         return parent::beforeSave($insert);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        $this->getSamlPlugin()->getProvider()->saveEnvironments($this);
+        parent::afterSave($insert, $changedAttributes);
     }
 
     /**

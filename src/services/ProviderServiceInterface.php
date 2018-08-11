@@ -27,7 +27,10 @@ interface ProviderServiceInterface
      * @param KeyChainRecord|null $keyChainRecord
      * @return ProviderInterface
      */
-    public function create(EntityDescriptor $entityDescriptor, KeyChainRecord $keyChainRecord = null): ProviderInterface;
+    public function create(
+        EntityDescriptor $entityDescriptor,
+        KeyChainRecord $keyChainRecord = null
+    ): ProviderInterface;
 
     /**
      * @param AbstractProvider $record
@@ -57,6 +60,14 @@ interface ProviderServiceInterface
         $runValidation = true,
         $attributeNames = null
     );
+
+    /**
+     * @param AbstractProvider $provider
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function saveEnvironments(AbstractProvider $provider);
 
     /**
      * @param string $entityId

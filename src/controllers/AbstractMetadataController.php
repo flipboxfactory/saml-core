@@ -10,6 +10,7 @@ namespace flipbox\saml\core\controllers;
 
 
 use Craft;
+use flipbox\ember\exceptions\RecordNotFoundException;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
@@ -201,14 +202,14 @@ abstract class AbstractMetadataController extends AbstractController
 
     /**
      * @return ProviderInterface
-     * @throws \yii\web\BadRequestHttpException
+     * @throws \Exception
      */
     protected function processSaveAction()
     {
 
         $providerId = Craft::$app->request->getBodyParam('identifier');
         $keyId = Craft::$app->request->getBodyParam('keychain');
-        $enabled = Craft::$app->request->getParam('enabled', false) == '1' ? true : false ;
+        $enabled = Craft::$app->request->getParam('enabled', false) == '1' ? true : false;
 
         $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
         /** @var ProviderInterface $record */
@@ -216,6 +217,10 @@ abstract class AbstractMetadataController extends AbstractController
             $record = $recordClass::find()->where([
                 'id' => $providerId,
             ])->one();
+
+            if (! $record) {
+                throw new \Exception("Provider with ID: {$providerId} not found.");
+            }
 
             $record->enabled = $enabled;
         } else {
@@ -235,6 +240,10 @@ abstract class AbstractMetadataController extends AbstractController
                     $keychain
                 );
             }
+        }
+
+        if ($environments = Craft::$app->request->getParam('environments')) {
+            $record->setEnvironments($environments);
         }
 
         Craft::configure(
