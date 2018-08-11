@@ -222,7 +222,6 @@ abstract class AbstractMetadataController extends AbstractController
                 throw new \Exception("Provider with ID: {$providerId} not found.");
             }
 
-            $record->enabled = $enabled;
         } else {
             $record = new $recordClass();
             /**

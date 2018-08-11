@@ -20,77 +20,94 @@
         <li>
             Create a key pair.
             <ul>
-                <li> - Install your own key <a href="{{ cpUrl(baseCpPath ~ '/keychain/new') }}">HERE</a>.</li>
-                <li> - Use OpenSSL to create one <a href="{{ cpUrl(baseCpPath ~ '/keychain/new-openssl') }}">HERE</a>.
+                <li>
+                    <a href="{{ cpUrl(baseCpPath ~ '/keychain/new') }}" class="go nowrap">
+                        Install your own key
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ cpUrl(baseCpPath ~ '/keychain/new-openssl') }}" class="go nowrap">
+                        Use OpenSSL to create one
+                    </a>
                 </li>
             </ul>
         </li>
-        <li>Create your provider's metadata <a href="{{ cpUrl(baseCpPath ~ '/metadata/my-provider') }}">HERE</a>.</li>
-        <li>Install the Remote provider's metadata <a href="{{ cpUrl(baseCpPath ~ '/metadata/new') }}">HERE</a>.</li>
+        <li>
+            <a href="{{ cpUrl(baseCpPath ~ '/metadata/my-provider') }}" class="go nowrap">
+                Create your provider's metadata
+            </a>
+        </li>
+        <li>
+            <a href="{{ cpUrl(baseCpPath ~ '/metadata/new') }}" class="go nowrap">
+                Install the Remote provider's metadata
+            </a>
+        </li>
     </ol>
     <hr/>
-    <h2>Your Provider Configuration</h2>
-    {{ forms.textField({
-        label: "Entity ID"|t(pluginHandle ),
-        name: "entityId",
-        id: 'entityId',
-        class: "code",
-        value: ownProvider.entityId,
-        errors: ownProvider.getErrors('entityId'),
-        readonly: true,
-        disabled: true
-    }) }}
-    {% if ownProvider.id %}
-        {% if singleSignOnServices %}
-            {% for binding, singleSignOnService in singleSignOnServices %}
-                {{ forms.textField({
-                    label: "Single Signon Service (SSO) "|t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: singleSignOnService,
-                    errors: ownProvider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
+    {% if ownProvider %}
+        <h2>Your Provider Configuration</h2>
+        {{ forms.textField({
+            label: "Entity ID"|t(pluginHandle ),
+            name: "entityId",
+            id: 'entityId',
+            class: "code",
+            value: ownProvider.entityId,
+            errors: ownProvider.getErrors('entityId'),
+            readonly: true,
+            disabled: true
+        }) }}
+        {% if ownProvider.id %}
+            {% if singleSignOnServices %}
+                {% for binding, singleSignOnService in singleSignOnServices %}
+                    {{ forms.textField({
+                        label: "Single Signon Service (SSO) "|t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: singleSignOnService,
+                        errors: ownProvider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
 
-        {% endif %}
+            {% endif %}
 
-        {% if assertionConsumerServices %}
-            {% for binding, assertionConsumerService in assertionConsumerServices %}
-                {{ forms.textField({
-                    label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: assertionConsumerService,
-                    errors: ownProvider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
+            {% if assertionConsumerServices %}
+                {% for binding, assertionConsumerService in assertionConsumerServices %}
+                    {{ forms.textField({
+                        label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: assertionConsumerService,
+                        errors: ownProvider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
 
-        {% endif %}
+            {% endif %}
 
 
-        {% if singleLogoutServices %}
-            {% for binding, singleLogoutService in singleLogoutServices %}
-                {{ forms.textField({
-                    label: "Single Logout Service (SLO)" |t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: singleLogoutService,
-                    errors: ownProvider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
+            {% if singleLogoutServices %}
+                {% for binding, singleLogoutService in singleLogoutServices %}
+                    {{ forms.textField({
+                        label: "Single Logout Service (SLO)" |t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: singleLogoutService,
+                        errors: ownProvider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
 
+            {% endif %}
         {% endif %}
     {% endif %}
 {% endblock %}
