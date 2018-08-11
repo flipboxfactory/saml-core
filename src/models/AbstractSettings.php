@@ -35,7 +35,7 @@ class AbstractSettings extends Model
      *
      * @var string
      */
-    public $logoutRequestEndpoint = '/sso/login/request';
+    public $logoutRequestEndpoint = '/sso/logout/request';
 
     /**
      * @inheritdoc
