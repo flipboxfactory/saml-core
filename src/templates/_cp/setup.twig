@@ -14,8 +14,10 @@
         <h1>Setup</h1>
     </div>
     <hr/>
-    <h2>Getting Started</h2>
-    <p>Do the following to get started:</p>
+    <div class="readable">
+        <h2>Getting Started</h2>
+    </div>
+    <p>Steps to getting started:</p>
     <ol>
         <li>
             Create a key pair.
@@ -45,7 +47,10 @@
     </ol>
     <hr/>
     {% if ownProvider %}
-        <h2>Your Provider Configuration</h2>
+
+        <div class="readable">
+            <h2>Your Provider Configuration</h2>
+        </div>
         {{ forms.textField({
             label: "Entity ID"|t(pluginHandle ),
             name: "entityId",
@@ -62,11 +67,10 @@
                     {{ forms.textField({
                         label: "Single Signon Service (SSO) "|t(pluginHandle ),
                         instructions: "Binding: " ~ binding|t(pluginHandle ),
-                        name: "acs",
-                        id: 'acs',
-                        class: "acs",
+                        name: "sso",
+                        id: 'sso',
+                        class: "sso",
                         value: singleSignOnService,
-                        errors: ownProvider.getErrors('acs'),
                         readonly: true,
                         disabled: true
                     }) }}
@@ -83,7 +87,6 @@
                         id: 'acs',
                         class: "acs",
                         value: assertionConsumerService,
-                        errors: ownProvider.getErrors('acs'),
                         readonly: true,
                         disabled: true
                     }) }}
@@ -97,11 +100,10 @@
                     {{ forms.textField({
                         label: "Single Logout Service (SLO)" |t(pluginHandle ),
                         instructions: "Binding: " ~ binding|t(pluginHandle ),
-                        name: "acs",
-                        id: 'acs',
-                        class: "acs",
+                        name: "slo",
+                        id: 'slo',
+                        class: "slo",
                         value: singleLogoutService,
-                        errors: ownProvider.getErrors('acs'),
                         readonly: true,
                         disabled: true
                     }) }}

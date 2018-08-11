@@ -56,19 +56,20 @@
                 }],
                 required: true
             }) }}
-        </div>
 
-        {% if createType == myType %}
-            {{ forms.selectField({
-                label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
-                id: 'keychain',
-                name: 'keychain',
-                value: provider.keychain ? provider.keychain.id : '',
-                errors: provider.getErrors('keychain'),
-                options: allkeypairs|merge([{label:'None',value:null}]),
-                required: true
-            }) }}
-        {% endif %}
+            <hr/>
+            {% if createType == myType %}
+                {{ forms.selectField({
+                    label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
+                    id: 'keychain',
+                    name: 'keychain',
+                    value: provider.keychain ? provider.keychain.id : '',
+                    errors: provider.getErrors('keychain'),
+                    options: allkeypairs|merge([{label:'None',value:null}]),
+                    required: true
+                }) }}
+            {% endif %}
+        </div>
         {% if provider.id %}
             <hr>
             <div class="meta read-only">
