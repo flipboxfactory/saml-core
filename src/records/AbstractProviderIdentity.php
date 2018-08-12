@@ -9,6 +9,8 @@
 namespace flipbox\saml\core\records;
 
 
+use craft\validators\DateTimeValidator;
+use flipbox\ember\helpers\ModelHelper;
 use flipbox\ember\records\ActiveRecord;
 use yii\db\ActiveQuery;
 
@@ -31,7 +33,7 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
      */
     public function getUser()
     {
-        if(! $this->userId) {
+        if (! $this->userId) {
             return null;
         }
         if (! $this->user) {
@@ -47,4 +49,31 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
      */
     abstract public function getProvider();
 
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return array_merge(
+            parent::rules(),
+            [
+                [
+                    [
+                        'lastLoginDate',
+                    ],
+                    DateTimeValidator::class,
+                ],
+                [
+                    [
+                        'lastLoginDate',
+                    ],
+                    'safe',
+                    'on' => [
+                        ModelHelper::SCENARIO_DEFAULT,
+                    ]
+                ]
+            ]
+
+        );
+    }
 }

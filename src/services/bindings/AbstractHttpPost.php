@@ -42,7 +42,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
     {
         $provider = $this->getSamlPlugin()->getProvider()->findByEntityId(
             $issuer->getValue()
-        );
+        )->one();
         if (! $provider) {
             throw new InvalidIssuer(
                 sprintf("Invalid issuer: %s", $issuer->getValue())

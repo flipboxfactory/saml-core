@@ -13,6 +13,7 @@ use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\keychain\records\KeyChainRecord;
 use LightSaml\Model\Metadata\EntityDescriptor;
+use yii\db\Query;
 
 interface ProviderServiceInterface
 {
@@ -63,7 +64,7 @@ interface ProviderServiceInterface
 
     /**
      * @param string $entityId
-     * @return AbstractProvider|null
+     * @return Query|null
      */
     public function findByEntityId($entityId);
 
@@ -73,12 +74,12 @@ interface ProviderServiceInterface
     public function findOwn();
 
     /**
-     * @return AbstractProvider|null
+     * @return Query|null
      */
-    public function findByIdp();
+    public function findByIdp($condition = []);
 
     /**
-     * @return AbstractProvider|null
+     * @return Query|null
      */
-    public function findBySp();
+    public function findBySp($condition = []);
 }

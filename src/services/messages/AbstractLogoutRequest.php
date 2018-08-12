@@ -44,7 +44,7 @@ abstract class AbstractLogoutRequest extends AbstractLogout implements SamlReque
          */
         $providerIdentity = $this->getSamlPlugin()->getProviderIdentity()->findByUser(
             \Craft::$app->getUser()->getIdentity()
-        );
+        )->one();
 
         /**
          * Set remote destination

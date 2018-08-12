@@ -295,6 +295,7 @@ abstract class AbstractPlugin extends Plugin
     {
         \Craft::error($message, static::getInstance()->getHandle());
     }
+
     /**
      * @param $message
      */
@@ -302,6 +303,7 @@ abstract class AbstractPlugin extends Plugin
     {
         \Craft::warning($message, static::getInstance()->getHandle());
     }
+
     /**
      * @param $message
      */
@@ -309,6 +311,7 @@ abstract class AbstractPlugin extends Plugin
     {
         \Craft::info($message, static::getInstance()->getHandle());
     }
+
     /**
      * @param $message
      */

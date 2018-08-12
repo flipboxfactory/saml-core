@@ -61,7 +61,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
         $class = $this->getRecordClass();
 
         /** @var AbstractProviderIdentity $class */
-        $providerId = $class::find()->where($condition)->one();
+        $providerId = $class::find()->where($condition);
 
         return $providerId;
     }
@@ -73,7 +73,11 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
      * @return ProviderIdentityInterface
      * @throws \Exception
      */
-    public function save(ProviderIdentityInterface $record, $runValidation = true, $attributeNames = null): ProviderIdentityInterface
+    public function save(
+        ProviderIdentityInterface $record,
+        $runValidation = true,
+        $attributeNames = null
+    ): ProviderIdentityInterface
     {
 
         if (! $record->save($runValidation, $attributeNames)) {

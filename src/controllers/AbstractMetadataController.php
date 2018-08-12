@@ -37,7 +37,7 @@ abstract class AbstractMetadataController extends AbstractController
 
         $provider = $this->getSamlPlugin()->getProvider()->findByEntityId(
             $this->getSamlPlugin()->getSettings()->getEntityId()
-        );
+        )->one();
 
         if ($provider) {
             $metadata = $provider->getMetadataModel();

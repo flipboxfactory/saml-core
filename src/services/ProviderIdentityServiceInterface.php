@@ -12,25 +12,26 @@ namespace flipbox\saml\core\services;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\records\ProviderIdentityInterface;
 use craft\elements\User;
+use yii\db\Query;
 
 interface ProviderIdentityServiceInterface
 {
     /**
      * @param string $nameId
      * @param ProviderInterface $provider
-     * @return ProviderIdentityInterface|null
+     * @return Query|null
      */
     public function findByNameId(string $nameId, ProviderInterface $provider);
 
     /**
      * @param User $user
-     * @return ProviderIdentityInterface|null
+     * @return Query|null
      */
     public function findByUser(User $user);
 
     /**
      * @param array $condition
-     * @return ProviderIdentityInterface|null
+     * @return Query|null
      */
     public function find($condition = []);
 
