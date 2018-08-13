@@ -210,6 +210,7 @@ abstract class AbstractMetadataController extends AbstractController
         $providerId = Craft::$app->request->getBodyParam('identifier');
         $keyId = Craft::$app->request->getBodyParam('keychain');
         $enabled = Craft::$app->request->getParam('enabled', false) == '1' ? true : false;
+        $label = Craft::$app->request->getRequiredParam('label');
 
         $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
         /** @var ProviderInterface $record */
@@ -229,6 +230,8 @@ abstract class AbstractMetadataController extends AbstractController
              */
             $record->enabled = true;
         }
+
+        $record->label = $label;
 
         if ($keyId) {
             /** @var KeyChainRecord $keychain */

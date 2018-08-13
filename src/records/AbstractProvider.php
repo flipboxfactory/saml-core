@@ -20,10 +20,10 @@ use yii\db\ActiveQuery;
 /**
  * Class AbstractProvider
  * @package flipbox\saml\core\records
+ * @property string $label
  * @property string $entityId
  * @property string $sha256
  * @property string $metadata
- * @property array $environments
  * @property KeyChainRecord|null $keychain
  */
 abstract class AbstractProvider extends ActiveRecord
@@ -32,6 +32,11 @@ abstract class AbstractProvider extends ActiveRecord
 
     protected $metadataModel;
     protected $cachedKeychain;
+
+    /**
+     * @return string|null
+     */
+    abstract public function getLoginPath();
 
     /**
      * @inheritdoc

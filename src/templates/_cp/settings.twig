@@ -27,19 +27,19 @@
         <h3>Endpoints</h3>
     </div>
     {{ forms.textField({
-        label: "Login Request Endpoint"|t(pluginHandle ),
+        label: "Default Login Request Endpoint"|t(pluginHandle ),
         instructions: "This initiates login. Set the CraftCMS general config `loginPath` to the following value.",
         class: "code",
-        value: craft.samlSp.settings.logoutRequestEndpoint,
+        value: settings.loginRequestEndpoint,
         readonly: true,
         disabled: true
     }) }}
     {{ forms.textField({
-        label: "Logout Request Endpoint"|t(pluginHandle ),
+        label: "Default Logout Request Endpoint"|t(pluginHandle ),
         instructions: "This initiates logout. Use the following link as the logout anchor link href or use" ~
         " the variable `{{ craft." ~ pluginVariable ~ ".settings.logoutRequestEndpoint }}`",
         class: "code",
-        value: craft.samlSp.settings.logoutRequestEndpoint,
+        value: settings.logoutRequestEndpoint,
         readonly: true,
         disabled: true
     }) }}

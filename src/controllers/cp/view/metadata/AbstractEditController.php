@@ -67,6 +67,7 @@ abstract class AbstractEditController extends AbstractController
             $provider = $variables['provider'];
             $variables['provider']->entityId = $this->getSamlPlugin()->getSettings()->getEntityId();
             $variables['provider']->providerType = $this->getSamlPlugin()->getMyType();
+            $variables['provider']->label = 'My Provider';
         }
 
         /**

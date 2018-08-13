@@ -1,8 +1,6 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% do view.registerAssetBundle("flipbox\\saml\\core\\web\\assets\\bundles\\ProviderEnvironmentStatus") %}
-
 {% set fullPageForm=1 %}
 
 {% block details %}
@@ -60,7 +58,7 @@
             <hr/>
             {% if createType == myType %}
                 {{ forms.selectField({
-                    label: "Key Pair or <a target=\"_target\" href=\"/admin/" ~ baseCpPath ~ '/keychain/new' ~ "\">Create One</a>"|t(pluginHandle),
+                    label: "Key Pair"|t(pluginHandle),
                     id: 'keychain',
                     name: 'keychain',
                     value: provider.keychain ? provider.keychain.id : '',
@@ -68,6 +66,20 @@
                     options: allkeypairs|merge([{label:'None',value:null}]),
                     required: true
                 }) }}
+                <div>
+                    <a id="generate-key" class="btn">Generate key pair</a>
+                    <a class="go"
+                       href="/{{ craft.app.config.general.cpTrigger }}/{{ pluginHandle }}/keychain"
+                    >View all key pairs</a>
+                </div>
+                {% do view.registerAssetBundle("flipbox\\keychain\\web\\assets\\bundles\\GenerateKeyPair") %}
+                {% js %}
+                    new Craft.GenerateKeyPair(
+                        $('#generate-key'),
+                        $('#keychain'),
+                        "{{ pluginHandle }}"
+                    );
+                {% endjs %}
             {% endif %}
         </div>
         {% if provider.id %}
@@ -95,6 +107,16 @@
         {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
 
         {{ forms.textField({
+            label: "Label"|t(pluginHandle ),
+            instructions: "Friendly name for the provider. You can use the providers name (like `OKTA`) or the environment (`DEV`) so everyone knows it's purpose."|t(pluginHandle ),
+            name: "label",
+            id: 'label',
+            required: true,
+            value: provider.label,
+            errors: provider.getErrors('label'),
+        }) }}
+
+        {{ forms.textField({
             label: "Entity ID"|t(pluginHandle ),
             instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
             name: "entityId",
@@ -106,7 +128,25 @@
             disabled: true
         }) }}
 
+
         {% if provider.id %}
+            {% if provider.type == 'idp' and provider.loginPath %}
+                {{ forms.textField({
+                    label: "Login Path"|t(pluginHandle ),
+                    instructions: "Use this as the `loginPath` value in the `general.php` configuration file."|t(pluginHandle ),
+                    name: "loginPath",
+                    id: 'loginPath',
+                    class: "code",
+                    value: provider.loginPath,
+                    readonly: true,
+                    disabled: true
+                }) }}
+            {% endif %}
+
+            <hr/>
+            <div class="readable">
+                <h2>Bindings</h2>
+            </div>
             {% if singleSignOnServices %}
                 {% for binding, singleSignOnService in singleSignOnServices %}
                     {{ forms.textField({
@@ -160,6 +200,7 @@
             {% endif %}
         {% endif %}
 
+        <hr/>
         {% if provider.keychain and createType == myType %}
             <p>
                 <a target="_blank"

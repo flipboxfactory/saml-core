@@ -23,6 +23,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
 {
 
     use EnsureSamlPlugin;
+
     /**
      * @var AbstractProvider[]
      */
@@ -56,7 +57,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
      */
     public function findByIdp($condition = [])
     {
-        return $this->findByType('idp');
+        return $this->findByType('idp',$condition);
     }
 
     /**
@@ -64,21 +65,26 @@ abstract class AbstractProviderService extends Component implements ProviderServ
      */
     public function findBySp($condition = [])
     {
-        return $this->findByType('sp');
+        return $this->findByType('sp',$condition);
     }
 
     /**
      * @inheritdoc
      */
-    protected function findByType($type)
+    protected function findByType($type, $condition = [])
     {
         if (! in_array($type, ['sp', 'idp'])) {
             throw new \InvalidArgumentException("Type must be idp or sp.");
         }
-        return $this->find([
-            'enabled'      => 1,
-            'providerType' => $type,
-        ]);
+        return $this->find(
+            array_merge(
+                [
+                    'enabled'      => 1,
+                    'providerType' => $type,
+                ],
+                $condition
+            )
+        );
     }
 
     /**
