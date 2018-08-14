@@ -19,8 +19,9 @@ interface MetadataServiceInterface
 
     /**
      * @param KeyChainRecord|null $withKeyPair
+     * @param null $entityId
      * @return EntityDescriptor
      */
-    public function create(KeyChainRecord $withKeyPair = null): EntityDescriptor;
+    public function create(KeyChainRecord $withKeyPair = null, $entityId = null): EntityDescriptor;
 
 }

@@ -62,8 +62,10 @@ abstract class AbstractMetadataController extends AbstractController
         $record = $this->processSaveAction();
 
         $entityDescriptor = $this->getSamlPlugin()->getMetadata()->create(
-            $record->keychain
+            $record->keychain,
+            $entityId = Craft::$app->request->getParam('entityId', null)
         );
+
         $provider = $this->getSamlPlugin()->getProvider()->create(
             $entityDescriptor,
             $record->keychain

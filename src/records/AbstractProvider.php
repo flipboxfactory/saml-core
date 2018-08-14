@@ -39,6 +39,11 @@ abstract class AbstractProvider extends ActiveRecord
     abstract public function getLoginPath();
 
     /**
+     * @return string|null
+     */
+    abstract public function getLogoutPath();
+
+    /**
      * @inheritdoc
      */
     public function beforeSave($insert)
@@ -153,5 +158,6 @@ abstract class AbstractProvider extends ActiveRecord
         $this->populateRelation('keychain', $keyChain);
         return $this;
     }
+
 
 }

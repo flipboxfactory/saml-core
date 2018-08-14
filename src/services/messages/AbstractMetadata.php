@@ -150,14 +150,15 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
 
     /**
      * @param KeyChainRecord|null $withKeyPair
+     * @param null $entityId
      * @return EntityDescriptor
      * @throws InvalidConfigException
      */
-    public function create(KeyChainRecord $withKeyPair = null): EntityDescriptor
+    public function create(KeyChainRecord $withKeyPair = null, $entityId = null): EntityDescriptor
     {
 
         $entityDescriptor = new EntityDescriptor(
-            $this->getSamlPlugin()->getSettings()->getEntityId()
+            $entityId ?: $this->getSamlPlugin()->getSettings()->getEntityId()
         );
 
         foreach ($this->getSupportedBindings() as $binding) {

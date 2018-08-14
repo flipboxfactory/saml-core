@@ -10,6 +10,7 @@ namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\records\ProviderInterface;
@@ -26,12 +27,17 @@ abstract class AbstractEditController extends AbstractController
      * @param string|null $providerId
      * @return \yii\web\Response
      */
-    public function actionIndex($providerId = null)
+    public function actionIndex($providerId = null, $overwriteVariables = [])
     {
+        /** @var AbstractPlugin $plugin */
+        $plugin = $this->getSamlPlugin();
         $variables = $this->prepVariables($providerId);
+        $provider = $variables['provider'];
 
         $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(),
-            'Remote Provider (' . strtoupper($variables['remoteType']) . ')');
+            'Edit ' . $this->getTitle($provider->getType())
+        );
+
         $variables['createType'] = $variables['remoteType'];
 
         if (isset($variables['provider']) && $variables['provider'] instanceof ProviderInterface) {
@@ -43,6 +49,7 @@ abstract class AbstractEditController extends AbstractController
 
         }
 
+        $variables = array_merge($variables, $overwriteVariables);
         return $this->renderTemplate(
             $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
@@ -52,11 +59,78 @@ abstract class AbstractEditController extends AbstractController
     /**
      * @return \yii\web\Response
      */
+    public function actionNewIdp()
+    {
+        /** @var AbstractPlugin $plugin */
+        $plugin = $this->getSamlPlugin();
+        return $this->actionIndex(null, [
+            'title'      => 'New ' . $this->getTitle($plugin::IDP),
+            'createType' => $plugin::IDP,
+        ]);
+    }
+
+    /**
+     * @return \yii\web\Response
+     */
+    public function actionNewSp()
+    {
+        /** @var AbstractPlugin $plugin */
+        $plugin = $this->getSamlPlugin();
+        return $this->actionIndex(null, [
+            'title'      => 'New ' . $this->getTitle($plugin::SP),
+            'createType' => $plugin::SP,
+            'crumbs'     => [
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $plugin->getHandle(),
+                            ]
+                        )
+                    ),
+                    'label' => $plugin->name,
+                ],
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $plugin->getHandle(),
+                                'metadata/sp',
+                            ]
+                        )
+                    ),
+                    'label' => 'SP List',
+                ],
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $plugin->getHandle(),
+                                'metadata/sp',
+                                'new-sp'
+                            ]
+                        )
+                    ),
+                    'label' => 'New SP',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @return \yii\web\Response
+     */
     public function actionMyProvider()
     {
-        $variables = $this->prepVariables();
+        $provider = $this->getSamlPlugin()->getProvider()->findOwn();
+        $variables = $this->prepVariables(
+            $provider ? $provider->id : null
+        );
 
-        if ($provider = $this->getSamlPlugin()->getProvider()->findOwn()) {
+        if ($provider) {
             $variables['provider'] = $provider;
 
             $variables = array_merge(
@@ -154,19 +228,32 @@ abstract class AbstractEditController extends AbstractController
             /**
              * @var ProviderInterface $provider
              */
-            $variables['provider'] = $provider = $this->getProviderRecord()::find()->where([
+            $provider = $variables['provider'] = $provider = $this->getProviderRecord()::find()->where([
                 'id' => $providerId,
             ])->one();
 
             $variables['title'] .= ': Edit';
 
             $crumb = [
-                'url'   => UrlHelper::cpUrl(
-                    $this->getSamlPlugin()->getHandle() . '/' . $providerId
-                ),
-                'label' => $variables['provider']->entityId,
-            ];
+                [
 
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $this->getSamlPlugin()->getHandle(),
+                                'metadata/' . $provider->getType(),
+                            ]
+                        )
+                    ),
+                    'label' => strtoupper($provider->getType()) . ' List',
+                ], [
+                    'url'   => UrlHelper::cpUrl(
+                        $this->getSamlPlugin()->getHandle() . '/' . $providerId
+                    ),
+                    'label' => $provider->label ?: $provider->entityId,
+                ]
+            ];
             $variables['keypair'] = $provider->keychain;
 
             $variables = array_merge(
@@ -176,17 +263,19 @@ abstract class AbstractEditController extends AbstractController
         } else {
             $record = $this->getProviderRecord();
 
-            $variables['provider'] = new $record([
+            $provider = $variables['provider'] = new $record([
                 'providerType' => 'idp',
             ]);
 
             $variables['title'] .= ': Create';
 
             $crumb = [
-                'url'   => UrlHelper::cpUrl(
-                    $this->getSamlPlugin()->getHandle() . '/new'
-                ),
-                'label' => 'New',
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        $this->getSamlPlugin()->getHandle() . '/new'
+                    ),
+                    'label' => 'New',
+                ]
             ];
         }
 
@@ -201,13 +290,12 @@ abstract class AbstractEditController extends AbstractController
             ];
         }
 
-        $variables['crumbs'] = [
+        $variables['crumbs'] = array_merge([
             [
                 'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
                 'label' => Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name),
             ],
-            $crumb,
-        ];
+        ], $crumb);
 
         return $variables;
     }

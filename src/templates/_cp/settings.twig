@@ -15,13 +15,36 @@
     <div class="readable">
         <h2>Settings</h2>
     </div>
+    {{ forms.textField({
+        label: "Default Entity ID"|t(pluginHandle ),
+        name:'entityId',
+        id:'entityId',
+        instructions: "Entity ID for this system.",
+        value: settings.entityId,
+    }) }}
     <hr>
-    {% set cols = {
-        'value' : {
-            type: 'singleline',
-            heading: 'Value',
-            width: '50'
-        }} %}
+    {#{% set cols = {#}
+        {#'attibuteName':{#}
+            {#type: 'singleline',#}
+            {#heading: 'Attribute Name',#}
+        {#},#}
+        {#'craftProperty' : {#}
+            {#type: 'singleline',#}
+            {#heading: 'Craft Property',#}
+        {#}#}
+    {#} %}#}
+
+    {#{% set rows = [] %}#}
+    {#{{ forms.editableTableField({#}
+        {#label: "Environments"|t('patron'),#}
+        {#instructions: "Enter each environment on a new row."|t('patron'),#}
+        {#id: 'environments',#}
+        {#name: 'environments',#}
+        {#addRowLabel: "Add an environment",#}
+        {#cols: cols,#}
+        {#rows: rows,#}
+        {#errors: settings.getErrors('environments')#}
+    {#}) }}#}
 
     <div class="readable">
         <h3>Endpoints</h3>

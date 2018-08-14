@@ -1,0 +1,138 @@
+{% extends "_layouts/cp" %}
+
+{#{% block actionButton %}#}
+    {#<div class="btngroup">#}
+        {#<a class="btn submit" href="{{ mainAction.url }}">{{ mainAction.label }}</a>#}
+        {#<div class="btn submit menubtn"></div>#}
+        {#{% if actions|length %}#}
+        {#<div class="menu">#}
+            {#<ul>#}
+                {#{% for action in actions %}#}
+                    {#<li><a#}
+                           {#href="{{ action.url }}">{{ action.label }}</a>#}
+                    {#</li>#}
+                {#{% endfor %}#}
+            {#</ul>#}
+        {#</div>#}
+        {#{% endif %}#}
+    {#</div>#}
+{#{% endblock %}#}
+
+{% block content %}
+    <div class="elements">
+        <div class="saml-instructions readable">
+            <a href="{{ cpUrl("/" ~ pluginHandle ~"/metadata/new-sp") }}" class="btn large submit icon add" style="float: right;">Add Service Provider</a>
+            <h2>
+                Service Provider List
+            </h2>
+            <p>
+                {{ spListInstructions }}
+            </p>
+        </div>
+        <div class="tableview">
+            <table class="data fullwidth">
+                <thead>
+                <tr>
+                    <th scope="col" data-attribute="label">Label</th>
+                    <th scope="col" data-attribute="entityid">EntityId</th>
+                    <th scope="col" data-attribute="dateCreated">Date Created</th>
+                    <th scope="col" data-attribute="dateUpdated">Date Updated</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for provider in spProviders %}
+                    <tr data-id="">
+                        <td data-title="label">
+                            <div class="element small hasstatus "
+                                 data-status="active"
+                                    {% if myProvider and myProvider.id == provider.id %}
+                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                    {% else %}
+                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                    {% endif %}
+                                 data-level="" data-editable="">
+                                <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
+                                <div class="label">
+                                    <span class="title">
+                                        <a
+                                                {% if myProvider and myProvider.id == provider.id %}
+                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                                {% else %}
+                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                                {% endif %}
+                                        >{{ provider.label }}
+                                        </a>
+                                        {% if myProvider and myProvider.id == provider.id %}
+                                            (My Provider)
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-title="entityid">{{ provider.entityId }}</td>
+                        <td data-title="Date Created">{{ provider.dateCreated|date }}</td>
+                        <td data-title="Date Updated">{{ provider.dateUpdated|date }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="saml-instructions readable">
+            <a href="{{ cpUrl("/" ~ pluginHandle ~"/metadata/new-idp") }}" class="btn large submit icon add" style="float: right;">Add Identity Provider</a>
+            <h2>
+                Identity Provider List
+            </h2>
+            <p>
+                {{ idpListInstructions }}
+            </p>
+        </div>
+        <div class="tableview">
+            <table class="data fullwidth">
+                <thead>
+                <tr>
+                    <th scope="col" data-attribute="label">Label</th>
+                    <th scope="col" data-attribute="entityid">EntityId</th>
+                    <th scope="col" data-attribute="dateCreated">Date Created</th>
+                    <th scope="col" data-attribute="dateUpdated">Date Updated</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for provider in idpProviders %}
+                    <tr data-id="">
+                        <td data-title="label">
+                            <div class="element small hasstatus "
+                                 data-status="active"
+                                    {% if myProvider and myProvider.id == provider.id %}
+                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                    {% else %}
+                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                    {% endif %}
+                                 data-level="" data-editable="">
+                                <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
+                                <div class="label">
+                                    <span class="title">
+                                        <a
+                                                {% if myProvider and myProvider.id == provider.id %}
+                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                                {% else %}
+                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                                {% endif %}
+                                        >{{ provider.label }}
+                                        </a>
+                                        {% if myProvider and myProvider.id == provider.id %}
+                                            (My Provider)
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-title="entityid">{{ provider.entityId }}</td>
+                        <td data-title="Date Created">{{ provider.dateCreated|date }}</td>
+                        <td data-title="Date Updated">{{ provider.dateUpdated|date }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

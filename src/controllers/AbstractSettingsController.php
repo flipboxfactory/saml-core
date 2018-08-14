@@ -11,6 +11,7 @@ namespace flipbox\saml\core\controllers;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\base\Action;
 
@@ -21,11 +22,6 @@ use yii\base\Action;
 abstract class AbstractSettingsController extends AbstractController
 {
     use EnsureSamlPlugin;
-
-    /**
-     * @return string
-     */
-    abstract protected function getUpdateClass();
 
     /**
      * @return array
@@ -72,16 +68,19 @@ abstract class AbstractSettingsController extends AbstractController
      */
     public function actionSave()
     {
-        /** @var Action $action */
-        $action = Craft::createObject([
-            'class'       => $this->getUpdateClass(),
-            'checkAccess' => [$this, 'checkUpdateAccess']
-        ], [
-            'update',
-            $this
-        ]);
+        $entityId = Craft::$app->request->getRequiredParam('entityId');
+        /** @var AbstractPlugin $plugin */
+        $plugin = $this->getSamlPlugin();
 
-        return $action->runWithParams([]);
+        $settings = [
+            'entityId' => $entityId
+        ];
+
+        Craft::$app->plugins->savePluginSettings(
+            $this->getSamlPlugin(),
+            $settings
+        );
+        return $this->redirectToPostedUrl();
     }
 
     /**

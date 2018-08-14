@@ -9,10 +9,12 @@
 namespace flipbox\saml\core\controllers\cp\view;
 
 
+use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\Saml;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use flipbox\saml\core\controllers\AbstractController as BaseController;
+use flipbox\saml\core\web\assets\bundles\SamlCore;
 
 /**
  * Class AbstractController
@@ -23,6 +25,17 @@ abstract class AbstractController extends BaseController
     use EnsureSamlPlugin;
 
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function init()
+    {
+        parent::init();
+        \Craft::$app->view->registerAssetBundle(
+            SamlCore::class
+        );
+    }
 
     /**
      * @return string
@@ -74,6 +87,9 @@ abstract class AbstractController extends BaseController
         return $variables;
     }
 
+    /**
+     * @return null|string
+     */
     protected function getSubNavKey()
     {
         $request = \Craft::$app->request;
@@ -126,6 +142,7 @@ abstract class AbstractController extends BaseController
             return $variables;
         }
 
+        /** @var AbstractPlugin $plugin */
         $plugin = $this->getSamlPlugin();
 
         /**
@@ -172,4 +189,15 @@ abstract class AbstractController extends BaseController
         return $variables;
     }
 
+
+    /**
+     * @param $type
+     * @return string
+     */
+    protected function getTitle($type)
+    {
+        /** @var AbstractPlugin $plugin */
+        $plugin = $this->getSamlPlugin();
+        return $type === $plugin::SP ? 'Service Provider (SP)' : 'Identity Provider (IDP)';
+    }
 }

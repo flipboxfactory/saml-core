@@ -19,6 +19,7 @@ use yii\db\ActiveRecordInterface;
  * @property int $id
  * @property int $userId
  * @property int $entityId
+ * @property string $label
  * @property string $metadata
  * @property string $sha256
  * @property string $providerType

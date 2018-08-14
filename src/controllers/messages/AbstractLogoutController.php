@@ -33,7 +33,7 @@ abstract class AbstractLogoutController extends Controller
     /**
      * @return ProviderInterface
      */
-    abstract protected function getRemoteProvider(): ProviderInterface;
+    abstract protected function getRemoteProvider($uid = null): ProviderInterface;
 
     /**
      * @param AbstractRequest $samlMessage
@@ -120,11 +120,11 @@ abstract class AbstractLogoutController extends Controller
     /**
      * @throws \yii\base\ExitException
      */
-    public function actionRequest()
+    public function actionRequest($uid = null)
     {
 
         /** @var ProviderInterface $provider */
-        $provider = $this->getRemoteProvider();
+        $provider = $this->getRemoteProvider($uid);
 
         $logoutRequest = $this->getSamlPlugin()->getLogoutRequest()->create($provider);
 

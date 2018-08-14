@@ -88,6 +88,7 @@ abstract class AbstractPlugin extends Plugin
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
             }
         );
+
     }
 
     /**
@@ -110,11 +111,11 @@ abstract class AbstractPlugin extends Plugin
                     'My Provider'
                 ),
             ],
-            'saml.providers'  => [
+            'saml.providers'    => [
                 'url'   => $this->getHandle() . '/metadata',
                 'label' => \Craft::t(
                     $this->getHandle(),
-                    'Providers'
+                    'Providers List'
                 ),
             ],
             'saml.keychain'   => [
