@@ -48,6 +48,7 @@ abstract class AbstractInstall extends Migration
     {
         return [
             'id'           => $this->primaryKey(),
+            'label' => $this->string(64),
             'entityId'     => $this->string()->notNull(),
             'metadata'     => $this->text()->notNull(),
             'sha256'       => $this->string()->notNull(),
@@ -55,6 +56,7 @@ abstract class AbstractInstall extends Migration
                 'idp',
                 'sp'
             ])->notNull(),
+            'mapping' => $this->text(),
             'enabled'      => $this->boolean()->defaultValue(true)->notNull(),
             'dateUpdated'  => $this->dateTime()->notNull(),
             'dateCreated'  => $this->dateTime()->notNull(),

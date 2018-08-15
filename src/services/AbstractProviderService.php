@@ -57,7 +57,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
      */
     public function findByIdp($condition = [])
     {
-        return $this->findByType('idp',$condition);
+        return $this->findByType('idp', $condition);
     }
 
     /**
@@ -65,7 +65,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
      */
     public function findBySp($condition = [])
     {
-        return $this->findByType('sp',$condition);
+        return $this->findByType('sp', $condition);
     }
 
     /**
@@ -185,5 +185,20 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     public function delete(ProviderInterface $provider)
     {
         return $provider->delete();
+    }
+
+    public static function providerMappingToKeyValue(ProviderInterface $provider)
+    {
+        $mapping = $provider->getMapping();
+        if (! is_array($mapping)) {
+            return [];
+        }
+
+        $newMap = [];
+        foreach ($mapping as $map) {
+            $newMap[$map['attibuteName']] = $map['craftProperty'];
+        }
+
+        return $newMap;
     }
 }

@@ -115,7 +115,7 @@ abstract class AbstractPlugin extends Plugin
                 'url'   => $this->getHandle() . '/metadata',
                 'label' => \Craft::t(
                     $this->getHandle(),
-                    'Providers List'
+                    'Provider List'
                 ),
             ],
             'saml.keychain'   => [

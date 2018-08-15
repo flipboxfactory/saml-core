@@ -29,8 +29,6 @@ abstract class AbstractEditController extends AbstractController
      */
     public function actionIndex($providerId = null, $overwriteVariables = [])
     {
-        /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
         $variables = $this->prepVariables($providerId);
         $provider = $variables['provider'];
 
@@ -66,6 +64,44 @@ abstract class AbstractEditController extends AbstractController
         return $this->actionIndex(null, [
             'title'      => 'New ' . $this->getTitle($plugin::IDP),
             'createType' => $plugin::IDP,
+            'crumbs'     => [
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $plugin->getHandle(),
+                            ]
+                        )
+                    ),
+                    'label' => $plugin->name,
+                ],
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $plugin->getHandle(),
+                                'metadata',
+                            ]
+                        )
+                    ),
+                    'label' => 'Provider List',
+                ],
+                [
+                    'url'   => UrlHelper::cpUrl(
+                        implode(
+                            '/',
+                            [
+                                $plugin->getHandle(),
+                                'metadata',
+                                'new-idp'
+                            ]
+                        )
+                    ),
+                    'label' => 'New IDP',
+                ],
+            ],
         ]);
     }
 
@@ -97,11 +133,11 @@ abstract class AbstractEditController extends AbstractController
                             '/',
                             [
                                 $plugin->getHandle(),
-                                'metadata/sp',
+                                'metadata',
                             ]
                         )
                     ),
-                    'label' => 'SP List',
+                    'label' => 'Provider List',
                 ],
                 [
                     'url'   => UrlHelper::cpUrl(
@@ -109,7 +145,7 @@ abstract class AbstractEditController extends AbstractController
                             '/',
                             [
                                 $plugin->getHandle(),
-                                'metadata/sp',
+                                'metadata',
                                 'new-sp'
                             ]
                         )
@@ -242,14 +278,14 @@ abstract class AbstractEditController extends AbstractController
                             '/',
                             [
                                 $this->getSamlPlugin()->getHandle(),
-                                'metadata/' . $provider->getType(),
+                                'metadata',
                             ]
                         )
                     ),
-                    'label' => strtoupper($provider->getType()) . ' List',
+                    'label' => 'Provider List',
                 ], [
                     'url'   => UrlHelper::cpUrl(
-                        $this->getSamlPlugin()->getHandle() . '/' . $providerId
+                        $this->getSamlPlugin()->getHandle() . '/metadata/' . $providerId
                     ),
                     'label' => $provider->label ?: $provider->entityId,
                 ]

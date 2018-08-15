@@ -17,12 +17,12 @@ use yii\db\ActiveRecordInterface;
  * Interface ProviderInterface
  * @package flipbox\saml\core\records
  * @property int $id
- * @property int $userId
- * @property int $entityId
  * @property string $label
+ * @property int $entityId
  * @property string $metadata
  * @property string $sha256
  * @property string $providerType
+ * @property string $mapping
  * @property KeyChainRecord|null $keychain
  * @property bool $enabled
  * @property \DateTime $dateCreated
@@ -67,5 +67,10 @@ interface ProviderInterface extends ActiveRecordInterface
      * @return string
      */
     public function getEntityId();
+
+    /**
+     * @return array
+     */
+    public function getMapping();
 
 }

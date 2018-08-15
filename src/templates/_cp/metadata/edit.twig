@@ -3,8 +3,23 @@
 
 {% set fullPageForm=1 %}
 
+{% set tabs = {
+    metadata: {
+        id: 'metadata',
+        class: 'metadata',
+        url: '#metadata',
+        label: 'Metadata'
+    },
+    configure: {
+        id:'configure',
+        class: 'configure',
+        url: '#configure',
+        label: 'Configure'
+    }
+} %}
+
 {% block details %}
-    <div id="settings">
+    <div>
         <div class="meta">
             <div class="data first">
                 <h5 class="heading">{{ "Enabled"|t('app') }}</h5>
@@ -55,8 +70,8 @@
                 required: true
             }) }}
 
-            <hr/>
             {% if createType == myType %}
+                <hr/>
                 {{ forms.selectField({
                     label: "Key Pair"|t(pluginHandle),
                     id: 'keychain',
@@ -107,56 +122,146 @@
 
 {% block content %}
 
-    <input type="hidden" name="action"
-           value="{{ baseActionPath }}/metadata/{% if createType == myType or myType == provider.type %}auto-create{% else %}save{% endif %}">
-    {{ redirectInput(baseCpPath ~ '/metadata/' ~ myType ) }}
+    <div id="name">
+        <input type="hidden" name="action"
+               value="{{ baseActionPath }}/metadata/{% if createType == myType or myType == provider.type %}auto-create{% else %}save{% endif %}">
+        {{ redirectInput(baseCpPath ~ '/metadata/' ) }}
 
-    {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
+        {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
 
-    {{ forms.textField({
-        label: "Label"|t(pluginHandle ),
-        instructions: "Friendly name for the provider. You can use the providers name (like `OKTA`) or the environment (`DEV`) so everyone knows it's purpose."|t(pluginHandle ),
-        name: "label",
-        id: 'label',
-        required: true,
-        value: provider.label,
-        errors: provider.getErrors('label'),
-    }) }}
-
-    {% if myType == provider.type or myType == createType %}
         {{ forms.textField({
-            label: "Entity ID"|t(pluginHandle ),
-            instructions: "Important: It's recommended to use the value provided. " ~
-            " If this value matches a seperate environment, verify it matchs the other environment's "~
-            "`baseUrl` exactly. If it's absolutely nessesary to change this value, the config property in the "~
-            "`config/"~pluginHandle~".php`."
-            |t(pluginHandle ),
-            name: "entityId",
-            id: 'entityId',
-            class: "code",
-            value: provider.entityId ?: ownEntityId,
-            errors: provider.getErrors('entityId'),
-            readonly: false,
-            disabled: false
+            label: "Label"|t(pluginHandle ),
+            instructions: "Friendly name for the provider. You can use the providers name (like `OKTA`) or the environment (`DEV`) so everyone knows it's purpose."|t(pluginHandle ),
+            name: "label",
+            id: 'label',
+            required: true,
+            value: provider.label,
+            errors: provider.getErrors('label'),
         }) }}
-    {% else %}
-        {{ forms.textField({
-            label: "Entity ID"|t(pluginHandle ),
-            instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
-            name: "entityId",
-            id: 'entityId',
-            class: "code",
-            value: provider.entityId,
-            errors: provider.getErrors('entityId'),
-            readonly: true,
-            disabled: true
-        }) }}
-    {% endif %}
+
+        {% if myType == provider.type or myType == createType %}
+            {{ forms.textField({
+                label: "Entity ID"|t(pluginHandle ),
+                instructions: "Important: It's recommended to use the value provided. " ~
+                " If this value matches a seperate environment, verify it matchs the other environment's "~
+                "`baseUrl` exactly. If it's absolutely nessesary to change this value, the config property in the "~
+                "`config/"~pluginHandle~".php`."
+                |t(pluginHandle ),
+                name: "entityId",
+                id: 'entityId',
+                class: "code",
+                value: provider.entityId ?: ownEntityId,
+                errors: provider.getErrors('entityId'),
+                readonly: false,
+                disabled: false
+            }) }}
+        {% else %}
+            {{ forms.textField({
+                label: "Entity ID"|t(pluginHandle ),
+                instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                name: "entityId",
+                id: 'entityId',
+                class: "code",
+                value: provider.entityId,
+                errors: provider.getErrors('entityId'),
+                readonly: true,
+                disabled: true
+            }) }}
+        {% endif %}
+    </div>
+    {#
+        Default showing
+    #}
+    <div id="metadata">
+        {% if provider.id %}
+            <br/>
+            <div class="readable">
+                <h2>Bindings</h2>
+            </div>
+            {% if singleSignOnServices %}
+                {% for binding, singleSignOnService in singleSignOnServices %}
+                    {{ forms.textField({
+                        label: "Single Signon Service (SSO) "|t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: singleSignOnService,
+                        errors: provider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
+
+            {% endif %}
+
+            {% if assertionConsumerServices %}
+                {% for binding, assertionConsumerService in assertionConsumerServices %}
+                    {{ forms.textField({
+                        label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: assertionConsumerService,
+                        errors: provider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
+
+            {% endif %}
 
 
-    {% if provider.id %}
+            {% if singleLogoutServices %}
+                {% for binding, singleLogoutService in singleLogoutServices %}
+                    {{ forms.textField({
+                        label: "Single Logout Service (SLO)" |t(pluginHandle ),
+                        instructions: "Binding: " ~ binding|t(pluginHandle ),
+                        name: "acs",
+                        id: 'acs',
+                        class: "acs",
+                        value: singleLogoutService,
+                        errors: provider.getErrors('acs'),
+                        readonly: true,
+                        disabled: true
+                    }) }}
+                {% endfor %}
+
+            {% endif %}
+        {% endif %}
+
+        <div class="readable">
+            <h2>Metadata</h2>
+        </div>
+        {% if provider.keychain and createType == myType %}
+            <p>
+                <a target="_blank"
+                   class="btn large"
+                   href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
+                    Download Certificate
+                </a>
+            </p>
+        {% endif %}
+
+        {{ forms.textareaField({
+            label: "Metadata XML"|t(pluginHandle ),
+            instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
+            class: "code",
+            id: 'metadata',
+            name: 'metadata',
+            value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
+            readonly: createType == myType ? true : false,
+            disabled: createType == myType ? true : false,
+            errors: provider.getErrors('metadata'),
+            required: true,
+            rows: 10
+        }) }}
+    </div>
+
+    <div id="configure" class="hidden">
         {% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}
-            <hr/>
+            <br/>
             <div class="readable">
                 <h2>Login/Logout Paths</h2>
             </div>
@@ -173,7 +278,8 @@
 
             {{ forms.textField({
                 label: "Logout Path"|t(pluginHandle ),
-                instructions: "Use this for your logout button if you provider supports Single Logout (SLO)."|t(pluginHandle ),
+                instructions: "Use this for your logout button if you provider supports Single Logout (SLO)."~
+                " Using the twig variable looks like this: `{{ craft.samlSp.settings.logoutRequestEndpoint }}`"|t(pluginHandle ),
                 name: "logoutPath",
                 id: 'logoutPath',
                 class: "code",
@@ -181,93 +287,37 @@
                 readonly: true,
                 disabled: true
             }) }}
-        {% endif %}
 
-        <hr/>
-        <div class="readable">
-            <h2>Bindings</h2>
-        </div>
-        {% if singleSignOnServices %}
-            {% for binding, singleSignOnService in singleSignOnServices %}
-                {{ forms.textField({
-                    label: "Single Signon Service (SSO) "|t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: singleSignOnService,
-                    errors: provider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
+            {% if provider.type == 'idp' %}
+                <div class="readable">
+                    <h2>Mapping</h2>
+                </div>
+                {% set cols = {
+                    'attibuteName':{
+                        type: 'singleline',
+                        heading: 'Attribute Name',
+                    },
+                    'craftProperty' : {
+                        type: 'singleline',
+                        heading: 'Craft Property',
+                    }
+                } %}
+
+                {% set rows = provider.getMapping() %}
+                {{ forms.editableTableField({
+                    label: "Mapping"|t(pluginHandle),
+                    instructions: "Each mapping on a different row."|t(pluginHandle),
+                    id: 'mapping',
+                    name: 'mapping',
+                    addRowLabel: "Add a new mapping",
+                    cols: cols,
+                    rows: rows,
+                    errors: provider.getErrors('mapping')
                 }) }}
-            {% endfor %}
-
+            {% endif %}
         {% endif %}
 
-        {% if assertionConsumerServices %}
-            {% for binding, assertionConsumerService in assertionConsumerServices %}
-                {{ forms.textField({
-                    label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: assertionConsumerService,
-                    errors: provider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
-
-        {% endif %}
-
-
-        {% if singleLogoutServices %}
-            {% for binding, singleLogoutService in singleLogoutServices %}
-                {{ forms.textField({
-                    label: "Single Logout Service (SLO)" |t(pluginHandle ),
-                    instructions: "Binding: " ~ binding|t(pluginHandle ),
-                    name: "acs",
-                    id: 'acs',
-                    class: "acs",
-                    value: singleLogoutService,
-                    errors: provider.getErrors('acs'),
-                    readonly: true,
-                    disabled: true
-                }) }}
-            {% endfor %}
-
-        {% endif %}
-    {% endif %}
-
-    <hr/>
-    <div class="readable">
-        <h2>Metadata</h2>
     </div>
-    {% if provider.keychain and createType == myType %}
-        <p>
-            <a target="_blank"
-               class="btn large"
-               href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
-                Download Certificate
-            </a>
-        </p>
-    {% endif %}
-
-    {{ forms.textareaField({
-        label: "Metadata XML"|t(pluginHandle ),
-        instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
-        class: "code",
-        id: 'metadata',
-        name: 'metadata',
-        value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
-        readonly: createType == myType ? true : false,
-        disabled: createType == myType ? true : false,
-        errors: provider.getErrors('metadata'),
-        required: true,
-        rows: 10
-    }) }}
-    <div class="item" data-position="right" data-colspan="1"></div>
 
 {% endblock %}
 

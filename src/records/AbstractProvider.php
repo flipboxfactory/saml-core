@@ -20,13 +20,8 @@ use yii\db\ActiveQuery;
 /**
  * Class AbstractProvider
  * @package flipbox\saml\core\records
- * @property string $label
- * @property string $entityId
- * @property string $sha256
- * @property string $metadata
- * @property KeyChainRecord|null $keychain
  */
-abstract class AbstractProvider extends ActiveRecord
+abstract class AbstractProvider extends ActiveRecord implements ProviderInterface
 {
     const METADATA_HASH_ALGO = 'sha256';
 
@@ -52,6 +47,9 @@ abstract class AbstractProvider extends ActiveRecord
             $this->entityId = $this->getEntityId();
         }
 
+        if (is_array($this->mapping)) {
+            $this->mapping = json_encode($this->mapping);
+        }
         /**
          * Remove the signature if it exists.
          */
@@ -159,5 +157,16 @@ abstract class AbstractProvider extends ActiveRecord
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getMapping()
+    {
+        if (is_string($this->mapping)) {
+            $this->mapping = json_decode($this->mapping,true);
+        }
+
+        return $this->mapping;
+    }
 
 }
