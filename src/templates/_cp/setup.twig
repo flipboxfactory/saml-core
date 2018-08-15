@@ -31,70 +31,21 @@
         </li>
     </ol>
     <hr/>
+{% endblock %}
+
+{% block details %}
+
     {% if ownProvider %}
 
-        <div class="readable">
-            <h2>Your Provider Configuration</h2>
+        <div class="meta">
+            <div class="readable">
+                <h2>System Configuration</h2>
+            </div>
+            <hr/>
+            <h3>Entity Id</h3>
+            <p class="code">
+                {{ ownProvider.entityId }}
+            </p>
         </div>
-        {{ forms.textField({
-            label: "Entity ID"|t(pluginHandle ),
-            name: "entityId",
-            id: 'entityId',
-            class: "code",
-            value: ownProvider.entityId,
-            errors: ownProvider.getErrors('entityId'),
-            readonly: true,
-            disabled: true
-        }) }}
-        {% if ownProvider.id %}
-            {% if singleSignOnServices %}
-                {% for binding, singleSignOnService in singleSignOnServices %}
-                    {{ forms.textField({
-                        label: "Single Signon Service (SSO) "|t(pluginHandle ),
-                        instructions: "Binding: " ~ binding|t(pluginHandle ),
-                        name: "sso",
-                        id: 'sso',
-                        class: "sso",
-                        value: singleSignOnService,
-                        readonly: true,
-                        disabled: true
-                    }) }}
-                {% endfor %}
-
-            {% endif %}
-
-            {% if assertionConsumerServices %}
-                {% for binding, assertionConsumerService in assertionConsumerServices %}
-                    {{ forms.textField({
-                        label: "Assertion Consumer Service (ACS) " |t(pluginHandle ),
-                        instructions: "Binding: " ~ binding|t(pluginHandle ),
-                        name: "acs",
-                        id: 'acs',
-                        class: "acs",
-                        value: assertionConsumerService,
-                        readonly: true,
-                        disabled: true
-                    }) }}
-                {% endfor %}
-
-            {% endif %}
-
-
-            {% if singleLogoutServices %}
-                {% for binding, singleLogoutService in singleLogoutServices %}
-                    {{ forms.textField({
-                        label: "Single Logout Service (SLO)" |t(pluginHandle ),
-                        instructions: "Binding: " ~ binding|t(pluginHandle ),
-                        name: "slo",
-                        id: 'slo',
-                        class: "slo",
-                        value: singleLogoutService,
-                        readonly: true,
-                        disabled: true
-                    }) }}
-                {% endfor %}
-
-            {% endif %}
-        {% endif %}
     {% endif %}
 {% endblock %}

@@ -106,7 +106,7 @@ abstract class AbstractMetadataController extends AbstractController
         $record = $this->processSaveAction();
         $record->metadata = Craft::$app->request->getBodyParam('metadata');
         $record->mapping = Craft::$app->request->getBodyParam('mapping');
-        
+
         if (! $this->getSamlPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
