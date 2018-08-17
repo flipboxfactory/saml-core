@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\models;
 
-
 use craft\base\Model;
 use craft\config\GeneralConfig;
 use craft\helpers\UrlHelper;

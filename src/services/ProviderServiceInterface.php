@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\keychain\records\KeyChainRecord;

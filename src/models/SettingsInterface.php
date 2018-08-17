@@ -8,13 +8,11 @@
 
 namespace flipbox\saml\core\models;
 
-
-Interface SettingsInterface
+interface SettingsInterface
 {
 
     /**
      * @return string
      */
     public function getEntityId();
-
 }

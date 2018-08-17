@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\migrations;
 
-
 use craft\db\Migration;
 use craft\records\User;
 use flipbox\keychain\records\KeyChainRecord;
@@ -19,9 +18,9 @@ abstract class AbstractInstall extends Migration
 
     const PROVIDER_AFTER_COLUMN = 'sha256';
 
-    abstract static protected function getIdentityTableName();
+    abstract protected static function getIdentityTableName();
 
-    abstract static protected function getProviderTableName();
+    abstract protected static function getProviderTableName();
 
     /**
      * @inheritdoc
@@ -96,7 +95,6 @@ abstract class AbstractInstall extends Migration
             'dateCreated'   => $this->dateTime()->notNull(),
             'uid'           => $this->uid()
         ]);
-
     }
 
     /**
@@ -157,12 +155,14 @@ abstract class AbstractInstall extends Migration
         );
 
         $this->createIndex(
-            $this->db->getIndexName(static::getIdentityTableName(),
+            $this->db->getIndexName(
+                static::getIdentityTableName(),
                 [
                     'providerId',
                     'userId',
                 ],
-                true),
+                true
+            ),
             static::getIdentityTableName(),
             [
                 'providerId',

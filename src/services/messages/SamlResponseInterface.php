@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use LightSaml\Model\Protocol\AbstractRequest;
 use LightSaml\Model\Protocol\StatusResponse;
 

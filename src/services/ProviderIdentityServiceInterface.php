@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\records\ProviderIdentityInterface;
 use craft\elements\User;
@@ -41,5 +40,9 @@ interface ProviderIdentityServiceInterface
      * @param null $attributeNames
      * @return ProviderIdentityInterface
      */
-    public function save(ProviderIdentityInterface $record, $runValidation = true, $attributeNames = null): ProviderIdentityInterface;
+    public function save(
+        ProviderIdentityInterface $record,
+        $runValidation = true,
+        $attributeNames = null
+    ): ProviderIdentityInterface;
 }

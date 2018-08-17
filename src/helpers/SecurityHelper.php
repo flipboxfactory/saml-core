@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\helpers;
 
-
 use flipbox\keychain\records\KeyChainRecord;
 use LightSaml\Credential\KeyHelper;
 use LightSaml\Error\LightSamlSecurityException;
@@ -50,7 +49,6 @@ class SecurityHelper
         $signatureReader = $message->getSignature();
 
         try {
-
             if (static::validate(
                 $signatureReader,
                 KeyHelper::createPublicKey(
@@ -64,8 +62,6 @@ class SecurityHelper
         } catch (\Exception $e) {
             return false;
         }
-
-
     }
 
     /**

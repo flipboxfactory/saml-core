@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services\bindings;
 
-
 use Craft;
 use craft\base\Component;
 use craft\web\Request;
@@ -33,7 +32,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
 {
     use EnsureSamlPlugin;
 
-    abstract function getTemplatePath();
+    abstract public function getTemplatePath();
 
     /**
      * @inheritdoc
@@ -156,8 +155,7 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
         /**
          * Find the first key descriptor
          */
-        if (
-            $provider->providerType === AbstractPlugin::IDP
+        if ($provider->providerType === AbstractPlugin::IDP
         ) {
             $key = $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor();
         } else {
@@ -181,5 +179,4 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
 
         return $message;
     }
-
 }

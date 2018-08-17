@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\AbstractPlugin;
@@ -121,8 +120,7 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     protected function createSpDescriptor(string $binding)
     {
         $descriptor = new SpSsoDescriptor();
-        if (
-            property_exists($this->getSamlPlugin()->getSettings(), 'wantsSignedAssertions') &&
+        if (property_exists($this->getSamlPlugin()->getSettings(), 'wantsSignedAssertions') &&
             is_bool($this->getSamlPlugin()->getSettings()->wantsSignedAssertions)
         ) {
             $descriptor->setWantAssertionsSigned($this->getSamlPlugin()->getSettings()->wantsSignedAssertions);
@@ -162,7 +160,6 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
         );
 
         foreach ($this->getSupportedBindings() as $binding) {
-
             $entityDescriptor->addItem(
                 $descriptor = $this->createDescriptor($binding)
             );

@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\controllers\cp\view;
 
-
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\Saml;
@@ -95,12 +94,14 @@ abstract class AbstractController extends BaseController
         $request = \Craft::$app->request;
 
         $key = null;
-        $path = implode('/',
+        $path = implode(
+            '/',
             [
                 $request->getSegment(2),
                 $request->getSegment(3),
                 $request->getSegment(4),
-            ]);
+            ]
+        );
 
         if (preg_match('#^/+$#', $path)) {
             $key = 'saml.setup';
@@ -108,7 +109,6 @@ abstract class AbstractController extends BaseController
             $key = 'saml.myProvider';
         } elseif (preg_match('#metadata/+$#', $path)) {
             $key = 'saml.providers';
-
         } elseif (preg_match('#keychain/+$#', $path)) {
             $key = 'saml.keychain';
         } elseif (preg_match('#settings/+$#', $path)) {
@@ -149,18 +149,16 @@ abstract class AbstractController extends BaseController
          * Add SP URLs
          */
         if ($provider->getType() === $plugin::SP) {
-            foreach (
-                $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllSingleLogoutServices()
-                as $singleLogoutService
-            ) {
+            foreach ($provider->
+            getMetadataModel()->
+            getFirstSpSsoDescriptor()->
+            getAllSingleLogoutServices() as $singleLogoutService) {
                 $variables['singleLogoutServices'][$singleLogoutService->getBinding()] =
                     $singleLogoutService->getResponseLocation();
             }
-
-            foreach (
-                $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getAllAssertionConsumerServices()
-                as $assertionConsumerService
-            ) {
+            foreach ($provider->getMetadataModel()->
+            getFirstSpSsoDescriptor()->
+            getAllAssertionConsumerServices() as $assertionConsumerService) {
                 $variables['assertionConsumerServices'][$assertionConsumerService->getBinding()] =
                     $assertionConsumerService->getLocation();
             }
@@ -170,18 +168,16 @@ abstract class AbstractController extends BaseController
          * Add IDP URLs
          */
         if ($provider->getType() === $plugin::IDP) {
-            foreach (
-                $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getAllSingleLogoutServices()
-                as $singleLogoutService
-            ) {
+            foreach ($provider->getMetadataModel()->
+            getFirstIdpSsoDescriptor()->
+            getAllSingleLogoutServices() as $singleLogoutService) {
                 $variables['singleLogoutServices'][$singleLogoutService->getBinding()] =
                     $singleLogoutService->getLocation();
             }
 
-            foreach (
-                $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getAllSingleSignOnServices()
-                as $signOnService
-            ) {
+            foreach ($provider->getMetadataModel()->
+            getFirstIdpSsoDescriptor()->
+            getAllSingleSignOnServices() as $signOnService) {
                 $variables['singleSignOnServices'][$signOnService->getBinding()] = $signOnService->getLocation();
             }
         }

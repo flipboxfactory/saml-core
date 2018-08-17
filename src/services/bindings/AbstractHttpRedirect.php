@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services\bindings;
 
-
 use craft\base\Component;
 use craft\web\Request;
 use flipbox\saml\core\records\AbstractProvider;
@@ -39,7 +38,6 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
         }
 
         \Craft::$app->response->redirect($destination);
-
     }
 
     /**
@@ -65,7 +63,6 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
         $this->loadSignature($message, $queryData);
 
         return $message;
-
     }
 
     protected function parseQuery(Request $request)
@@ -157,7 +154,6 @@ abstract class AbstractHttpRedirect extends Component implements BindingInterfac
         }
         $data['SignedQuery'] = $sigQuery . $relayState . $sigAlg;
         return $data;
-
     }
 
 

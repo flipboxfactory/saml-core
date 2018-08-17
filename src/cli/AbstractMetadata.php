@@ -91,7 +91,6 @@ abstract class AbstractMetadata extends Controller
         ];
 
         foreach (KeyChainRecord::find()->select('id,description')->asArray()->all() as $key) {
-
             $keys[$key['id']] = sprintf(
                 'Existing key (id: %s): %s',
                 (string)$key['id'],
@@ -103,7 +102,8 @@ abstract class AbstractMetadata extends Controller
             $this->stdout(
                 sprintf(
                     'A key must be created or chosen from this list. Choose one of the following or use \'?\' for help.'
-                ) . PHP_EOL, Console::FG_CYAN
+                ) . PHP_EOL,
+                Console::FG_CYAN
             );
 
             $this->keyPairId = (int)$this->select(
@@ -116,8 +116,6 @@ abstract class AbstractMetadata extends Controller
             $this->keyPairId = null;
             $this->createKeyPair = true;
         }
-
-
     }
 
     /**
@@ -138,17 +136,19 @@ abstract class AbstractMetadata extends Controller
             $keyPairRecord = $openSslConfig->create();
             if (! KeyChain::getInstance()->getService()->save($keyPairRecord)) {
                 $this->stderr(
-                    sprintf('Failed to save new key pair to the database') . PHP_EOL
-                    , Console::FG_RED);
+                    sprintf('Failed to save new key pair to the database') . PHP_EOL,
+                    Console::FG_RED
+                );
                 return ExitCode::DATAERR;
             }
-        } else if ($this->keyPairId) {
+        } elseif ($this->keyPairId) {
             if (! ($keyPairRecord = KeyChainRecord::findOne([
                 'id' => $this->keyPairId,
             ]))) {
                 $this->stderr(
-                    sprintf('Failed to fetch key pair with id: %s', (string)$this->keyPairId) . PHP_EOL
-                    , Console::FG_RED);
+                    sprintf('Failed to fetch key pair with id: %s', (string)$this->keyPairId) . PHP_EOL,
+                    Console::FG_RED
+                );
                 return ExitCode::DATAERR;
             }
         }
@@ -162,11 +162,10 @@ abstract class AbstractMetadata extends Controller
         );
 
         if ($this->getSamlPlugin()->getProvider()->save($provider)) {
-
             $this->stdout(sprintf(
-                    'Save for %s metadata was successful.',
-                    $provider->entityId
-                ) . PHP_EOL, Console::FG_GREEN);
+                'Save for %s metadata was successful.',
+                $provider->entityId
+            ) . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 
@@ -200,14 +199,12 @@ abstract class AbstractMetadata extends Controller
         $provider->getMetadataModel();
 
         if ($this->getSamlPlugin()->getProvider()->save($provider)) {
-
             $this->stdout(sprintf(
-                    'Save for %s metadata was successful.',
-                    $provider->entityId
-                ) . PHP_EOL, Console::FG_GREEN);
+                'Save for %s metadata was successful.',
+                $provider->entityId
+            ) . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
         return ExitCode::UNSPECIFIED_ERROR;
     }
-
 }

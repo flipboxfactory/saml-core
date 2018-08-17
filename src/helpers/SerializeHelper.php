@@ -31,7 +31,6 @@ class SerializeHelper
         }
 
         return base64_encode($xml);
-
     }
 
     /**

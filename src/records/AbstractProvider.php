@@ -163,10 +163,9 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     public function getMapping()
     {
         if (is_string($this->mapping)) {
-            $this->mapping = json_decode($this->mapping,true);
+            $this->mapping = json_decode($this->mapping, true);
         }
 
         return $this->mapping;
     }
-
 }

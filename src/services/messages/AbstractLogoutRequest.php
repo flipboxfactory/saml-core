@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\records\ProviderInterface;

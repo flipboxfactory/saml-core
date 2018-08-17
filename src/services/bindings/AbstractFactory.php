@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services\bindings;
 
-
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\records\ProviderInterface;
@@ -79,7 +78,7 @@ abstract class AbstractFactory
             $binding = static::determineBindingToSp($message, $provider);
         }
 
-        return static::getService($binding)->send($message,  $provider);
+        return static::getService($binding)->send($message, $provider);
     }
 
     /**
@@ -102,7 +101,9 @@ abstract class AbstractFactory
                     )) {
                         $binding = SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
                     } else {
-                        throw new InvalidMetadata('Metabeta seems to be invalid. Provider ACS binding is not detected.');
+                        throw new InvalidMetadata(
+                            'Metabeta seems to be invalid. Provider ACS binding is not detected.'
+                        );
                     }
                 }
 
@@ -116,14 +117,15 @@ abstract class AbstractFactory
                     )) {
                         $binding = SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
                     } else {
-                        throw new InvalidMetadata('Metabeta seems to be invalid. Provider SLO binding is not detected.');
+                        throw new InvalidMetadata(
+                            'Metabeta seems to be invalid. Provider SLO binding is not detected.'
+                        );
                     }
                 }
                 break;
         }
 
         return $binding;
-
     }
 
     /**
@@ -147,7 +149,9 @@ abstract class AbstractFactory
                     )) {
                         $binding = SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
                     } else {
-                        throw new InvalidMetadata('Metabeta seems to be invalid. Provider SSO binding is not detected.');
+                        throw new InvalidMetadata(
+                            'Metabeta seems to be invalid. Provider SSO binding is not detected.'
+                        );
                     }
                 }
                 break;
@@ -160,7 +164,9 @@ abstract class AbstractFactory
                     )) {
                         $binding = SamlConstants::BINDING_SAML2_HTTP_REDIRECT;
                     } else {
-                        throw new InvalidMetadata('Metabeta seems to be invalid. Provider SLO binding is not detected.');
+                        throw new InvalidMetadata(
+                            'Metabeta seems to be invalid. Provider SLO binding is not detected.'
+                        );
                     }
                 }
 
@@ -169,5 +175,4 @@ abstract class AbstractFactory
 
         return $binding;
     }
-
 }

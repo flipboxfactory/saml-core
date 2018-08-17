@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core;
 
-
 use craft\base\Model;
 use craft\base\PluginInterface;
 use flipbox\keychain\KeyChain;

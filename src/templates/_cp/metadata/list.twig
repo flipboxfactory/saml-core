@@ -1,23 +1,5 @@
 {% extends "_layouts/cp" %}
 
-{#{% block actionButton %}#}
-    {#<div class="btngroup">#}
-        {#<a class="btn submit" href="{{ mainAction.url }}">{{ mainAction.label }}</a>#}
-        {#<div class="btn submit menubtn"></div>#}
-        {#{% if actions|length %}#}
-        {#<div class="menu">#}
-            {#<ul>#}
-                {#{% for action in actions %}#}
-                    {#<li><a#}
-                           {#href="{{ action.url }}">{{ action.label }}</a>#}
-                    {#</li>#}
-                {#{% endfor %}#}
-            {#</ul>#}
-        {#</div>#}
-        {#{% endif %}#}
-    {#</div>#}
-{#{% endblock %}#}
-
 {% block content %}
     <div class="elements">
         <div class="saml-instructions readable">
@@ -60,7 +42,7 @@
                                                 {% else %}
                                                     href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
                                                 {% endif %}
-                                        >{{ provider.label }}
+                                        >{{ provider.label ?? 'Provider' }}
                                         </a>
                                         {% if myProvider and myProvider.id == provider.id %}
                                             (My Provider)
@@ -117,7 +99,7 @@
                                                 {% else %}
                                                     href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
                                                 {% endif %}
-                                        >{{ provider.label }}
+                                        >{{ provider.label ?? 'Provider' }}
                                         </a>
                                         {% if myProvider and myProvider.id == provider.id %}
                                             (My Provider)

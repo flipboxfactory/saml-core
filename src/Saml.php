@@ -11,7 +11,6 @@ namespace flipbox\saml\core;
 use craft\base\Plugin;
 use yii\base\Module;
 
-
 class Saml extends Module
 {
 
@@ -26,7 +25,6 @@ class Saml extends Module
          */
         \Craft::setAlias('@flipbox/saml/core/controllers', __DIR__ . '/controllers');
         parent::init();
-
     }
 
     /**

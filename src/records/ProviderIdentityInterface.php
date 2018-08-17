@@ -7,8 +7,8 @@
  */
 
 namespace flipbox\saml\core\records;
-use yii\db\ActiveRecordInterface;
 
+use yii\db\ActiveRecordInterface;
 
 /**
  * Interface ProviderIdentityInterface

@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\controllers;
 
-
 use Craft;
 use craft\helpers\ArrayHelper;
 use flipbox\saml\core\AbstractPlugin;

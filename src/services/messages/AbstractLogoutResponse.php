@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use craft\base\Component;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
@@ -55,15 +54,15 @@ abstract class AbstractLogoutResponse extends AbstractLogout implements SamlResp
 
             $provider->getType() === AbstractPlugin::SP ?
                 $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getFirstSingleLogoutService(
-                /**
-                 * We only support post right now
-                 */
+                    /**
+                    * We only support post right now
+                    */
                     SamlConstants::BINDING_SAML2_HTTP_POST
                 )->getLocation() :
                 $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstSingleLogoutService(
-                /**
-                 * We only support post right now
-                 */
+                    /**
+                    * We only support post right now
+                    */
                     SamlConstants::BINDING_SAML2_HTTP_POST
                 )->getLocation()
         );

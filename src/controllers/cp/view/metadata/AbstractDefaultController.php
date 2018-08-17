@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
-
 use Craft;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
@@ -78,7 +77,6 @@ abstract class AbstractDefaultController extends AbstractController
             $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
             $variables
         );
-
     }
 
     /**

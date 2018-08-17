@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\fields;
 
-
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\User;

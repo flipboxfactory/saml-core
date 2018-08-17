@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\controllers\cp\view;
 
-
 use Craft;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\controllers\cp\actions\AbstractUpdate;
@@ -93,7 +92,5 @@ abstract class AbstractGeneralController extends AbstractController
                 'settings',
             ]
         );
-
     }
-
 }

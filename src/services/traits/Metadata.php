@@ -16,7 +16,6 @@ use LightSaml\Model\Metadata\KeyDescriptor;
 use LightSaml\Credential\X509Certificate;
 use LightSaml\SamlConstants;
 
-
 trait Metadata
 {
     /**
@@ -72,5 +71,4 @@ trait Metadata
                 ->setCertificate((new X509Certificate())->loadPem($keyChainRecord->getDecryptedCertificate()))
         );
     }
-
 }

@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use craft\elements\User;
 use flipbox\saml\core\records\AbstractProviderIdentity;
 use flipbox\saml\core\records\ProviderIdentityInterface;
@@ -77,8 +76,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
         ProviderIdentityInterface $record,
         $runValidation = true,
         $attributeNames = null
-    ): ProviderIdentityInterface
-    {
+    ): ProviderIdentityInterface {
 
         if (! $record->save($runValidation, $attributeNames)) {
             throw new \Exception(Json::encode($record->getErrors()));

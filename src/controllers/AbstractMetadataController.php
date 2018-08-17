@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\controllers;
 
-
 use Craft;
 use flipbox\ember\exceptions\RecordNotFoundException;
 use flipbox\keychain\records\KeyChainRecord;
@@ -226,7 +225,6 @@ abstract class AbstractMetadataController extends AbstractController
             if (! $record) {
                 throw new \Exception("Provider with ID: {$providerId} not found.");
             }
-
         } else {
             $record = new $recordClass();
             /**

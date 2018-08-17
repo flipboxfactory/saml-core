@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services\bindings;
 
-
 use craft\web\Request;
 use flipbox\saml\core\exceptions\InvalidIssuer;
 use flipbox\saml\core\records\ProviderInterface;
@@ -39,5 +38,4 @@ interface BindingInterface
      * @throws InvalidIssuer
      */
     public function getProviderByIssuer(Issuer $issuer): ProviderInterface;
-
 }

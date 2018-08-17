@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use craft\base\Component;
 use craft\helpers\Json;
 use flipbox\keychain\records\KeyChainRecord;
@@ -117,8 +116,9 @@ abstract class AbstractProviderService extends Component implements ProviderServ
             'metadata' => SerializeHelper::toXml($entityDescriptor),
         ]);
 
-        if ($keyChainRecord)
+        if ($keyChainRecord) {
             $provider->setKeychain($keyChainRecord);
+        }
 
         return $provider;
     }
@@ -155,8 +155,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         KeyChainRecord $keyChain,
         $runValidation = true,
         $attributeNames = null
-    )
-    {
+    ) {
         if (! $provider->id && ! $keyChain->id) {
             throw new \Exception('Provider id and keychain id must exist before linking.');
         }

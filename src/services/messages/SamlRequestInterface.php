@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use flipbox\saml\core\records\ProviderInterface;
 use LightSaml\Model\Protocol\AbstractRequest;
 
@@ -17,5 +16,4 @@ interface SamlRequestInterface
      * @return AbstractRequest
      */
     public function create(ProviderInterface $provider, array $config = []): AbstractRequest;
-
 }

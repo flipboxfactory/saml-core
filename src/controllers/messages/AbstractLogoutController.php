@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\controllers\messages;
 
-
 use craft\web\Controller;
 use craft\web\Request;
 use flipbox\saml\core\helpers\SerializeHelper;
@@ -136,5 +135,4 @@ abstract class AbstractLogoutController extends Controller
         $this->send($logoutRequest, $provider);
         \Craft::$app->end();
     }
-
 }

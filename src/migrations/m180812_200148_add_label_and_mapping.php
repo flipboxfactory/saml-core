@@ -14,7 +14,7 @@ abstract class m180812_200148_add_label_and_mapping extends Migration
 
     use EnsureSamlPlugin;
 
-    abstract static protected function getProviderTableName();
+    abstract protected static function getProviderTableName();
 
     /**
      * @inheritdoc

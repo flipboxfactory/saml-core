@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\records;
 
-
 use craft\validators\DateTimeValidator;
 use flipbox\ember\helpers\ModelHelper;
 use flipbox\ember\records\ActiveRecord;
@@ -73,7 +72,6 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
                     ]
                 ]
             ]
-
         );
     }
 }

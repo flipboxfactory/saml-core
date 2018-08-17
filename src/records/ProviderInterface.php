@@ -72,5 +72,4 @@ interface ProviderInterface extends ActiveRecordInterface
      * @return array
      */
     public function getMapping();
-
 }

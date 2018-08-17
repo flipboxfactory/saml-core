@@ -7,7 +7,6 @@
 
 namespace flipbox\saml\core;
 
-
 use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\web\twig\variables\CraftVariable;
@@ -88,7 +87,6 @@ abstract class AbstractPlugin extends Plugin
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
             }
         );
-
     }
 
     /**
@@ -133,7 +131,6 @@ abstract class AbstractPlugin extends Plugin
                 ),
             ],
         ];
-
     }
 
     /**
@@ -168,7 +165,6 @@ abstract class AbstractPlugin extends Plugin
                 }
             }
         );
-
     }
 
     /**

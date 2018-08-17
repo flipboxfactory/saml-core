@@ -32,7 +32,8 @@ abstract class AbstractEditController extends AbstractController
         $variables = $this->prepVariables($providerId);
         $provider = $variables['provider'];
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(),
+        $variables['title'] = Craft::t(
+            $this->getSamlPlugin()->getHandle(),
             'Edit ' . $this->getTitle($provider->getType())
         );
 
@@ -44,7 +45,6 @@ abstract class AbstractEditController extends AbstractController
              * Actions
              */
             $variables['actions'] = $this->getActions($variables['provider']);
-
         }
 
         $variables = array_merge($variables, $overwriteVariables);
@@ -188,8 +188,10 @@ abstract class AbstractEditController extends AbstractController
         /**
          * Edit Title
          */
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(),
-            'My Provider (' . strtoupper($variables['provider']->providerType) . ')');
+        $variables['title'] = Craft::t(
+            $this->getSamlPlugin()->getHandle(),
+            'My Provider (' . strtoupper($variables['provider']->providerType) . ')'
+        );
 
         $variables['createType'] = $variables['myType'];
 

@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\helpers;
 
-
 use LightSaml\Model\Protocol\AbstractRequest;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\Protocol\StatusResponse;
@@ -46,5 +45,4 @@ class MessageHelper
     {
         return static::isRequest($message) ? static::REQUEST_PARAMETER : static::RESPONSE_PARAMETER;
     }
-
 }

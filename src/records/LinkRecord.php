@@ -6,6 +6,7 @@
  * Time: 2:10 PM
  */
 namespace flipbox\saml\core\records;
+
 use flipbox\ember\records\ActiveRecord;
 use yii\db\ActiveQuery;
 use flipbox\keychain\records\KeyChainRecord;

@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\exceptions;
 
-
 class InvalidMessage extends \Exception
 {
 

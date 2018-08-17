@@ -8,11 +8,9 @@
 
 namespace flipbox\saml\core\traits;
 
-
 use flipbox\saml\core\SamlPluginInterface;
 
 trait EnsureSamlPlugin
 {
     abstract protected function getSamlPlugin(): SamlPluginInterface;
-
 }

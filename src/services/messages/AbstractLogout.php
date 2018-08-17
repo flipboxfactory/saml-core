@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use craft\base\Component;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
@@ -21,5 +20,4 @@ use LightSaml\SamlConstants;
 abstract class AbstractLogout extends Component
 {
     use EnsureSamlPlugin;
-
 }

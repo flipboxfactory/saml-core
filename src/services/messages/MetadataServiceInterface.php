@@ -8,7 +8,6 @@
 
 namespace flipbox\saml\core\services\messages;
 
-
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\exceptions\InvalidMetadata;
@@ -23,5 +22,4 @@ interface MetadataServiceInterface
      * @return EntityDescriptor
      */
     public function create(KeyChainRecord $withKeyPair = null, $entityId = null): EntityDescriptor;
-
 }

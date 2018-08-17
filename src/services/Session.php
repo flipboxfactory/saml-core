@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use craft\base\Component;
 
 class Session extends Component
@@ -23,7 +22,6 @@ class Session extends Component
             $this->getName(static::REQUEST_ID_KEY),
             $id
         );
-
     }
 
     /**
@@ -44,5 +42,4 @@ class Session extends Component
     {
         return static::CORE_NAMESPACE . '/' . $key;
     }
-
 }

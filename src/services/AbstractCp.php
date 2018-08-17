@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use Craft;
 use craft\base\Component;
 use flipbox\saml\core\migrations\AbstractAlterEnvironments;

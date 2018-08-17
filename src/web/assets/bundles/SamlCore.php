@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\web\assets\bundles;
 
-
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
@@ -30,5 +29,4 @@ class SamlCore extends AssetBundle
 
         parent::init();
     }
-
 }
