@@ -9,11 +9,10 @@
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
-use flipbox\keychain\KeyChain;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
-use craft\helpers\UrlHelper;
 use flipbox\saml\core\records\ProviderInterface;
+use craft\helpers\UrlHelper;
 
 /**
  * Class AbstractEditController
@@ -21,6 +20,8 @@ use flipbox\saml\core\records\ProviderInterface;
  */
 abstract class AbstractEditController extends AbstractController
 {
+    use VariablesTrait;
+
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
 
     /**
@@ -163,7 +164,7 @@ abstract class AbstractEditController extends AbstractController
     {
         $provider = $this->getSamlPlugin()->getProvider()->findOwn();
         $variables = $this->prepVariables(
-            $provider ? $provider->id : null
+            $provider ? $provider : null
         );
 
         if ($provider) {
@@ -199,142 +200,5 @@ abstract class AbstractEditController extends AbstractController
             $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
-    }
-
-    /**
-     * @param ProviderInterface $provider
-     * @return array
-     */
-    protected function getActions(ProviderInterface $provider)
-    {
-        $actions = [];
-
-        if ($provider->id) {
-            $actions = [
-                [
-                    //action list 1
-                    [
-                        'action' => $this->getSamlPlugin()->getHandle() . '/metadata/change-status',
-                        'label'  => $provider->enabled ? 'Disable' : 'Enable',
-                    ],
-                    [
-                        'action' => $this->getSamlPlugin()->getHandle() . '/metadata/delete',
-                        'label'  => 'Delete',
-                    ],
-                ],
-            ];
-        }
-        return $actions;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getBaseVariables()
-    {
-
-        return array_merge(
-            parent::getBaseVariables(),
-            [
-                'autoCreate' => false,
-                'myEntityId' => $this->getSamlPlugin()->getSettings()->getEntityId(),
-                'myType'     => $this->getSamlPlugin()->getSettings(),
-            ]
-        );
-    }
-
-    /**
-     * @param string|null $providerId
-     * @return array
-     */
-    protected function prepVariables($providerId = null)
-    {
-        $variables = $this->getBaseVariables();
-
-        $variables['title'] = Craft::t(
-            $this->getSamlPlugin()->getHandle(),
-            $this->getSamlPlugin()->name
-        );
-
-        /**
-         * TYPES
-         */
-        $variables['myType'] = $this->getSamlPlugin()->getMyType();
-        $variables['remoteType'] = $this->getSamlPlugin()->getRemoteType();
-
-        if ($providerId) {
-            /**
-             * @var ProviderInterface $provider
-             */
-            $provider = $variables['provider'] = $provider = $this->getProviderRecord()::find()->where([
-                'id' => $providerId,
-            ])->one();
-
-            $variables['title'] .= ': Edit';
-
-            $crumb = [
-                [
-
-                    'url'   => UrlHelper::cpUrl(
-                        implode(
-                            '/',
-                            [
-                                $this->getSamlPlugin()->getHandle(),
-                                'metadata',
-                            ]
-                        )
-                    ),
-                    'label' => 'Provider List',
-                ], [
-                    'url'   => UrlHelper::cpUrl(
-                        $this->getSamlPlugin()->getHandle() . '/metadata/' . $providerId
-                    ),
-                    'label' => $provider->label ?: $provider->entityId,
-                ]
-            ];
-            $variables['keypair'] = $provider->keychain;
-
-            $variables = array_merge(
-                $variables,
-                $this->addUrls($provider)
-            );
-        } else {
-            $record = $this->getProviderRecord();
-
-            $provider = $variables['provider'] = new $record([
-                'providerType' => 'idp',
-            ]);
-
-            $variables['title'] .= ': Create';
-
-            $crumb = [
-                [
-                    'url'   => UrlHelper::cpUrl(
-                        $this->getSamlPlugin()->getHandle() . '/new'
-                    ),
-                    'label' => 'New',
-                ]
-            ];
-        }
-
-        $variables['allkeypairs'] = [];
-
-        $keypairs = KeyChain::getInstance()->getService()->findByPlugin($this->getSamlPlugin())->all();
-
-        foreach ($keypairs as $keypair) {
-            $variables['allkeypairs'][] = [
-                'label' => $keypair->description,
-                'value' => $keypair->id,
-            ];
-        }
-
-        $variables['crumbs'] = array_merge([
-            [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
-                'label' => Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name),
-            ],
-        ], $crumb);
-
-        return $variables;
     }
 }

@@ -38,7 +38,7 @@ interface ProviderInterface extends ActiveRecordInterface
     /**
      * @return EntityDescriptor
      */
-    public function getMetadataModel(): EntityDescriptor;
+    public function getMetadataModel();
 
     /**
      * @param EntityDescriptor $descriptor

@@ -9,12 +9,13 @@
 namespace flipbox\saml\core\controllers;
 
 use Craft;
-use flipbox\ember\exceptions\RecordNotFoundException;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
+use flipbox\saml\core\controllers\cp\view\metadata\VariablesTrait;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\web\NotFoundHttpException;
@@ -22,7 +23,7 @@ use yii\web\NotFoundHttpException;
 abstract class AbstractMetadataController extends AbstractController
 {
 
-    use EnsureSamlPlugin;
+    use EnsureSamlPlugin, VariablesTrait;
 
     /**
      * @return string
@@ -83,7 +84,7 @@ abstract class AbstractMetadataController extends AbstractController
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->getBaseVariables()
+                    $this->prepVariables($record)
                 )
             );
         }
@@ -102,11 +103,10 @@ abstract class AbstractMetadataController extends AbstractController
         $this->requireAdmin();
         $this->requirePostRequest();
 
+        /** @var AbstractProvider $record */
         $record = $this->processSaveAction();
-        $record->metadata = Craft::$app->request->getBodyParam('metadata');
-        $record->mapping = Craft::$app->request->getBodyParam('mapping');
 
-        if (! $this->getSamlPlugin()->getProvider()->save($record)) {
+        if ($record->hasErrors() || ! $this->getSamlPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -114,7 +114,7 @@ abstract class AbstractMetadataController extends AbstractController
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->getBaseVariables()
+                    $this->prepVariables($record)
                 )
             );
         }
@@ -132,6 +132,7 @@ abstract class AbstractMetadataController extends AbstractController
      * @return \yii\web\Response
      * @throws \yii\web\BadRequestHttpException
      * @throws \yii\web\ForbiddenHttpException
+     * @throws \Exception
      */
     public function actionChangeStatus()
     {
@@ -144,7 +145,7 @@ abstract class AbstractMetadataController extends AbstractController
         /** @var string $recordClass */
         $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
 
-        /** @var ProviderInterface $record */
+        /** @var AbstractProvider $record */
         $record = $recordClass::find()->where([
             'id' => $providerId,
         ])->one();
@@ -159,7 +160,7 @@ abstract class AbstractMetadataController extends AbstractController
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->getBaseVariables()
+                    $this->prepVariables($record)
                 )
             );
         }
@@ -195,7 +196,7 @@ abstract class AbstractMetadataController extends AbstractController
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->getBaseVariables()
+                    $this->prepVariables($record)
                 )
             );
         }
@@ -210,13 +211,16 @@ abstract class AbstractMetadataController extends AbstractController
     protected function processSaveAction()
     {
 
-        $providerId = Craft::$app->request->getBodyParam('identifier');
-        $keyId = Craft::$app->request->getBodyParam('keychain');
-        $enabled = Craft::$app->request->getParam('enabled', false) == '1' ? true : false;
+        $providerId = Craft::$app->request->getParam('identifier');
+        $keyId = Craft::$app->request->getParam('keychain');
+        $providerType = Craft::$app->request->getParam('providerType');
+        $metadata = Craft::$app->request->getParam('metadata');
+        $mapping = Craft::$app->request->getParam('mapping');
         $label = Craft::$app->request->getRequiredParam('label');
+        $plugin = $this->getSamlPlugin();
 
-        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
-        /** @var ProviderInterface $record */
+        $recordClass = $plugin->getProvider()->getRecordClass();
+        /** @var AbstractProvider $record */
         if ($providerId) {
             $record = $recordClass::find()->where([
                 'id' => $providerId,
@@ -233,7 +237,22 @@ abstract class AbstractMetadataController extends AbstractController
             $record->enabled = true;
         }
 
-        $record->label = $label;
+        /**
+         * Populate some vars
+         */
+        $record->metadata = $metadata;
+        $record->mapping = $mapping;
+        $record->providerType = $providerType;
+
+        /**
+         * check for label and add error if it's empty
+         */
+        if ($label) {
+            $record->label = $label;
+        } else {
+            $record->addError('label', Craft::t($plugin->getHandle(), "Label is required."));
+        }
+
 
         if ($keyId) {
             /** @var KeyChainRecord $keychain */
@@ -246,12 +265,12 @@ abstract class AbstractMetadataController extends AbstractController
             }
         }
 
-        Craft::configure(
-            $record,
-            [
-                'providerType' => Craft::$app->request->getBodyParam('providerType'),
-            ]
-        );
+        /**
+         * Metadata should exist for the remote provider
+         */
+        if ($plugin->getRemoteType() === $providerType && ! $metadata) {
+            $record->addError('metadata', Craft::t($plugin->getHandle(), "Metadata cannot be empty."));
+        }
 
         return $record;
     }

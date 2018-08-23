@@ -98,9 +98,9 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @return EntityDescriptor
      */
-    public function getMetadataModel(): EntityDescriptor
+    public function getMetadataModel()
     {
-        if (! $this->metadataModel) {
+        if (! $this->metadataModel && $this->metadata) {
             $this->metadataModel = EntityDescriptor::loadXml($this->metadata);
         }
 
