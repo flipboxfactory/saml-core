@@ -1,5 +1,14 @@
 Changelog
 =========
+# 1.0.0-beta.12
+### Fixed
+- defaulting signing method to rsa256 (instead of sha1)
+
+# 1.0.0-beta.11
+### Fixed
+- Fixed a bug where during the verification of a signature, we were pulling the first key from the metadata
+which could be the wrong one. Now specify the signing key.
+
 # 1.0.0-beta.10
 ### Fixed
 - Fixed issue with base64 being encoded twice.

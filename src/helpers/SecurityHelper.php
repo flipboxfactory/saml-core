@@ -17,6 +17,7 @@ use LightSaml\Credential\X509Certificate;
 use LightSaml\Credential\KeyHelper as LightSamlKeyHelper;
 use LightSaml\Model\XmlDSig\SignatureWriter;
 use LightSaml\Model\XmlDSig\SignatureXmlReader;
+use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class SecurityHelper
@@ -31,9 +32,14 @@ class SecurityHelper
         $cert = new X509Certificate();
         $cert->loadPem($pair->getDecryptedCertificate());
 
-        $privateKey = LightSamlKeyHelper::createPrivateKey($pair->getDecryptedKey(), '');
+        $privateKey = LightSamlKeyHelper::createPrivateKey(
+            $pair->getDecryptedKey(),
+            '',
+            false,
+            XMLSecurityKey::RSA_SHA256
+        );
 
-        $message->setSignature(new SignatureWriter($cert, $privateKey));
+        $message->setSignature(new SignatureWriter($cert, $privateKey, XMLSecurityDSig::SHA256));
     }
 
 
@@ -75,7 +81,12 @@ class SecurityHelper
 
         return new \LightSaml\Credential\X509Credential(
             $credential,
-            \LightSaml\Credential\KeyHelper::createPrivateKey($chainRecord->getDecryptedKey(), '', false)
+            \LightSaml\Credential\KeyHelper::createPrivateKey(
+                $chainRecord->getDecryptedKey(),
+                '',
+                false,
+                XMLSecurityKey::RSA_SHA256
+            )
         );
     }
 

@@ -157,9 +157,13 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
          */
         if ($provider->providerType === AbstractPlugin::IDP
         ) {
-            $key = $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor();
+            $key = $provider->getMetadataModel()->getFirstIdpSsoDescriptor()->getFirstKeyDescriptor(
+                \LightSaml\Model\Metadata\KeyDescriptor::USE_SIGNING
+            );
         } else {
-            $key = $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getFirstKeyDescriptor();
+            $key = $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getFirstKeyDescriptor(
+                \LightSaml\Model\Metadata\KeyDescriptor::USE_SIGNING
+            );
         }
 
 
