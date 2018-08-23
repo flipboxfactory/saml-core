@@ -1,5 +1,13 @@
 Changelog
 =========
+# 1.0.0-RC1
+### Added
+- Improved Control Panel UI
+- Login via admin for sp
+- Labels for Providers
+- Auto generate OpenSSL key pairs with Keychain
+- Mapping attributes based on provider
+
 # 1.0.0-beta.12
 ### Fixed
 - defaulting signing method to rsa256 (instead of sha1)
