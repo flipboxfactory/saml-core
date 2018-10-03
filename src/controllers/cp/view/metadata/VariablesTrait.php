@@ -7,10 +7,10 @@
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
-use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\records\ProviderInterface;
+use flipbox\saml\core\traits\EnsureSamlPlugin;
 
 trait VariablesTrait
 {
@@ -88,7 +88,7 @@ trait VariablesTrait
                  */
             $provider instanceof ProviderInterface ?
                 $provider :
-                $provider = $this->getProviderRecord()::find()->where([
+                $provider = $this->getSamlPlugin()->getProviderRecordClass()::find()->where([
                     /**
                      * Is ID
                      */
@@ -125,7 +125,7 @@ trait VariablesTrait
                 $this->addUrls($provider)
             );
         } else {
-            $record = $this->getProviderRecord();
+            $record = $this->getSamlPlugin()->getProviderRecordClass();
 
             $provider = $variables['provider'] = new $record([
                 'providerType' => 'idp',

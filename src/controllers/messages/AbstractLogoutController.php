@@ -32,7 +32,7 @@ abstract class AbstractLogoutController extends Controller
     /**
      * @return ProviderInterface
      */
-    abstract protected function getRemoteProvider($uid = null): ProviderInterface;
+    abstract protected function getRemoteProvider($uid = null);
 
     /**
      * @param AbstractRequest $samlMessage

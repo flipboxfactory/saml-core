@@ -143,7 +143,7 @@ abstract class AbstractMetadataController extends AbstractController
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
         /** @var string $recordClass */
-        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
 
         /** @var AbstractProvider $record */
         $record = $recordClass::find()->where([
@@ -181,7 +181,7 @@ abstract class AbstractMetadataController extends AbstractController
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
         /** @var string $recordClass */
-        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
 
         /** @var ProviderInterface $record */
         $record = $recordClass::find()->where([
@@ -219,7 +219,7 @@ abstract class AbstractMetadataController extends AbstractController
         $label = Craft::$app->request->getRequiredParam('label');
         $plugin = $this->getSamlPlugin();
 
-        $recordClass = $plugin->getProvider()->getRecordClass();
+        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
         /** @var AbstractProvider $record */
         if ($providerId) {
             $record = $recordClass::find()->where([

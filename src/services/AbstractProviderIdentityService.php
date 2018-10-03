@@ -26,11 +26,6 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     use EnsureSamlPlugin;
 
     /**
-     * @return string
-     */
-    abstract public function getRecordClass();
-
-    /**
      * @inheritdoc
      */
     public function findByNameId(string $nameId, ProviderInterface $provider)
@@ -57,7 +52,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     public function find($condition = [])
     {
         /** @var AbstractProviderIdentity $class */
-        $class = $this->getRecordClass();
+        $class = $this->getSamlPlugin()->getProviderIdentityRecordClass();
 
         /** @var AbstractProviderIdentity $class */
         $providerId = $class::find()->where($condition);

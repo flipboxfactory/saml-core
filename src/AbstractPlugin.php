@@ -9,6 +9,7 @@ namespace flipbox\saml\core;
 
 use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\helpers\StringHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\saml\core\services\AbstractCp;
@@ -20,7 +21,6 @@ use flipbox\saml\core\services\messages\SamlResponseInterface;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
 use yii\base\Event;
-use craft\helpers\StringHelper;
 
 /**
  * Class AbstractPlugin
@@ -50,6 +50,16 @@ abstract class AbstractPlugin extends Plugin
      */
     abstract public function getMyType();
 
+    /**
+     * @return string
+     */
+    abstract public function getProviderRecordClass();
+
+    /**
+     * @return string
+     */
+    abstract public function getProviderIdentityRecordClass();
+
     public function init()
     {
         parent::init();
@@ -62,17 +72,7 @@ abstract class AbstractPlugin extends Plugin
      */
     public function initCore()
     {
-        \Craft::setAlias('@flipbox/saml/core', __DIR__);
-
-        /**
-         * Register Core Module on Craft
-         */
-        if (! \Craft::$app->getModule(Saml::MODULE_ID)) {
-            \Craft::$app->setModule(Saml::MODULE_ID, [
-                'class' => Saml::class
-            ]);
-        }
-
+        \Craft::setAlias('@flipbox/saml/core/web/assets', __DIR__ . '/web/assets');
         $this->registerTemplates();
 
         /**
@@ -109,7 +109,7 @@ abstract class AbstractPlugin extends Plugin
                     'My Provider'
                 ),
             ],
-            'saml.providers'    => [
+            'saml.providers'  => [
                 'url'   => $this->getHandle() . '/metadata',
                 'label' => \Craft::t(
                     $this->getHandle(),
@@ -160,8 +160,8 @@ abstract class AbstractPlugin extends Plugin
             View::class,
             View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
             function (RegisterTemplateRootsEvent $e) {
-                if (is_dir($baseDir = Saml::getTemplateRoot())) {
-                    $e->roots[Saml::getTemplateRootKey($this)] = $baseDir;
+                if (is_dir($baseDir = $this->getTemplateRoot())) {
+                    $e->roots[$this->getTemplateRootKey()] = $baseDir;
                 }
             }
         );
@@ -178,6 +178,22 @@ abstract class AbstractPlugin extends Plugin
         }
 
         return $type;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTemplateRoot()
+    {
+        return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates';
+    }
+
+    /**
+     * @return string
+     */
+    public function getTemplateRootKey()
+    {
+        return $this->getHandle() . '-' . 'core';
     }
 
     /**

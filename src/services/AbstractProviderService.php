@@ -24,14 +24,6 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     use EnsureSamlPlugin;
 
     /**
-     * @var AbstractProvider[]
-     */
-    /**
-     * @return string
-     */
-    abstract public function getRecordClass();
-
-    /**
      * @inheritdoc
      */
     abstract public function findOwn();
@@ -42,7 +34,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     public function find($condition = [])
     {
         /** @var AbstractProvider $class */
-        $class = $this->getRecordClass();
+        $class = $this->getSamlPlugin()->getProviderRecordClass();
 
         if (! $provider = $class::find()->where($condition)) {
             return null;
@@ -102,7 +94,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     public function create(EntityDescriptor $entityDescriptor, KeyChainRecord $keyChainRecord = null): ProviderInterface
     {
 
-        $recordClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
 
         /** @var ProviderInterface $provider */
         $provider = (new $recordClass())
@@ -184,20 +176,5 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     public function delete(ProviderInterface $provider)
     {
         return $provider->delete();
-    }
-
-    public static function providerMappingToKeyValue(ProviderInterface $provider)
-    {
-        $mapping = $provider->getMapping();
-        if (! is_array($mapping)) {
-            return [];
-        }
-
-        $newMap = [];
-        foreach ($mapping as $map) {
-            $newMap[$map['attibuteName']] = $map['craftProperty'];
-        }
-
-        return $newMap;
     }
 }

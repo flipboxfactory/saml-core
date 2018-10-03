@@ -8,19 +8,14 @@
 
 namespace flipbox\saml\core\services;
 
-use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\records\AbstractProvider;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\ProviderInterface;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use yii\db\Query;
 
 interface ProviderServiceInterface
 {
-
-    /**
-     * @return string
-     */
-    public function getRecordClass();
 
     /**
      * @param EntityDescriptor $entityDescriptor

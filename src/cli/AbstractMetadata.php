@@ -188,7 +188,7 @@ abstract class AbstractMetadata extends Controller
             throw new \InvalidArgumentException('Type must be idp or sp');
         }
 
-        $providerClass = $this->getSamlPlugin()->getProvider()->getRecordClass();
+        $providerClass = $this->getSamlPlugin()->getProviderRecordClass();
 
         /** @var AbstractProvider $provider */
         $provider = new $providerClass([

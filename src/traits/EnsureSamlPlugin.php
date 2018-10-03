@@ -12,5 +12,8 @@ use flipbox\saml\core\SamlPluginInterface;
 
 trait EnsureSamlPlugin
 {
+    /**
+     * @return SamlPluginInterface
+     */
     abstract protected function getSamlPlugin(): SamlPluginInterface;
 }

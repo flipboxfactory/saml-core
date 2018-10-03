@@ -8,35 +8,32 @@
 
 namespace flipbox\saml\core\services\bindings;
 
+use craft\base\Component;
+use craft\web\Request;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\SamlPluginInterface;
+use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\SamlConstants;
-use craft\web\Request;
 
 /**
  * Class AbstractFactory
  * @package flipbox\saml\core\services\bindings
  */
-abstract class AbstractFactory
+abstract class AbstractFactory extends Component
 {
-
-    /**
-     * @return SamlPluginInterface
-     */
-    abstract protected static function getSamlPlugin(): SamlPluginInterface;
+    use EnsureSamlPlugin;
 
     /**
      * @param string $binding
      * @return BindingInterface
      */
-    public static function getService(string $binding): BindingInterface
+    public function getService(string $binding): BindingInterface
     {
-        $service = static::getSamlPlugin()->getHttpPost();
+        $service = $this->getSamlPlugin()->getHttpPost();
         if ($binding === SamlConstants::BINDING_SAML2_HTTP_REDIRECT) {
-            $service = static::getSamlPlugin()->getHttpRedirect();
+            $service = $this->getSamlPlugin()->getHttpRedirect();
         }
 
         return $service;
@@ -48,16 +45,16 @@ abstract class AbstractFactory
      * @throws \Exception
      * @throws \flipbox\saml\core\exceptions\InvalidSignature
      */
-    public static function receive(Request $request)
+    public function receive(Request $request)
     {
 
         switch ($request->getMethod()) {
             case 'POST':
-                $message = static::getSamlPlugin()->getHttpPost()->receive($request);
+                $message = $this->getSamlPlugin()->getHttpPost()->receive($request);
                 break;
             case 'GET':
             default:
-                $message = static::getSamlPlugin()->getHttpRedirect()->receive($request);
+                $message = $this->getSamlPlugin()->getHttpRedirect()->receive($request);
                 break;
         }
 
@@ -70,15 +67,15 @@ abstract class AbstractFactory
      * @return mixed
      * @throws InvalidMetadata
      */
-    public static function send(SamlMessage $message, ProviderInterface $provider)
+    public function send(SamlMessage $message, ProviderInterface $provider)
     {
         if ($provider->getType() === $provider::TYPE_IDP) {
-            $binding = static::determineBindingToIdp($message, $provider);
+            $binding = $this->determineBindingToIdp($message, $provider);
         } else {
-            $binding = static::determineBindingToSp($message, $provider);
+            $binding = $this->determineBindingToSp($message, $provider);
         }
 
-        return static::getService($binding)->send($message, $provider);
+        return $this->getService($binding)->send($message, $provider);
     }
 
     /**
@@ -87,7 +84,7 @@ abstract class AbstractFactory
      * @return string
      * @throws InvalidMetadata
      */
-    public static function determineBindingToSp(SamlMessage $message, ProviderInterface $provider)
+    public function determineBindingToSp(SamlMessage $message, ProviderInterface $provider)
     {
         $binding = SamlConstants::BINDING_SAML2_HTTP_POST;
 
@@ -134,7 +131,7 @@ abstract class AbstractFactory
      * @return string
      * @throws InvalidMetadata
      */
-    public static function determineBindingToIdp(SamlMessage $message, ProviderInterface $provider)
+    public function determineBindingToIdp(SamlMessage $message, ProviderInterface $provider)
     {
 
         $binding = SamlConstants::BINDING_SAML2_HTTP_POST;

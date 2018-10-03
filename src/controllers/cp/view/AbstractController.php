@@ -10,7 +10,6 @@ namespace flipbox\saml\core\controllers\cp\view;
 
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\Saml;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use flipbox\saml\core\controllers\AbstractController as BaseController;
 use flipbox\saml\core\web\assets\bundles\SamlCore;
@@ -39,16 +38,9 @@ abstract class AbstractController extends BaseController
     /**
      * @return string
      */
-    abstract protected function getProviderRecord();
-
-    /**
-     * @return string
-     */
     protected function getTemplateIndex()
     {
-        return Saml::getTemplateRootKey(
-            $this->getSamlPlugin()
-        );
+        return $this->getSamlPlugin()->getTemplateRootKey();
     }
 
     /**

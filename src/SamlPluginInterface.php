@@ -8,9 +8,7 @@
 
 namespace flipbox\saml\core;
 
-use craft\base\Model;
 use craft\base\PluginInterface;
-use flipbox\keychain\KeyChain;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\AbstractCp;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
@@ -29,6 +27,26 @@ use flipbox\saml\core\services\Session;
  */
 interface SamlPluginInterface extends PluginInterface
 {
+    /**
+     * @return ProviderServiceInterface
+     */
+    public function getProviderRecordClass();
+
+    /**
+     * @return ProviderIdentityServiceInterface
+     */
+    public function getProviderIdentityRecordClass();
+
+    /**
+     * @return string
+     */
+    public function getTemplateRootKey();
+
+    /**
+     * @return string
+     */
+    public function getTemplateRoot();
+
     /**
      * @return ProviderServiceInterface
      */
