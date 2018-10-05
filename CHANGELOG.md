@@ -1,5 +1,9 @@
 Changelog
 =========
+# 1.0.1
+### Fixed
+- Refactoring for cleanup
+
 # 1.0.0-RC1
 ### Added
 - Improved Control Panel UI
