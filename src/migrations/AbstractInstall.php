@@ -18,9 +18,15 @@ abstract class AbstractInstall extends Migration
 
     const PROVIDER_AFTER_COLUMN = 'sha256';
 
-    abstract protected static function getIdentityTableName();
+    /**
+     * @return string
+     */
+    abstract protected function getIdentityTableName(): string;
 
-    abstract protected static function getProviderTableName();
+    /**
+     * @return string
+     */
+    abstract protected function getProviderTableName(): string;
 
     /**
      * @inheritdoc
@@ -72,7 +78,7 @@ abstract class AbstractInstall extends Migration
     {
 
 
-        $this->createTable(static::getProviderTableName(), $this->getProviderFields());
+        $this->createTable($this->getProviderTableName(), $this->getProviderFields());
 
         $this->createTable(LinkRecord::tableName(), [
             'id'          => $this->primaryKey(),
@@ -83,7 +89,7 @@ abstract class AbstractInstall extends Migration
             'uid'         => $this->uid()
         ]);
 
-        $this->createTable(static::getIdentityTableName(), [
+        $this->createTable($this->getIdentityTableName(), [
             'id'            => $this->primaryKey(),
             'providerId'    => $this->integer()->notNull(),
             'userId'        => $this->integer()->notNull(),
@@ -105,9 +111,9 @@ abstract class AbstractInstall extends Migration
 
 
         // Delete tables
-        $this->dropTableIfExists(static::getIdentityTableName());
+        $this->dropTableIfExists($this->getIdentityTableName());
         $this->dropTableIfExists(LinkRecord::tableName());
-        $this->dropTableIfExists(static::getProviderTableName());
+        $this->dropTableIfExists($this->getProviderTableName());
         return true;
     }
 
@@ -120,16 +126,16 @@ abstract class AbstractInstall extends Migration
     {
 
         $this->createIndex(
-            $this->db->getIndexName(static::getProviderTableName(), 'entityId', false, true),
-            static::getProviderTableName(),
+            $this->db->getIndexName($this->getProviderTableName(), 'entityId', false, true),
+            $this->getProviderTableName(),
             'entityId',
             false
         );
         $this->createIndex(
-            $this->db->getIndexName(static::getProviderTableName(), [
+            $this->db->getIndexName($this->getProviderTableName(), [
                 'sha256',
             ], true, true),
-            static::getProviderTableName(),
+            $this->getProviderTableName(),
             [
                 'sha256',
             ],
@@ -148,22 +154,22 @@ abstract class AbstractInstall extends Migration
             true
         );
         $this->createIndex(
-            $this->db->getIndexName(static::getIdentityTableName(), 'nameId', false, true),
-            static::getIdentityTableName(),
+            $this->db->getIndexName($this->getIdentityTableName(), 'nameId', false, true),
+            $this->getIdentityTableName(),
             'nameId',
             false
         );
 
         $this->createIndex(
             $this->db->getIndexName(
-                static::getIdentityTableName(),
+                $this->getIdentityTableName(),
                 [
                     'providerId',
                     'userId',
                 ],
                 true
             ),
-            static::getIdentityTableName(),
+            $this->getIdentityTableName(),
             [
                 'providerId',
                 'userId',
@@ -187,7 +193,7 @@ abstract class AbstractInstall extends Migration
             $this->db->getForeignKeyName(LinkRecord::tableName(), 'providerId'),
             LinkRecord::tableName(),
             'providerId',
-            static::getProviderTableName(),
+            $this->getProviderTableName(),
             'id',
             'CASCADE'
         );
@@ -205,18 +211,18 @@ abstract class AbstractInstall extends Migration
         );
 
         $this->addForeignKey(
-            $this->db->getForeignKeyName(static::getIdentityTableName(), 'userId'),
-            static::getIdentityTableName(),
+            $this->db->getForeignKeyName($this->getIdentityTableName(), 'userId'),
+            $this->getIdentityTableName(),
             'userId',
             User::tableName(),
             'id',
             'CASCADE'
         );
         $this->addForeignKey(
-            $this->db->getForeignKeyName(static::getIdentityTableName(), 'providerId'),
-            static::getIdentityTableName(),
+            $this->db->getForeignKeyName($this->getIdentityTableName(), 'providerId'),
+            $this->getIdentityTableName(),
             'providerId',
-            static::getProviderTableName(),
+            $this->getProviderTableName(),
             'id',
             'CASCADE'
         );

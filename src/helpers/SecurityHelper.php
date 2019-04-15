@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/14/18
- * Time: 9:40 PM
- */
 
 namespace flipbox\saml\core\helpers;
 

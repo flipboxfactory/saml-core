@@ -7,8 +7,19 @@
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
+use craft\base\Field;
+use craft\elements\User;
+use craft\fields\Color;
+use craft\fields\Date;
+use craft\fields\Dropdown;
+use craft\fields\Email;
+use craft\fields\Lightswitch;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\fields\Url;
 use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\helpers\MappingHelper;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 
@@ -30,11 +41,11 @@ trait VariablesTrait
                     //action list 1
                     [
                         'action' => $this->getSamlPlugin()->getHandle() . '/metadata/change-status',
-                        'label'  => $provider->enabled ? 'Disable' : 'Enable',
+                        'label' => $provider->enabled ? 'Disable' : 'Enable',
                     ],
                     [
                         'action' => $this->getSamlPlugin()->getHandle() . '/metadata/delete',
-                        'label'  => 'Delete',
+                        'label' => 'Delete',
                     ],
                 ],
             ];
@@ -53,7 +64,7 @@ trait VariablesTrait
             [
                 'autoCreate' => false,
                 'myEntityId' => $this->getSamlPlugin()->getSettings()->getEntityId(),
-                'myType'     => $this->getSamlPlugin()->getSettings(),
+                'myType' => $this->getSamlPlugin()->getSettings(),
             ]
         );
     }
@@ -70,6 +81,11 @@ trait VariablesTrait
             $this->getSamlPlugin()->getHandle(),
             $this->getSamlPlugin()->name
         );
+
+
+        $user = new User();
+
+        $variables['craftMappingOptions'] = $this->getCraftMappingOptions();
 
         /**
          * TYPES
@@ -101,7 +117,7 @@ trait VariablesTrait
             $crumb = [
                 [
 
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
@@ -112,11 +128,11 @@ trait VariablesTrait
                     ),
                     'label' => 'Provider List',
                 ], [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         $this->getSamlPlugin()->getHandle() . '/metadata/' . $provider->id
                     ),
                     'label' => $provider->label ?: $provider->entityId,
-                ]
+                ],
             ];
             $variables['keypair'] = $provider->keychain;
 
@@ -135,11 +151,11 @@ trait VariablesTrait
 
             $crumb = [
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         $this->getSamlPlugin()->getHandle() . '/new'
                     ),
                     'label' => 'New',
-                ]
+                ],
             ];
         }
 
@@ -156,11 +172,41 @@ trait VariablesTrait
 
         $variables['crumbs'] = array_merge([
             [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
+                'url' => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
                 'label' => Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name),
             ],
         ], $crumb);
 
         return $variables;
     }
+
+    protected function getCraftMappingOptions()
+    {
+        $user = new User();
+        $options = [
+            [
+                'label' => $user->getAttributeLabel('firstName'),
+                'value' => 'firstName',
+            ],
+            [
+                'label' => $user->getAttributeLabel('lastName'),
+                'value' => 'firstName',
+            ],
+            [
+                'label' => $user->getAttributeLabel('email'),
+                'value' => 'email',
+            ],
+        ];
+        foreach ($user->getFieldLayout()->getFields() as $field) {
+            if (MappingHelper::isSupportedField($field)) {
+                $options[] = [
+                    'label' => $field->name,
+                    'value' => $field->handle,
+                ];
+            }
+        }
+
+        return $options;
+    }
+
 }

@@ -15,4 +15,37 @@ interface SettingsInterface
      * @return string
      */
     public function getEntityId();
+
+    /**
+     * Receives logout requests
+     * Returns a URL
+     *
+     * @return string
+     */
+    public function getDefaultLogoutEndpoint();
+
+    /**
+     * Initiates logout requests
+     * Returns a URL
+     *
+     * @return string
+     */
+    public function getDefaultLogoutRequestEndpoint();
+
+    /**
+     * Receives login requests
+     * Returns a URL
+     *
+     * @return string
+     */
+    public function getDefaultLoginEndpoint();
+
+    /**
+     * Initiates login request
+     * Returns a URL
+     *
+     * @return string
+     */
+    public function getDefaultLoginRequestEndpoint();
+
 }

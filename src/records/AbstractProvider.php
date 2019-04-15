@@ -29,11 +29,20 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     protected $cachedKeychain;
 
     /**
+     * This method helps initiate the login process for a remote provider.
+     * When using this method, say your craft site is the SP. This method will be helpful
+     * on the IDP provider record. Going to this login path will
+     * initiate the login process for this IDP. Returns null when you getLoginPath for the
+     * local provider (the current craft site).
+     *
      * @return string|null
      */
     abstract public function getLoginPath();
 
     /**
+     * Similar to getLoginPath(), this method initiates logout with the intended remote
+     * provider.
+     *
      * @return string|null
      */
     abstract public function getLogoutPath();

@@ -9,10 +9,11 @@
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
+use craft\elements\User;
+use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\records\ProviderInterface;
-use craft\helpers\UrlHelper;
 
 /**
  * Class AbstractEditController
@@ -62,12 +63,16 @@ abstract class AbstractEditController extends AbstractController
     {
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getSamlPlugin();
+        $providerRecord = $this->getSamlPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
-            'title'      => 'New ' . $this->getTitle($plugin::IDP),
+            'title' => 'New ' . $this->getTitle($plugin::IDP),
             'createType' => $plugin::IDP,
-            'crumbs'     => [
+            'provider' => new $providerRecord([
+                'providerType' => $plugin::IDP,
+            ]),
+            'crumbs' => [
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
@@ -78,7 +83,7 @@ abstract class AbstractEditController extends AbstractController
                     'label' => $plugin->name,
                 ],
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
@@ -90,13 +95,13 @@ abstract class AbstractEditController extends AbstractController
                     'label' => 'Provider List',
                 ],
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
                                 $plugin->getHandle(),
                                 'metadata',
-                                'new-idp'
+                                'new-idp',
                             ]
                         )
                     ),
@@ -113,12 +118,16 @@ abstract class AbstractEditController extends AbstractController
     {
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getSamlPlugin();
+        $providerRecord = $this->getSamlPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
-            'title'      => 'New ' . $this->getTitle($plugin::SP),
+            'title' => 'New ' . $this->getTitle($plugin::SP),
             'createType' => $plugin::SP,
-            'crumbs'     => [
+            'provider' => new $providerRecord([
+                'providerType' => $plugin::SP,
+            ]),
+            'crumbs' => [
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
@@ -129,7 +138,7 @@ abstract class AbstractEditController extends AbstractController
                     'label' => $plugin->name,
                 ],
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
@@ -141,13 +150,13 @@ abstract class AbstractEditController extends AbstractController
                     'label' => 'Provider List',
                 ],
                 [
-                    'url'   => UrlHelper::cpUrl(
+                    'url' => UrlHelper::cpUrl(
                         implode(
                             '/',
                             [
                                 $plugin->getHandle(),
                                 'metadata',
-                                'new-sp'
+                                'new-sp',
                             ]
                         )
                     ),

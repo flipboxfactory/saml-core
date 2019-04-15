@@ -260,7 +260,7 @@
     </div>
 
     <div id="configure" class="hidden">
-        {% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}
+        {#{% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}#}
             <br/>
             <div class="readable">
                 <h2>Login/Logout Paths</h2>
@@ -298,8 +298,9 @@
                         heading: 'Attribute Name',
                     },
                     'craftProperty' : {
-                        type: 'singleline',
+                        type: 'select',
                         heading: 'Craft Property',
+                        options: craftMappingOptions
                     }
                 } %}
 
@@ -315,7 +316,7 @@
                     errors: provider.getErrors('mapping')
                 }) }}
             {% endif %}
-        {% endif %}
+        {#{% endif %}#}
 
     </div>
 

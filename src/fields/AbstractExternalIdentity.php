@@ -9,6 +9,7 @@ namespace flipbox\saml\core\fields;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\User;
+use craft\helpers\UrlHelper;
 use flipbox\saml\core\records\ProviderIdentityInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\db\Query;
@@ -19,7 +20,7 @@ abstract class AbstractExternalIdentity extends Field
 
     public static function displayName(): string
     {
-        return 'External Identity';
+        return 'SAML External Identity';
     }
 
     /**
@@ -56,21 +57,17 @@ abstract class AbstractExternalIdentity extends Field
         if (! ($value instanceof Query)) {
             return '';
         }
+        $handle = $this->getSamlPlugin()->getHandle();
+
         return \Craft::$app->getView()->renderTemplate(
-            'saml-core/_cp/fields/external-id',
+            $handle . '/_cp/fields/external-id',
             [
                 'identities' => $value,
-                'element'    => $element,
+                'element' => $element,
+                'baseProviderUrl' => UrlHelper::cpUrl(
+                    $handle . '/metadata'
+                ),
             ]
         );
-//        return "
-//<div class='meta'>
-//    NameID: {$value->nameId}
-//    <br/>
-//    Issuer: {$value->provider->getEntityId()}
-//    <br/>
-//    Last Login: {$value->lastLoginDate}
-//</div >
-//";
     }
 }

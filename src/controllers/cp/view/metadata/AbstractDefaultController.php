@@ -95,6 +95,9 @@ abstract class AbstractDefaultController extends AbstractController
             throw new \Exception($providerType . ' is not a valid type.');
         }
 
+        /**
+         * TODO - Fix this for the IdP
+         */
         return $plugin::SP === $providerType ? Craft::t(
             $this->getSamlPlugin()->getHandle(),
             'These are your CraftCMS sites (this website). '

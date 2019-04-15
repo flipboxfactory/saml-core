@@ -104,6 +104,8 @@ abstract class AbstractHttpPost extends Component implements BindingInterface
          */
         $relayState = $message->getRelayState();
 
+        \Craft::info('[saml-core]' . $relayState);
+
         /**
          * Use craft to get it
          */

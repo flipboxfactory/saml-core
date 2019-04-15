@@ -12,13 +12,29 @@ use craft\base\Model;
 use craft\config\GeneralConfig;
 use craft\helpers\UrlHelper;
 
-class AbstractSettings extends Model
+abstract class AbstractSettings extends Model
 {
 
     /**
      * @var string
      */
     protected $entityId;
+
+    /**
+     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
+     * @see GeneralConfig::$loginPath
+     *
+     * @var string
+     */
+    public $loginEndpoint = '/sso/login';
+
+    /**
+     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
+     * @see GeneralConfig::$loginPath
+     *
+     * @var string
+     */
+    public $logoutEndpoint = '/sso/logout';
 
     /**
      * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
@@ -75,5 +91,37 @@ class AbstractSettings extends Model
         }
 
         return $this->entityId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLoginEndpoint()
+    {
+        return UrlHelper::siteUrl($this->loginEndpoint);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLogoutEndpoint()
+    {
+        return UrlHelper::siteUrl($this->logoutEndpoint);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLogoutRequestEndpoint()
+    {
+        return UrlHelper::siteUrl($this->logoutRequestEndpoint);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLoginRequestEndpoint()
+    {
+        return UrlHelper::siteUrl($this->loginRequestEndpoint);
     }
 }

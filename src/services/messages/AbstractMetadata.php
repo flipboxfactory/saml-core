@@ -12,7 +12,6 @@ use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\services\traits\Metadata as MetadataTrait;
-use craft\helpers\UrlHelper;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Model\Metadata\AssertionConsumerService;
 use LightSaml\Model\Metadata\EntityDescriptor;
@@ -21,6 +20,8 @@ use LightSaml\Model\Metadata\SingleLogoutService;
 use LightSaml\Model\Metadata\SingleSignOnService;
 use LightSaml\Model\Metadata\SpSsoDescriptor;
 use LightSaml\SamlConstants;
+use SAML2\Configuration\IdentityProvider;
+use SAML2\Constants;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
@@ -34,34 +35,6 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
 
     const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
-    const LOGOUT_RESPONSE_LOCATION = '';
-    const LOGOUT_REQUEST_LOCATION = '';
-    const LOGIN_LOCATION = '';
-
-    /**
-     * @return string
-     */
-    public static function getLogoutResponseLocation()
-    {
-        return UrlHelper::siteUrl(static::LOGOUT_RESPONSE_LOCATION);
-    }
-
-    /**
-     * @return string
-     */
-    public static function getLogoutRequestLocation()
-    {
-        return UrlHelper::siteUrl(static::LOGOUT_REQUEST_LOCATION);
-    }
-
-    /**
-     * @return string
-     */
-    public static function getLoginLocation()
-    {
-        return UrlHelper::siteUrl(static::LOGIN_LOCATION);
-    }
-
     /**
      * @param string $binding
      * @return IdpSsoDescriptor|SpSsoDescriptor
@@ -70,8 +43,8 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
     protected function createDescriptor(string $binding)
     {
         if (! in_array($binding, [
-            SamlConstants::BINDING_SAML2_HTTP_REDIRECT,
-            SamlConstants::BINDING_SAML2_HTTP_POST,
+            Constants::BINDING_HTTP_POST,
+            Constants::BINDING_HTTP_REDIRECT,
         ])) {
             throw new InvalidConfigException('Binding not supported: ' . $binding);
         }
@@ -97,15 +70,20 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
      */
     protected function createIdpDescriptor(string $binding)
     {
+        $IdPDescriptor = new \SAML2\XML\md\IDPSSODescriptor();
+        $IdPDescriptor->setSingleSignOnService([
+            'Location' => ,
+                'ResponseLocation'=>,
+        ]);
         $descriptor = new IdpSsoDescriptor();
 
         $singleLogout = new SingleLogoutService();
-        $singleLogout->setLocation(static::getLogoutRequestLocation())
-            ->setResponseLocation(static::getLogoutResponseLocation())
+        $singleLogout->setLocation($this->getSamlPlugin()->getSettings()->getDefaultLogoutRequestEndpoint())
+            ->setResponseLocation($this->getSamlPlugin()->getSettings()->getDefaultLogoutEndpoint())
             ->setBinding($binding);
         $descriptor->addSingleSignOnService(
             new SingleSignOnService(
-                static::getLoginLocation(),
+                $this->getSamlPlugin()->getSettings()->getDefaultLoginEndpoint(),
                 $binding
             )
         )->addSingleLogoutService($singleLogout);
@@ -129,12 +107,12 @@ abstract class AbstractMetadata extends Component implements MetadataServiceInte
         //ASC
         $acs = new AssertionConsumerService();
         $acs->setBinding($binding)
-            ->setLocation(static::getLoginLocation());
+            ->setLocation($this->getSamlPlugin()->getSettings()->getDefaultLoginEndpoint());
 
         //SLO
         $singleLogout = new SingleLogoutService();
-        $singleLogout->setLocation(static::getLogoutRequestLocation())
-            ->setResponseLocation(static::getLogoutResponseLocation())
+        $singleLogout->setLocation($this->getSamlPlugin()->getSettings()->getDefaultLogoutRequestEndpoint())
+            ->setResponseLocation($this->getSamlPlugin()->getSettings()->getDefaultLogoutEndpoint())
             ->setBinding($binding);
 
         $descriptor

@@ -9,10 +9,13 @@ namespace flipbox\saml\core;
 
 use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\saml\core\services\AbstractCp;
+use flipbox\saml\core\services\bindings\AbstractFactory;
 use flipbox\saml\core\services\bindings\AbstractHttpPost;
 use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
 use flipbox\saml\core\services\messages\MetadataServiceInterface;
@@ -90,41 +93,54 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getSettingsResponse()
+    {
+
+        \Craft::$app->getResponse()->redirect(
+            UrlHelper::cpUrl(static::getInstance()->getHandle() . '/settings')
+        );
+
+        \Craft::$app->end();
+    }
+
+    /**
      * @return array
      */
     private function getSubNav()
     {
         return [
-            'saml.setup'      => [
-                'url'   => $this->getHandle() . '/',
+            'saml.setup' => [
+                'url' => $this->getHandle() . '/',
                 'label' => \Craft::t(
                     $this->getHandle(),
                     'Setup'
                 ),
             ],
             'saml.myProvider' => [
-                'url'   => $this->getHandle() . '/metadata/my-provider',
+                'url' => $this->getHandle() . '/metadata/my-provider',
                 'label' => \Craft::t(
                     $this->getHandle(),
                     'My Provider'
                 ),
             ],
-            'saml.providers'  => [
-                'url'   => $this->getHandle() . '/metadata',
+            'saml.providers' => [
+                'url' => $this->getHandle() . '/metadata',
                 'label' => \Craft::t(
                     $this->getHandle(),
                     'Provider List'
                 ),
             ],
-            'saml.keychain'   => [
-                'url'   => $this->getHandle() . '/keychain',
+            'saml.keychain' => [
+                'url' => $this->getHandle() . '/keychain',
                 'label' => \Craft::t(
                     $this->getHandle(),
                     'Keychain'
                 ),
             ],
-            'saml.settings'   => [
-                'url'   => $this->getHandle() . '/settings',
+            'saml.settings' => [
+                'url' => $this->getHandle() . '/settings',
                 'label' => \Craft::t(
                     $this->getHandle(),
                     'Settings'
@@ -139,7 +155,7 @@ abstract class AbstractPlugin extends Plugin
     public function getCpNavItem()
     {
         return array_merge(parent::getCpNavItem(), [
-            'subnav' => $this->getSubNav()
+            'subnav' => $this->getSubNav(),
         ]);
     }
 
@@ -194,6 +210,75 @@ abstract class AbstractPlugin extends Plugin
     public function getTemplateRootKey()
     {
         return $this->getHandle() . '-' . 'core';
+    }
+    /**
+     * EVENTs
+     */
+
+    /**
+     * @param RegisterUrlRulesEvent $event
+     */
+    public static function onRegisterCpUrlRules(RegisterUrlRulesEvent $event)
+    {
+        $handle = static::getInstance()->getHandle();
+        $event->rules = array_merge(
+            $event->rules,
+            [
+                $handle . '/' => $handle . '/cp/view/general/setup',
+                $handle . '/settings' => $handle . '/cp/view/general/settings',
+
+                /**
+                 * Keychain
+                 */
+                $handle . '/keychain' => $handle . '/cp/view/keychain/index',
+                $handle . '/keychain/new' => $handle . '/cp/view/keychain/edit',
+                $handle . '/keychain/new-openssl' => $handle . '/cp/view/keychain/edit/openssl',
+                $handle . '/keychain/<keypairId:\d+>' => $handle . '/cp/view/keychain/edit',
+
+                /**
+                 * Metadata
+                 */
+                $handle . '/metadata' => $handle . '/cp/view/metadata/default',
+                $handle . '/metadata/new' => $handle . '/cp/view/metadata/edit',
+                $handle . '/metadata/new-idp' => $handle . '/cp/view/metadata/edit/new-idp',
+                $handle . '/metadata/new-sp' => $handle . '/cp/view/metadata/edit/new-sp',
+                $handle . '/metadata/my-provider' => $handle . '/cp/view/metadata/edit/my-provider',
+                $handle . '/metadata/<providerId:\d+>' => $handle . '/cp/view/metadata/edit',
+            ]
+        );
+    }
+
+    /**
+     * @param RegisterUrlRulesEvent $event
+     */
+    public static function onRegisterSiteUrlRules(RegisterUrlRulesEvent $event)
+    {
+        $handle = static::getInstance()->getHandle();
+        $event->rules = array_merge(
+            $event->rules,
+            [
+                /**
+                 * LOGIN
+                 */
+                'POST,GET /sso/login' => $handle . '/login',
+                sprintf(
+                    'GET %s',
+                    (string)static::getInstance()->getSettings()->loginRequestEndpoint
+                ) => $handle . '/login/request',
+                sprintf(
+                    'GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
+                    (string)static::getInstance()->getSettings()->loginRequestEndpoint
+                ) => $handle . '/login/request',
+                /**
+                 * LOGOUT
+                 */
+                'POST,GET /sso/logout' => $handle . '/logout',
+                sprintf(
+                    'GET %s',
+                    (string)static::getInstance()->getSettings()->logoutRequestEndpoint
+                ) => $handle . '/logout/request',
+            ]
+        );
     }
 
     /**
@@ -294,6 +379,17 @@ abstract class AbstractPlugin extends Plugin
         /** @noinspection PhpUnhandledExceptionInspection */
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('httpRedirect');
+    }
+
+    /**
+     * @return AbstractFactory
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getBindingFactory()
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('bindingFactory');
     }
 
 

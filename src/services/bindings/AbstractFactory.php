@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/24/18
- * Time: 8:11 PM
- */
 
 namespace flipbox\saml\core\services\bindings;
 

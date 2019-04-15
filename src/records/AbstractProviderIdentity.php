@@ -65,6 +65,7 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
                 [
                     [
                         'lastLoginDate',
+                        'sessionId',
                     ],
                     'safe',
                     'on' => [
@@ -74,4 +75,5 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
             ]
         );
     }
+
 }
