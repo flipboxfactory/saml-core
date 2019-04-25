@@ -6,14 +6,11 @@
 
 namespace flipbox\saml\core\services\messages;
 
-use craft\base\Component;
 use flipbox\saml\core\AbstractPlugin;
+use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
-use LightSaml\Model\AbstractSamlModel;
 use LightSaml\Model\Assertion\Issuer;
-use LightSaml\Model\Assertion\NameID;
 use LightSaml\Model\Protocol\AbstractRequest;
 use LightSaml\Model\Protocol\LogoutRequest as LogoutRequestModel;
 use LightSaml\Model\Protocol\LogoutResponse;
@@ -21,10 +18,8 @@ use LightSaml\Model\Protocol\StatusResponse;
 use LightSaml\SamlConstants;
 use yii\base\Event;
 
-abstract class AbstractLogoutResponse extends AbstractLogout implements SamlResponseInterface
+abstract class AbstractLogoutResponse extends AbstractLogout implements EnsureSAMLPlugin
 {
-    use EnsureSamlPlugin;
-
     const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     /**

@@ -9,10 +9,10 @@
 namespace flipbox\saml\core\services;
 
 use craft\elements\User;
+use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\records\AbstractProviderIdentity;
 use flipbox\saml\core\records\ProviderIdentityInterface;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\base\Component;
 use yii\helpers\Json;
 
@@ -21,10 +21,8 @@ use yii\helpers\Json;
  * @package flipbox\saml\core\services
  * @property \DateTime $lastLoginDate
  */
-abstract class AbstractProviderIdentityService extends Component implements ProviderIdentityServiceInterface
+abstract class AbstractProviderIdentityService extends Component implements ProviderIdentityServiceInterface, EnsureSAMLPlugin
 {
-    use EnsureSamlPlugin;
-
     /**
      * @inheritdoc
      */
@@ -52,7 +50,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     public function find($condition = [])
     {
         /** @var AbstractProviderIdentity $class */
-        $class = $this->getSamlPlugin()->getProviderIdentityRecordClass();
+        $class = $this->getPlugin()->getProviderIdentityRecordClass();
 
         /** @var AbstractProviderIdentity $class */
         $providerId = $class::find()->where($condition);

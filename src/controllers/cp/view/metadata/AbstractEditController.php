@@ -9,7 +9,6 @@
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;

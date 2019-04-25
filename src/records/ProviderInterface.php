@@ -9,7 +9,7 @@
 namespace flipbox\saml\core\records;
 
 use flipbox\keychain\records\KeyChainRecord;
-use LightSaml\Model\Metadata\EntityDescriptor;
+use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecordInterface;
 
@@ -72,4 +72,10 @@ interface ProviderInterface extends ActiveRecordInterface
      * @return array
      */
     public function getMapping();
+
+    /**
+     * @return string
+     */
+    public function toXmlString();
+
 }

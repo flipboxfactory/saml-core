@@ -14,13 +14,13 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use flipbox\craft\psr3\Logger;
+use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\AbstractCp;
-use flipbox\saml\core\services\bindings\AbstractFactory;
-use flipbox\saml\core\services\bindings\AbstractHttpPost;
-use flipbox\saml\core\services\bindings\AbstractHttpRedirect;
-use flipbox\saml\core\services\messages\MetadataServiceInterface;
-use flipbox\saml\core\services\messages\SamlRequestInterface;
-use flipbox\saml\core\services\messages\SamlResponseInterface;
+use flipbox\saml\core\services\bindings\Factory;
+use flipbox\saml\core\services\messages\AbstractLogoutRequest;
+use flipbox\saml\core\services\messages\AbstractLogoutResponse;
+use flipbox\saml\core\services\Metadata;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
 use yii\base\Event;
@@ -33,12 +33,6 @@ abstract class AbstractPlugin extends Plugin
 {
 
     /**
-     * Saml Constants
-     */
-    const SP = 'sp';
-    const IDP = 'idp';
-
-    /**
      * @var bool
      */
     public $hasCpSettings = true;
@@ -47,11 +41,6 @@ abstract class AbstractPlugin extends Plugin
      * @var bool
      */
     public $hasCpSection = true;
-
-    /**
-     * @return string
-     */
-    abstract public function getMyType();
 
     /**
      * @return string
@@ -90,6 +79,13 @@ abstract class AbstractPlugin extends Plugin
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
             }
         );
+
+        $this->setComponents([
+            'psr3logger' => [
+                'class' => Logger::class,
+            ],
+            'metadata' => Metadata::class,
+        ]);
     }
 
     /**
@@ -186,11 +182,19 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @return string
      */
+    public function getMyType()
+    {
+        return $this->getSettings()->getMyType();
+    }
+
+    /**
+     * @return string
+     */
     public function getRemoteType()
     {
-        $type = static::SP;
-        if ($this->getMyType() === static::SP) {
-            $type = static::IDP;
+        $type = SettingsInterface::SP;
+        if ($this->getMyType() === SettingsInterface::SP) {
+            $type = SettingsInterface::IDP;
         }
 
         return $type;
@@ -322,7 +326,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return MetadataServiceInterface
+     * @return Metadata
      */
     public function getMetadata()
     {
@@ -333,7 +337,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return SamlRequestInterface
+     * @return AbstractLogoutRequest
      * @throws \yii\base\InvalidConfigException
      */
     public function getLogoutRequest()
@@ -345,7 +349,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return SamlResponseInterface
+     * @return AbstractLogoutResponse
      * @throws \yii\base\InvalidConfigException
      */
     public function getLogoutResponse()
@@ -360,29 +364,7 @@ abstract class AbstractPlugin extends Plugin
      */
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @return AbstractHttpPost
-     */
-    public function getHttpPost()
-    {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('httpPost');
-    }
-
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @return AbstractHttpRedirect
-     */
-    public function getHttpRedirect()
-    {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('httpRedirect');
-    }
-
-    /**
-     * @return AbstractFactory
+     * @return Factory
      * @throws \yii\base\InvalidConfigException
      */
     public function getBindingFactory()
@@ -390,6 +372,17 @@ abstract class AbstractPlugin extends Plugin
         /** @noinspection PhpUnhandledExceptionInspection */
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('bindingFactory');
+    }
+
+    /**
+     * @return Logger
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getPsr3Logger()
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('psr3logger');
     }
 
 

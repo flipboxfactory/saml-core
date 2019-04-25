@@ -11,7 +11,7 @@ namespace flipbox\saml\core\services;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
-use LightSaml\Model\Metadata\EntityDescriptor;
+use SAML2\XML\md\EntityDescriptor;
 use yii\db\Query;
 
 interface ProviderServiceInterface

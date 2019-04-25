@@ -10,6 +10,8 @@ namespace flipbox\saml\core\models;
 
 interface SettingsInterface
 {
+    const SP = 'sp';
+    const IDP = 'idp';
 
     /**
      * @return string
@@ -47,5 +49,10 @@ interface SettingsInterface
      * @return string
      */
     public function getDefaultLoginRequestEndpoint();
+
+    /**
+     * @return string
+     */
+    public function getMyType();
 
 }

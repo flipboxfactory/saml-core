@@ -11,18 +11,14 @@ namespace flipbox\saml\core\services;
 use craft\base\Component;
 use craft\helpers\Json;
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
-use LightSaml\Model\Metadata\EntityDescriptor;
+use SAML2\XML\md\EntityDescriptor;
 
-abstract class AbstractProviderService extends Component implements ProviderServiceInterface
+abstract class AbstractProviderService extends Component implements ProviderServiceInterface, EnsureSAMLPlugin
 {
-
-    use EnsureSamlPlugin;
-
     /**
      * @inheritdoc
      */
@@ -34,7 +30,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     public function find($condition = [])
     {
         /** @var AbstractProvider $class */
-        $class = $this->getSamlPlugin()->getProviderRecordClass();
+        $class = $this->getPlugin()->getProviderRecordClass();
 
         if (! $provider = $class::find()->where($condition)) {
             return null;
@@ -70,7 +66,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         return $this->find(
             array_merge(
                 [
-                    'enabled'      => 1,
+                    'enabled' => 1,
                     'providerType' => $type,
                 ],
                 $condition
@@ -94,18 +90,20 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     public function create(EntityDescriptor $entityDescriptor, KeyChainRecord $keyChainRecord = null): ProviderInterface
     {
 
-        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
+        $recordClass = $this->getPlugin()->getProviderRecordClass();
 
         /** @var ProviderInterface $provider */
         $provider = (new $recordClass())
             ->loadDefaultValues();
 
 
-        $provider->providerType = $this->getSamlPlugin()->getMyType();
+        $provider->providerType = $this->getPlugin()->getMyType();
+
+        $provider->setMetadataModel($entityDescriptor);
 
         \Craft::configure($provider, [
             'entityId' => $entityDescriptor->getEntityID(),
-            'metadata' => SerializeHelper::toXml($entityDescriptor),
+            'metadata' => $provider->toXmlString(),
         ]);
 
         if ($keyChainRecord) {
@@ -147,7 +145,8 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         KeyChainRecord $keyChain,
         $runValidation = true,
         $attributeNames = null
-    ) {
+    )
+    {
         if (! $provider->id && ! $keyChain->id) {
             throw new \Exception('Provider id and keychain id must exist before linking.');
         }

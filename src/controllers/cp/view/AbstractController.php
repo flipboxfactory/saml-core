@@ -9,10 +9,13 @@
 namespace flipbox\saml\core\controllers\cp\view;
 
 use flipbox\saml\core\AbstractPlugin;
+use flipbox\saml\core\controllers\AbstractController as BaseController;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\traits\EnsureSamlPlugin;
-use flipbox\saml\core\controllers\AbstractController as BaseController;
 use flipbox\saml\core\web\assets\bundles\SamlCore;
+use SAML2\XML\md\IDPSSODescriptor;
+use SAML2\XML\md\IndexedEndpointType;
+use SAML2\XML\md\SPSSODescriptor;
 
 /**
  * Class AbstractController
@@ -49,18 +52,18 @@ abstract class AbstractController extends BaseController
     protected function getBaseVariables()
     {
         $variables = [
-            'title'              => $this->getSamlPlugin()->name,
-            'pluginHandle'       => $this->getSamlPlugin()->getHandle(),
-            'pluginVariable'     => $this->getSamlPlugin()->getPluginVariableHandle(),
-            'ownEntityId'        => $this->getSamlPlugin()->getSettings()->getEntityId(),
-            'settings'           => $this->getSamlPlugin()->getSettings(),
+            'title' => $this->getSamlPlugin()->name,
+            'pluginHandle' => $this->getSamlPlugin()->getHandle(),
+            'pluginVariable' => $this->getSamlPlugin()->getPluginVariableHandle(),
+            'ownEntityId' => $this->getSamlPlugin()->getSettings()->getEntityId(),
+            'settings' => $this->getSamlPlugin()->getSettings(),
 
             // Set the "Continue Editing" URL
             'continueEditingUrl' => $this->getBaseCpPath(),
-            'baseActionPath'     => $this->getBaseCpPath(),
-            'baseCpPath'         => $this->getBaseCpPath(),
-            'templateIndex'      => $this->getTemplateIndex(),
-            'ownProvider'        => $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn(),
+            'baseActionPath' => $this->getBaseCpPath(),
+            'baseCpPath' => $this->getBaseCpPath(),
+            'templateIndex' => $this->getTemplateIndex(),
+            'ownProvider' => $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn(),
 
             'actions' => [],
         ];
@@ -138,21 +141,29 @@ abstract class AbstractController extends BaseController
         $plugin = $this->getSamlPlugin();
 
         /**
+         * Metadata/EntityDescriptor Model
+         */
+        $entityDescriptor = $provider->getMetadataModel();
+
+        /**
          * Add SP URLs
          */
         if ($provider->getType() === $plugin::SP) {
-            foreach ($provider->
-            getMetadataModel()->
-            getFirstSpSsoDescriptor()->
-            getAllSingleLogoutServices() as $singleLogoutService) {
-                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] =
-                    $singleLogoutService->getResponseLocation();
-            }
-            foreach ($provider->getMetadataModel()->
-            getFirstSpSsoDescriptor()->
-            getAllAssertionConsumerServices() as $assertionConsumerService) {
-                $variables['assertionConsumerServices'][$assertionConsumerService->getBinding()] =
-                    $assertionConsumerService->getLocation();
+
+            foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
+                if (! ($roleDescriptor instanceof SPSSODescriptor)) {
+                    continue;
+                }
+
+                $sloBinding = $roleDescriptor->getSingleLogoutService()[0]->getBinding();
+                $sloResponseLocation = $roleDescriptor->getSingleLogoutService()[0]->getResponseLocation();
+                $variables['singleLogoutServices'][$sloBinding] = $sloResponseLocation;
+
+                /** @var IndexedEndpointType $firstACS */
+                $firstACS = $roleDescriptor->getAssertionConsumerService()[0];
+                $acsBinding = $firstACS->getBinding();
+                $acsLocation = $firstACS->getLocation();
+                $variables['assertionConsumerServices'][$acsBinding] = $acsLocation;
             }
         }
 
@@ -160,18 +171,21 @@ abstract class AbstractController extends BaseController
          * Add IDP URLs
          */
         if ($provider->getType() === $plugin::IDP) {
-            foreach ($provider->getMetadataModel()->
-            getFirstIdpSsoDescriptor()->
-            getAllSingleLogoutServices() as $singleLogoutService) {
-                $variables['singleLogoutServices'][$singleLogoutService->getBinding()] =
-                    $singleLogoutService->getLocation();
+            foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
+
+                if (! ($roleDescriptor instanceof IDPSSODescriptor)) {
+                    continue;
+                }
+
+                $sloBinding = $roleDescriptor->getSingleLogoutService()[0]->getBinding();
+                $sloLocation = $roleDescriptor->getSingleLogoutService()[0]->getLocation();
+                $variables['singleLogoutServices'][$sloBinding] = $sloLocation;
+
+                $ssoBinding = $roleDescriptor->getSingleSignOnService()[0]->getBinding();
+                $ssoLocation = $roleDescriptor->getSingleSignOnService()[0]->getLocation();
+                $variables['singleSignOnServices'][$ssoBinding] = $ssoLocation;
             }
 
-            foreach ($provider->getMetadataModel()->
-            getFirstIdpSsoDescriptor()->
-            getAllSingleSignOnServices() as $signOnService) {
-                $variables['singleSignOnServices'][$signOnService->getBinding()] = $signOnService->getLocation();
-            }
         }
 
         return $variables;

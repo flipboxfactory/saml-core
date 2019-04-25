@@ -1,20 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/9/18
- * Time: 10:51 PM
- */
-
 namespace flipbox\saml\core\records;
 
-use flipbox\ember\helpers\ObjectHelper;
-use flipbox\ember\helpers\QueryHelper;
 use flipbox\ember\records\ActiveRecord;
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\saml\core\helpers\SerializeHelper;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
-use LightSaml\Model\Metadata\EntityDescriptor;
+use SAML2\DOMDocumentFactory;
+use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
 
 /**
@@ -23,7 +13,10 @@ use yii\db\ActiveQuery;
  */
 abstract class AbstractProvider extends ActiveRecord implements ProviderInterface
 {
-    const METADATA_HASH_ALGO = 'sha256';
+
+    use traits\EntityDescriptor, traits\KeyChain;
+
+    const METADATA_HASH_ALGORITHM = 'sha256';
 
     protected $metadataModel;
     protected $cachedKeychain;
@@ -59,40 +52,12 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         if (is_array($this->mapping)) {
             $this->mapping = json_encode($this->mapping);
         }
-        /**
-         * Remove the signature if it exists.
-         */
-        if ($this->getMetadataModel()->getSignature()) {
-            $this->removeSignature();
-        }
 
-        $this->sha256 = hash(static::METADATA_HASH_ALGO, $this->metadata);
+        $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
 
-        $this->metadata = SerializeHelper::toXml($this->getMetadataModel());
+        $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
 
         return parent::beforeSave($insert);
-    }
-
-    /**
-     * We don't want to save the signature on the metadata and
-     * errors were being thrown during serialization so we
-     * will just remove it here, manually from the xml
-     * and overwrite the metadata and metadataModel
-     *
-     * @return void
-     */
-    protected function removeSignature()
-    {
-        if ($this->getMetadataModel()->getSignature()) {
-            $doc = new \DOMDocument('1.0', 'UTF-8');
-            $doc->loadXML($this->metadata);
-            $doc->documentElement->removeChild(
-                $doc->documentElement->getElementsByTagName('Signature')->item(0)
-            );
-
-            $this->metadata = $doc->saveXML();
-            $this->metadataModel = null;
-        }
     }
 
     /**
@@ -109,8 +74,11 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      */
     public function getMetadataModel()
     {
+
         if (! $this->metadataModel && $this->metadata) {
-            $this->metadataModel = EntityDescriptor::loadXml($this->metadata);
+            $this->metadataModel = new EntityDescriptor(
+                DOMDocumentFactory::fromString($this->metadata)->documentElement
+            );
         }
 
         return $this->metadataModel;
@@ -124,6 +92,22 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     {
         $this->metadataModel = $descriptor;
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIdentityProvider()
+    {
+        return $this->providerType === static::TYPE_IDP;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isServiceProvider()
+    {
+        return $this->providerType === static::TYPE_SP;
     }
 
     /**
@@ -177,4 +161,5 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
         return $this->mapping;
     }
+
 }

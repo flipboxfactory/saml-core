@@ -8,12 +8,12 @@
 
 namespace flipbox\saml\core\traits;
 
-use flipbox\saml\core\SamlPluginInterface;
+use flipbox\saml\core\AbstractPlugin;
 
 trait EnsureSamlPlugin
 {
     /**
-     * @return SamlPluginInterface
+     * @return AbstractPlugin
      */
-    abstract protected function getSamlPlugin(): SamlPluginInterface;
+    abstract protected function getSamlPlugin(): AbstractPlugin
 }

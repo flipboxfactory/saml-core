@@ -6,9 +6,10 @@
 
 namespace flipbox\saml\core\helpers;
 
-use LightSaml\Model\Protocol\AbstractRequest;
-use LightSaml\Model\Protocol\SamlMessage;
-use LightSaml\Model\Protocol\StatusResponse;
+use craft\helpers\StringHelper;
+use SAML2\Message as SamlMessage;
+use SAML2\Request as SamlRequest;
+use SAML2\StatusResponse as SamlResponse;
 
 /**
  * Class MessageHelper
@@ -19,13 +20,18 @@ class MessageHelper
     const REQUEST_PARAMETER = 'SAMLRequest';
     const RESPONSE_PARAMETER = 'SAMLResponse';
 
+    public static function generateId()
+    {
+        return StringHelper::UUID();
+    }
+
     /**
      * @param SamlMessage $message
      * @return bool
      */
     public static function isResponse(SamlMessage $message)
     {
-        return $message instanceof StatusResponse;
+        return $message instanceof SamlResponse;
     }
 
     /**
@@ -34,7 +40,7 @@ class MessageHelper
      */
     public static function isRequest(SamlMessage $message)
     {
-        return $message instanceof AbstractRequest;
+        return $message instanceof SamlRequest;
     }
 
     /**
@@ -45,4 +51,5 @@ class MessageHelper
     {
         return static::isRequest($message) ? static::REQUEST_PARAMETER : static::RESPONSE_PARAMETER;
     }
+
 }

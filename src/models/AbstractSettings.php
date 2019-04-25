@@ -12,8 +12,13 @@ use craft\base\Model;
 use craft\config\GeneralConfig;
 use craft\helpers\UrlHelper;
 
-abstract class AbstractSettings extends Model
+abstract class AbstractSettings extends Model implements SettingsInterface
 {
+
+    /**
+     * @var string
+     */
+    protected $myType;
 
     /**
      * @var string
@@ -91,6 +96,24 @@ abstract class AbstractSettings extends Model
         }
 
         return $this->entityId;
+    }
+
+    /**
+     * @param $myType
+     * @return $this
+     */
+    public function setMyType($myType)
+    {
+        $this->myType = $myType;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMyType()
+    {
+        return $this->myType;
     }
 
     /**

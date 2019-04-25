@@ -7,16 +7,7 @@
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\User;
-use craft\fields\Color;
-use craft\fields\Date;
-use craft\fields\Dropdown;
-use craft\fields\Email;
-use craft\fields\Lightswitch;
-use craft\fields\Number;
-use craft\fields\PlainText;
-use craft\fields\Url;
 use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
 use flipbox\saml\core\helpers\MappingHelper;
