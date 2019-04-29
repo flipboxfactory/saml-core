@@ -10,7 +10,6 @@ use craft\web\Controller;
 use craft\web\Request;
 use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use LightSaml\Model\Assertion\Issuer;
 use LightSaml\Model\Protocol\AbstractRequest;
 use LightSaml\Model\Protocol\LogoutResponse;
@@ -19,9 +18,8 @@ use LightSaml\Model\Protocol\SamlMessage;
 use LightSaml\Model\Protocol\StatusResponse;
 use yii\web\HttpException;
 
-abstract class AbstractLogoutController extends Controller
+abstract class AbstractLogoutController extends Controller implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-    use EnsureSamlPlugin;
 
     protected $allowAnonymous = [
         'actionIndex',
@@ -78,7 +76,7 @@ abstract class AbstractLogoutController extends Controller
         $isRequest = $message instanceof LogoutRequest;
         $isResponse = $message instanceof LogoutResponse;
 
-        if ($isResponse && $this->getSamlPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
+        if ($isResponse && $this->getPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
             throw new HttpException(400, "Invalid request");
         }
 
@@ -95,11 +93,11 @@ abstract class AbstractLogoutController extends Controller
         $issuer = $message->getIssuer();
 
         /** @var ProviderInterface $provider */
-        $provider = $this->getSamlPlugin()->getHttpPost()->getProviderByIssuer($issuer);
+        $provider = $this->getPlugin()->getHttpPost()->getProviderByIssuer($issuer);
 
         if ($isRequest) {
             /** @var AbstractRequest $message */
-            $response = $this->getSamlPlugin()->getLogoutResponse()->create($message);
+            $response = $this->getPlugin()->getLogoutResponse()->create($message);
 
             /**
              * Add the request id to the the response.
@@ -125,12 +123,12 @@ abstract class AbstractLogoutController extends Controller
         /** @var ProviderInterface $provider */
         $provider = $this->getRemoteProvider($uid);
 
-        $logoutRequest = $this->getSamlPlugin()->getLogoutRequest()->create($provider);
+        $logoutRequest = $this->getPlugin()->getLogoutRequest()->create($provider);
 
         /**
          * Save id to session so we can validate the response.
          */
-        $this->getSamlPlugin()->getSession()->setRequestId($logoutRequest->getID());
+        $this->getPlugin()->getSession()->setRequestId($logoutRequest->getID());
 
         $this->send($logoutRequest, $provider);
         \Craft::$app->end();

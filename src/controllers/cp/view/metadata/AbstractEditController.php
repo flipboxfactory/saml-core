@@ -13,12 +13,13 @@ use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\records\ProviderInterface;
+use flipbox\saml\core\EnsureSAMLPlugin;
 
 /**
  * Class AbstractEditController
  * @package flipbox\saml\core\controllers\cp\view\metadata
  */
-abstract class AbstractEditController extends AbstractController
+abstract class AbstractEditController extends AbstractController implements EnsureSAMLPlugin
 {
     use VariablesTrait;
 
@@ -34,7 +35,7 @@ abstract class AbstractEditController extends AbstractController
         $provider = $variables['provider'];
 
         $variables['title'] = Craft::t(
-            $this->getSamlPlugin()->getHandle(),
+            $this->getPlugin()->getHandle(),
             'Edit ' . $this->getTitle($provider->getType())
         );
 
@@ -61,8 +62,8 @@ abstract class AbstractEditController extends AbstractController
     public function actionNewIdp()
     {
         /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
-        $providerRecord = $this->getSamlPlugin()->getProviderRecordClass();
+        $plugin = $this->getPlugin();
+        $providerRecord = $this->getPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
             'title' => 'New ' . $this->getTitle($plugin::IDP),
             'createType' => $plugin::IDP,
@@ -116,8 +117,8 @@ abstract class AbstractEditController extends AbstractController
     public function actionNewSp()
     {
         /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
-        $providerRecord = $this->getSamlPlugin()->getProviderRecordClass();
+        $plugin = $this->getPlugin();
+        $providerRecord = $this->getPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
             'title' => 'New ' . $this->getTitle($plugin::SP),
             'createType' => $plugin::SP,
@@ -170,7 +171,7 @@ abstract class AbstractEditController extends AbstractController
      */
     public function actionMyProvider()
     {
-        $provider = $this->getSamlPlugin()->getProvider()->findOwn();
+        $provider = $this->getPlugin()->getProvider()->findOwn();
         $variables = $this->prepVariables(
             $provider ? $provider : null
         );
@@ -184,8 +185,8 @@ abstract class AbstractEditController extends AbstractController
             );
         } else {
             $provider = $variables['provider'];
-            $variables['provider']->entityId = $this->getSamlPlugin()->getSettings()->getEntityId();
-            $variables['provider']->providerType = $this->getSamlPlugin()->getMyType();
+            $variables['provider']->entityId = $this->getPlugin()->getSettings()->getEntityId();
+            $variables['provider']->providerType = $this->getPlugin()->getMyType();
             $variables['provider']->label = 'My Provider';
         }
 
@@ -198,7 +199,7 @@ abstract class AbstractEditController extends AbstractController
          * Edit Title
          */
         $variables['title'] = Craft::t(
-            $this->getSamlPlugin()->getHandle(),
+            $this->getPlugin()->getHandle(),
             'My Provider (' . strtoupper($variables['provider']->providerType) . ')'
         );
 

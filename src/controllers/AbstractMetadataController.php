@@ -17,13 +17,12 @@ use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\web\NotFoundHttpException;
 
-abstract class AbstractMetadataController extends AbstractController
+abstract class AbstractMetadataController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
 
-    use EnsureSamlPlugin, VariablesTrait;
+    use VariablesTrait;
 
     /**
      * @return string
@@ -35,8 +34,8 @@ abstract class AbstractMetadataController extends AbstractController
 
         $this->requireAdmin();
 
-        $provider = $this->getSamlPlugin()->getProvider()->findByEntityId(
-            $this->getSamlPlugin()->getSettings()->getEntityId()
+        $provider = $this->getPlugin()->getProvider()->findByEntityId(
+            $this->getPlugin()->getSettings()->getEntityId()
         )->one();
 
         if ($provider) {
@@ -61,12 +60,12 @@ abstract class AbstractMetadataController extends AbstractController
 
         $record = $this->processSaveAction();
 
-        $entityDescriptor = $this->getSamlPlugin()->getMetadata()->create(
+        $entityDescriptor = $this->getPlugin()->getMetadata()->create(
             $record->keychain,
             $entityId = Craft::$app->request->getParam('entityId', null)
         );
 
-        $provider = $this->getSamlPlugin()->getProvider()->create(
+        $provider = $this->getPlugin()->getProvider()->create(
             $entityDescriptor,
             $record->keychain
         );
@@ -76,7 +75,7 @@ abstract class AbstractMetadataController extends AbstractController
         $record->setMetadataModel($provider->getMetadataModel());
 
 
-        if (! $this->getSamlPlugin()->getProvider()->save($record)) {
+        if (! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -106,7 +105,7 @@ abstract class AbstractMetadataController extends AbstractController
         /** @var AbstractProvider $record */
         $record = $this->processSaveAction();
 
-        if ($record->hasErrors() || ! $this->getSamlPlugin()->getProvider()->save($record)) {
+        if ($record->hasErrors() || ! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -119,7 +118,7 @@ abstract class AbstractMetadataController extends AbstractController
             );
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t($this->getSamlPlugin()->getHandle(), 'Provider saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
 
         return $this->redirectToPostedUrl();
     }
@@ -143,7 +142,7 @@ abstract class AbstractMetadataController extends AbstractController
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
         /** @var string $recordClass */
-        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
+        $recordClass = $this->getPlugin()->getProviderRecordClass();
 
         /** @var AbstractProvider $record */
         $record = $recordClass::find()->where([
@@ -152,7 +151,7 @@ abstract class AbstractMetadataController extends AbstractController
 
         $record->enabled = ! $record->enabled;
 
-        if (! $this->getSamlPlugin()->getProvider()->save($record)) {
+        if (! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -181,14 +180,14 @@ abstract class AbstractMetadataController extends AbstractController
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
         /** @var string $recordClass */
-        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
+        $recordClass = $this->getPlugin()->getProviderRecordClass();
 
         /** @var ProviderInterface $record */
         $record = $recordClass::find()->where([
             'id' => $providerId,
         ])->one();
 
-        if (! $this->getSamlPlugin()->getProvider()->delete($record)) {
+        if (! $this->getPlugin()->getProvider()->delete($record)) {
             return $this->renderTemplate(
                 $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -217,9 +216,9 @@ abstract class AbstractMetadataController extends AbstractController
         $metadata = Craft::$app->request->getParam('metadata');
         $mapping = Craft::$app->request->getParam('mapping');
         $label = Craft::$app->request->getRequiredParam('label');
-        $plugin = $this->getSamlPlugin();
+        $plugin = $this->getPlugin();
 
-        $recordClass = $this->getSamlPlugin()->getProviderRecordClass();
+        $recordClass = $this->getPlugin()->getProviderRecordClass();
         /** @var AbstractProvider $record */
         if ($providerId) {
             $record = $recordClass::find()->where([

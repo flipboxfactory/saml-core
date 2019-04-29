@@ -10,12 +10,13 @@ use Craft;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
+use flipbox\saml\core\EnsureSAMLPlugin;
 
 /**
  * Class AbstractDefaultController
  * @package flipbox\saml\core\controllers\cp\view\metadata
  */
-abstract class AbstractDefaultController extends AbstractController
+abstract class AbstractDefaultController extends AbstractController implements EnsureSAMLPlugin
 {
 
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
@@ -27,7 +28,7 @@ abstract class AbstractDefaultController extends AbstractController
     public function actionIndex()
     {
         $variables = $this->getBaseVariables();
-        $plugin = $this->getSamlPlugin();
+        $plugin = $this->getPlugin();
         $variables['myProvider'] = null;
         $variables['spProviders'] = [];
         $variables['idpProviders'] = [];
@@ -39,11 +40,11 @@ abstract class AbstractDefaultController extends AbstractController
          */
         $variables['crumbs'] = [
             [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
-                'label' => $this->getSamlPlugin()->name
+                'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
+                'label' => $this->getPlugin()->name
             ],
             [
-                'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()) . '/metadata',
+                'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()) . '/metadata',
                 'label' => 'Provider List'
             ],
         ];
@@ -55,7 +56,7 @@ abstract class AbstractDefaultController extends AbstractController
             'enabled' => [true, false],
         ])->all() as $provider) {
             $variables['idpProviders'][] = $provider;
-            if ($provider->getEntityId() == $this->getSamlPlugin()->getSettings()->getEntityId()) {
+            if ($provider->getEntityId() == $this->getPlugin()->getSettings()->getEntityId()) {
                 $variables['myProvider'] = $provider;
             }
         }
@@ -67,12 +68,12 @@ abstract class AbstractDefaultController extends AbstractController
             'enabled' => [true, false],
         ])->all() as $provider) {
             $variables['spProviders'][] = $provider;
-            if ($provider->getEntityId() == $this->getSamlPlugin()->getSettings()->getEntityId()) {
+            if ($provider->getEntityId() == $this->getPlugin()->getSettings()->getEntityId()) {
                 $variables['myProvider'] = $provider;
             }
         }
 
-        $variables['title'] = Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name);
+        $variables['title'] = Craft::t($this->getPlugin()->getHandle(), $this->getPlugin()->name);
         return $this->renderTemplate(
             $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
             $variables
@@ -87,7 +88,7 @@ abstract class AbstractDefaultController extends AbstractController
     protected function getListInstructions($providerType)
     {
         /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
+        $plugin = $this->getPlugin();
         if (! in_array($providerType, [
             $plugin::SP,
             $plugin::IDP,
@@ -99,10 +100,10 @@ abstract class AbstractDefaultController extends AbstractController
          * TODO - Fix this for the IdP
          */
         return $plugin::SP === $providerType ? Craft::t(
-            $this->getSamlPlugin()->getHandle(),
+            $this->getPlugin()->getHandle(),
             'These are your CraftCMS sites (this website). '
         ) : Craft::t(
-            $this->getSamlPlugin()->getHandle(),
+            $this->getPlugin()->getHandle(),
             'These are the remote providers where the user ' .
             'authenticates, ie, OKTA, Microsoft AD, or Google, etc. To configure and IDP, simply obtain the metadata.'
         );

@@ -11,16 +11,14 @@ namespace flipbox\saml\core\controllers;
 use Craft;
 use craft\helpers\ArrayHelper;
 use flipbox\saml\core\AbstractPlugin;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\base\Action;
 
 /**
  * Class AbstractGeneralController
  * @package flipbox\saml\core\controllers\cp\view
  */
-abstract class AbstractSettingsController extends AbstractController
+abstract class AbstractSettingsController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-    use EnsureSamlPlugin;
 
     /**
      * @return array
@@ -69,14 +67,14 @@ abstract class AbstractSettingsController extends AbstractController
     {
         $entityId = Craft::$app->request->getRequiredParam('entityId');
         /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
+        $plugin = $this->getPlugin();
 
         $settings = [
             'entityId' => $entityId
         ];
 
         Craft::$app->plugins->savePluginSettings(
-            $this->getSamlPlugin(),
+            $this->getPlugin(),
             $settings
         );
         return $this->redirectToPostedUrl();

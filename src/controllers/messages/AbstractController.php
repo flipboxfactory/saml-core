@@ -11,4 +11,10 @@ use flipbox\saml\core\EnsureSAMLPlugin;
 abstract class AbstractController extends Controller implements EnsureSAMLPlugin,UtilizeSaml2Container
 {
 
+    public function init()
+    {
+        parent::init();
+        $this->loadContainer();
+    }
+
 }

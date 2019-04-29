@@ -55,11 +55,6 @@ class Response
         }
     }
 
-    private function addAssertionValidators(array $assertions)
-    {
-
-    }
-
     public function validate(SamlResponse $response)
     {
 

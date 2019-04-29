@@ -10,8 +10,8 @@ namespace flipbox\saml\core\controllers\cp\view;
 
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\AbstractController as BaseController;
+use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use flipbox\saml\core\web\assets\bundles\SamlCore;
 use SAML2\XML\md\IDPSSODescriptor;
 use SAML2\XML\md\IndexedEndpointType;
@@ -21,9 +21,8 @@ use SAML2\XML\md\SPSSODescriptor;
  * Class AbstractController
  * @package flipbox\saml\core\controllers\cp\view
  */
-abstract class AbstractController extends BaseController
+abstract class AbstractController extends BaseController implements EnsureSAMLPlugin
 {
-    use EnsureSamlPlugin;
 
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
 
@@ -43,7 +42,7 @@ abstract class AbstractController extends BaseController
      */
     protected function getTemplateIndex()
     {
-        return $this->getSamlPlugin()->getTemplateRootKey();
+        return $this->getPlugin()->getTemplateRootKey();
     }
 
     /**
@@ -52,18 +51,18 @@ abstract class AbstractController extends BaseController
     protected function getBaseVariables()
     {
         $variables = [
-            'title' => $this->getSamlPlugin()->name,
-            'pluginHandle' => $this->getSamlPlugin()->getHandle(),
-            'pluginVariable' => $this->getSamlPlugin()->getPluginVariableHandle(),
-            'ownEntityId' => $this->getSamlPlugin()->getSettings()->getEntityId(),
-            'settings' => $this->getSamlPlugin()->getSettings(),
+            'title' => $this->getPlugin()->name,
+            'pluginHandle' => $this->getPlugin()->getHandle(),
+            'pluginVariable' => $this->getPlugin()->getPluginVariableHandle(),
+            'ownEntityId' => $this->getPlugin()->getSettings()->getEntityId(),
+            'settings' => $this->getPlugin()->getSettings(),
 
             // Set the "Continue Editing" URL
             'continueEditingUrl' => $this->getBaseCpPath(),
             'baseActionPath' => $this->getBaseCpPath(),
             'baseCpPath' => $this->getBaseCpPath(),
             'templateIndex' => $this->getTemplateIndex(),
-            'ownProvider' => $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn(),
+            'ownProvider' => $ownProvider = $this->getPlugin()->getProvider()->findOwn(),
 
             'actions' => [],
         ];
@@ -117,7 +116,7 @@ abstract class AbstractController extends BaseController
      */
     protected function getBaseCpPath(): string
     {
-        return $this->getSamlPlugin()->getHandle();
+        return $this->getPlugin()->getHandle();
     }
 
     /**
@@ -138,7 +137,7 @@ abstract class AbstractController extends BaseController
         }
 
         /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
+        $plugin = $this->getPlugin();
 
         /**
          * Metadata/EntityDescriptor Model
@@ -199,7 +198,7 @@ abstract class AbstractController extends BaseController
     protected function getTitle($type)
     {
         /** @var AbstractPlugin $plugin */
-        $plugin = $this->getSamlPlugin();
+        $plugin = $this->getPlugin();
         return $type === $plugin::SP ? 'Service Provider (SP)' : 'Identity Provider (IDP)';
     }
 }

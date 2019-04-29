@@ -20,8 +20,9 @@ use flipbox\keychain\keypair\traits\OpenSSL;
 use flipbox\keychain\keypair\traits\OpenSSLCliUtil;
 use flipbox\keychain\records\KeyChainRecord;
 use yii\console\ExitCode;
+use \flipbox\saml\core\EnsureSAMLPlugin;
 
-abstract class AbstractMetadata extends Controller
+abstract class AbstractMetadata extends Controller implements EnsureSAMLPlugin
 {
 
     use OpenSSL, OpenSSLCliUtil;
@@ -43,11 +44,6 @@ abstract class AbstractMetadata extends Controller
      * @return ProviderInterface
      */
     abstract protected function newProviderRecord(array $config): ProviderInterface;
-
-    /**
-     * @return SamlPluginInterface
-     */
-    abstract protected function getSamlPlugin(): SamlPluginInterface;
 
     /**
      * @var bool
@@ -152,16 +148,16 @@ abstract class AbstractMetadata extends Controller
                 return ExitCode::DATAERR;
             }
         }
-        $entityDescriptor = $this->getSamlPlugin()->getMetadata()->create(
+        $entityDescriptor = $this->getPlugin()->getMetadata()->create(
             $keyPairRecord ? $keyPairRecord : null
         );
 
-        $provider = $this->getSamlPlugin()->getProvider()->create(
+        $provider = $this->getPlugin()->getProvider()->create(
             $entityDescriptor,
             $keyPairRecord ? $keyPairRecord : null
         );
 
-        if ($this->getSamlPlugin()->getProvider()->save($provider)) {
+        if ($this->getPlugin()->getProvider()->save($provider)) {
             $this->stdout(sprintf(
                 'Save for %s metadata was successful.',
                 $provider->entityId
@@ -188,7 +184,7 @@ abstract class AbstractMetadata extends Controller
             throw new \InvalidArgumentException('Type must be idp or sp');
         }
 
-        $providerClass = $this->getSamlPlugin()->getProviderRecordClass();
+        $providerClass = $this->getPlugin()->getProviderRecordClass();
 
         /** @var AbstractProvider $provider */
         $provider = new $providerClass([
@@ -198,7 +194,7 @@ abstract class AbstractMetadata extends Controller
 
         $provider->getMetadataModel();
 
-        if ($this->getSamlPlugin()->getProvider()->save($provider)) {
+        if ($this->getPlugin()->getProvider()->save($provider)) {
             $this->stdout(sprintf(
                 'Save for %s metadata was successful.',
                 $provider->entityId

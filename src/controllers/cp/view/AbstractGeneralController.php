@@ -9,12 +9,13 @@
 namespace flipbox\saml\core\controllers\cp\view;
 
 use craft\helpers\UrlHelper;
+use flipbox\saml\core\EnsureSAMLPlugin;
 
 /**
  * Class AbstractGeneralController
  * @package flipbox\saml\core\controllers\cp\view
  */
-abstract class AbstractGeneralController extends AbstractController
+abstract class AbstractGeneralController extends AbstractController implements EnsureSAMLPlugin
 {
 
     const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
@@ -34,7 +35,7 @@ abstract class AbstractGeneralController extends AbstractController
     {
         $variables = $this->getBaseVariables();
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
+            'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
             'label' => 'SSO Provider'
         ];
 
@@ -54,11 +55,11 @@ abstract class AbstractGeneralController extends AbstractController
 
         // Breadcrumbs
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
+            'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
             'label' => 'SSO Provider'
         ];
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle() . '/settings'),
+            'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle() . '/settings'),
             'label' => 'Settings'
         ];
 
@@ -86,7 +87,7 @@ abstract class AbstractGeneralController extends AbstractController
         return implode(
             '/',
             [
-                $this->getSamlPlugin()->getHandle(),
+                $this->getPlugin()->getHandle(),
                 'settings',
             ]
         );

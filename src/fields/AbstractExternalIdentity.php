@@ -11,12 +11,10 @@ use craft\base\Field;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\records\ProviderIdentityInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\db\Query;
 
-abstract class AbstractExternalIdentity extends Field
+abstract class AbstractExternalIdentity extends Field implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-    use EnsureSamlPlugin;
 
     public static function displayName(): string
     {
@@ -37,7 +35,7 @@ abstract class AbstractExternalIdentity extends Field
             return null;
         }
         /** @var User $element */
-        return $this->getSamlPlugin()->getProviderIdentity()->findByUser($element);
+        return $this->getPlugin()->getProviderIdentity()->findByUser($element);
     }
 
     public function getInputHtml($value, ElementInterface $element = null): string
@@ -57,7 +55,7 @@ abstract class AbstractExternalIdentity extends Field
         if (! ($value instanceof Query)) {
             return '';
         }
-        $handle = $this->getSamlPlugin()->getHandle();
+        $handle = $this->getPlugin()->getHandle();
 
         return \Craft::$app->getView()->renderTemplate(
             $handle . '/_cp/fields/external-id',

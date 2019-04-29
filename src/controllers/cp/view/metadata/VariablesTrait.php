@@ -10,13 +10,17 @@ use Craft;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\MappingHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 
+/**
+ * Trait VariablesTrait
+ * @package flipbox\saml\core\controllers\cp\view\metadata
+ * @method AbstractPlugin getPlugin
+ */
 trait VariablesTrait
 {
-    use EnsureSamlPlugin;
 
     /**
      * @param ProviderInterface $provider
@@ -31,11 +35,11 @@ trait VariablesTrait
                 [
                     //action list 1
                     [
-                        'action' => $this->getSamlPlugin()->getHandle() . '/metadata/change-status',
+                        'action' => $this->getPlugin()->getHandle() . '/metadata/change-status',
                         'label' => $provider->enabled ? 'Disable' : 'Enable',
                     ],
                     [
-                        'action' => $this->getSamlPlugin()->getHandle() . '/metadata/delete',
+                        'action' => $this->getPlugin()->getHandle() . '/metadata/delete',
                         'label' => 'Delete',
                     ],
                 ],
@@ -54,8 +58,8 @@ trait VariablesTrait
             parent::getBaseVariables(),
             [
                 'autoCreate' => false,
-                'myEntityId' => $this->getSamlPlugin()->getSettings()->getEntityId(),
-                'myType' => $this->getSamlPlugin()->getSettings(),
+                'myEntityId' => $this->getPlugin()->getSettings()->getEntityId(),
+                'myType' => $this->getPlugin()->getSettings(),
             ]
         );
     }
@@ -69,8 +73,8 @@ trait VariablesTrait
         $variables = $this->getBaseVariables();
 
         $variables['title'] = Craft::t(
-            $this->getSamlPlugin()->getHandle(),
-            $this->getSamlPlugin()->name
+            $this->getPlugin()->getHandle(),
+            $this->getPlugin()->name
         );
 
 
@@ -81,8 +85,8 @@ trait VariablesTrait
         /**
          * TYPES
          */
-        $variables['myType'] = $this->getSamlPlugin()->getMyType();
-        $variables['remoteType'] = $this->getSamlPlugin()->getRemoteType();
+        $variables['myType'] = $this->getPlugin()->getMyType();
+        $variables['remoteType'] = $this->getPlugin()->getRemoteType();
         $variables['createType'] = $variables['remoteType'];
 
         if ($provider) {
@@ -95,7 +99,7 @@ trait VariablesTrait
                  */
             $provider instanceof ProviderInterface ?
                 $provider :
-                $provider = $this->getSamlPlugin()->getProviderRecordClass()::find()->where([
+                $provider = $this->getPlugin()->getProviderRecordClass()::find()->where([
                     /**
                      * Is ID
                      */
@@ -112,7 +116,7 @@ trait VariablesTrait
                         implode(
                             '/',
                             [
-                                $this->getSamlPlugin()->getHandle(),
+                                $this->getPlugin()->getHandle(),
                                 'metadata',
                             ]
                         )
@@ -120,7 +124,7 @@ trait VariablesTrait
                     'label' => 'Provider List',
                 ], [
                     'url' => UrlHelper::cpUrl(
-                        $this->getSamlPlugin()->getHandle() . '/metadata/' . $provider->id
+                        $this->getPlugin()->getHandle() . '/metadata/' . $provider->id
                     ),
                     'label' => $provider->label ?: $provider->entityId,
                 ],
@@ -132,7 +136,7 @@ trait VariablesTrait
                 $this->addUrls($provider)
             );
         } else {
-            $record = $this->getSamlPlugin()->getProviderRecordClass();
+            $record = $this->getPlugin()->getProviderRecordClass();
 
             $provider = $variables['provider'] = new $record([
                 'providerType' => 'idp',
@@ -143,7 +147,7 @@ trait VariablesTrait
             $crumb = [
                 [
                     'url' => UrlHelper::cpUrl(
-                        $this->getSamlPlugin()->getHandle() . '/new'
+                        $this->getPlugin()->getHandle() . '/new'
                     ),
                     'label' => 'New',
                 ],
@@ -152,7 +156,7 @@ trait VariablesTrait
 
         $variables['allkeypairs'] = [];
 
-        $keypairs = KeyChain::getInstance()->getService()->findByPlugin($this->getSamlPlugin())->all();
+        $keypairs = KeyChain::getInstance()->getService()->findByPlugin($this->getPlugin())->all();
 
         foreach ($keypairs as $keypair) {
             $variables['allkeypairs'][] = [
@@ -163,8 +167,8 @@ trait VariablesTrait
 
         $variables['crumbs'] = array_merge([
             [
-                'url' => UrlHelper::cpUrl($this->getSamlPlugin()->getHandle()),
-                'label' => Craft::t($this->getSamlPlugin()->getHandle(), $this->getSamlPlugin()->name),
+                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
+                'label' => Craft::t($this->getPlugin()->getHandle(), $this->getPlugin()->name),
             ],
         ], $crumb);
 

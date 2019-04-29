@@ -17,7 +17,7 @@ trait KeyChain
     /**
      * @return string
      */
-    public function getCipherType()
+    public function defaultCipherType()
     {
         return XMLSecurityKey::RSA_SHA256;
     }
@@ -26,9 +26,9 @@ trait KeyChain
      * @return XMLSecurityKey
      * @throws \Exception
      */
-    public function getPrivateXmlSecurityKey()
+    public function keychainPrivateXmlSecurityKey()
     {
-        $xmlSecurityKey = new XMLSecurityKey($this->getCipherType(), [
+        $xmlSecurityKey = new XMLSecurityKey($this->defaultCipherType(), [
             'type' => 'private',
         ]);
 
@@ -41,9 +41,9 @@ trait KeyChain
      * @return XMLSecurityKey
      * @throws \Exception
      */
-    public function getPublicXmlSecurityKey()
+    public function keychainPublicXmlSecurityKey()
     {
-        $xmlSecurityKey = new XMLSecurityKey($this->getCipherType(), [
+        $xmlSecurityKey = new XMLSecurityKey($this->defaultCipherType(), [
             'type' => 'public',
         ]);
 

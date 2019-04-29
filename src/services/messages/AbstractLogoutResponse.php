@@ -33,12 +33,12 @@ abstract class AbstractLogoutResponse extends AbstractLogout implements EnsureSA
         /**
          * NOTE: $provider is the remote provider
          */
-        $provider = $this->getSamlPlugin()->getHttpPost()->getProviderByIssuer(
+        $provider = $this->getPlugin()->getHttpPost()->getProviderByIssuer(
             $request->getIssuer()
         );
 
         /** @var ProviderInterface $ownProvider */
-        $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn();
+        $ownProvider = $this->getPlugin()->getProvider()->findOwn();
 
         $logout = new LogoutResponse();
 

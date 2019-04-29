@@ -10,13 +10,11 @@ use Craft;
 use craft\base\Component;
 use flipbox\saml\core\migrations\AbstractAlterEnvironments;
 use flipbox\saml\core\models\SettingsInterface;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 use yii\base\Model;
+use flipbox\saml\core\EnsureSAMLPlugin
 
-abstract class AbstractCp extends Component
+abstract class AbstractCp extends Component implements EnsureSAMLPlugin
 {
-
-    use EnsureSamlPlugin;
 
     /**
      * @return AbstractAlterEnvironments
@@ -34,7 +32,7 @@ abstract class AbstractCp extends Component
 
         // Save plugin settings
         if (Craft::$app->getPlugins()->savePluginSettings(
-            $this->getSamlPlugin(),
+            $this->getPlugin(),
             $settingsModel->toArray()
         )) {
             // Alter table

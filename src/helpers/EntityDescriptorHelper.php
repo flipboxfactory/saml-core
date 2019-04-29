@@ -5,6 +5,7 @@ namespace flipbox\saml\core\helpers;
 
 
 use flipbox\saml\core\AbstractPlugin;
+use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
 use SAML2\XML\md\IndexedEndpointType;
@@ -83,7 +84,7 @@ class EntityDescriptorHelper
     /**
      * @param SSODescriptorType[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstArtifactResolutionService(array $roleDescriptors, string $binding = null)
     {
@@ -93,7 +94,7 @@ class EntityDescriptorHelper
     /**
      * @param SSODescriptorType[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstSLOService(array $roleDescriptors, string $binding = null)
     {
@@ -103,7 +104,7 @@ class EntityDescriptorHelper
     /**
      * @param SSODescriptorType[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstManageNameIDService(array $roleDescriptors, string $binding = null)
     {
@@ -117,7 +118,7 @@ class EntityDescriptorHelper
     /**
      * @param SPSSODescriptor[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstSpAssertionConsumerService(array $roleDescriptors, string $binding = null)
     {
@@ -127,7 +128,7 @@ class EntityDescriptorHelper
     /**
      * @param SPSSODescriptor[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstSpAttributeConsumingService(array $roleDescriptors, string $binding = null)
     {
@@ -141,7 +142,7 @@ class EntityDescriptorHelper
     /**
      * @param IDPSSODescriptor[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstIdpSSOService(array $roleDescriptors, string $binding = null)
     {
@@ -151,7 +152,7 @@ class EntityDescriptorHelper
     /**
      * @param IDPSSODescriptor[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstIdpAssertionIdRequestService(array $roleDescriptors, string $binding = null)
     {
@@ -161,7 +162,7 @@ class EntityDescriptorHelper
     /**
      * @param IDPSSODescriptor[] $roleDescriptors
      * @param string $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     public static function getFirstIdpNameIDMappingService(array $roleDescriptors, string $binding = null)
     {
@@ -172,7 +173,7 @@ class EntityDescriptorHelper
      * @param SSODescriptorType[] $roleDescriptors
      * @param string $binding
      * @param string $service
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     protected static function getFirstService(string $service, array $roleDescriptors, string $binding = null)
     {
@@ -215,7 +216,7 @@ class EntityDescriptorHelper
     /**
      * @param IndexedEndpointType[] $endpointTypes
      * @param $binding
-     * @return IndexedEndpointType|null
+     * @return EndpointType|null
      */
     protected static function getFirstIndexedEndpointType(array $endpointTypes, string $binding = null)
     {
@@ -234,9 +235,9 @@ class EntityDescriptorHelper
         // Reset the return
         $return = null;
 
-        /** @var IndexedEndpointType $endpointType */
+        /** @var EndpointType $endpointType */
         foreach ($endpointTypes as $endpointType) {
-            if (! $endpointType instanceof IndexedEndpointType) {
+            if (! $endpointType instanceof EndpointType) {
                 throw new \InvalidArgumentException();
             }
 

@@ -4,15 +4,12 @@ namespace flipbox\saml\core\migrations;
 
 use Craft;
 use craft\db\Migration;
-use flipbox\saml\core\traits\EnsureSamlPlugin;
 
 /**
  * m180812_200148_add_provider_label migration.
  */
 abstract class m180812_200148_add_label_and_mapping extends Migration
 {
-
-    use EnsureSamlPlugin;
 
     abstract protected static function getProviderTableName();
 

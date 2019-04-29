@@ -33,14 +33,14 @@ abstract class AbstractLogoutRequest extends AbstractLogout implements EnsureSAM
          * NOTE: $provider is the remote provider
          */
 
-        $ownProvider = $this->getSamlPlugin()->getProvider()->findOwn();
+        $ownProvider = $this->getPlugin()->getProvider()->findOwn();
 
         $logout = new LogoutRequestModel();
 
         /**
          * Get stored identity
          */
-        $providerIdentity = $this->getSamlPlugin()->getProviderIdentity()->findByUser(
+        $providerIdentity = $this->getPlugin()->getProviderIdentity()->findByUser(
             \Craft::$app->getUser()->getIdentity()
         )->one();
 

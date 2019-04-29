@@ -21,6 +21,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
 {
     /**
      * @inheritdoc
+     * @deprecated
      */
     abstract public function findOwn();
 
