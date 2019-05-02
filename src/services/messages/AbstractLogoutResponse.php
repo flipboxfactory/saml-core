@@ -17,6 +17,7 @@ use LightSaml\Model\Protocol\LogoutResponse;
 use LightSaml\Model\Protocol\StatusResponse;
 use LightSaml\SamlConstants;
 use yii\base\Event;
+use flipbox\saml\core\models\SettingsInterface;
 
 abstract class AbstractLogoutResponse extends AbstractLogout implements EnsureSAMLPlugin
 {
@@ -47,7 +48,7 @@ abstract class AbstractLogoutResponse extends AbstractLogout implements EnsureSA
          */
         $logout->setDestination(
 
-            $provider->getType() === AbstractPlugin::SP ?
+            $provider->getType() === SettingsInterface::SP ?
                 $provider->getMetadataModel()->getFirstSpSsoDescriptor()->getFirstSingleLogoutService(
                     /**
                     * We only support post right now

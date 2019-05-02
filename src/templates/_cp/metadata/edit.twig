@@ -4,18 +4,24 @@
 {% set fullPageForm=1 %}
 
 {% set tabs = {
-    metadata: {
-        id: 'metadata',
-        class: 'metadata',
-        url: '#metadata',
-        label: 'Metadata'
+    security: {
+        id:'security',
+        class: 'security',
+        url: '#security',
+        label: 'Security'
     },
     configure: {
         id:'configure',
         class: 'configure',
         url: '#configure',
         label: 'Configure'
-    }
+    },
+    metadata: {
+        id: 'metadata',
+        class: 'metadata',
+        url: '#metadata',
+        label: 'Metadata'
+    },
 } %}
 
 {% block details %}
@@ -69,40 +75,6 @@
                 }],
                 required: true
             }) }}
-
-            {% if createType == myType %}
-                <hr/>
-                {{ forms.selectField({
-                    label: "Key Pair"|t(pluginHandle),
-                    id: 'keychain',
-                    name: 'keychain',
-                    value: provider.keychain ? provider.keychain.id : '',
-                    errors: provider.getErrors('keychain'),
-                    options: allkeypairs|merge([{label:'None',value:null}]),
-                    required: true
-                }) }}
-                <div class="centeralign">
-                    <a id="generate-key" class="btn submit">Generate key pair</a>
-                </div>
-                <div class="centeralign">
-                    <a class="go"
-                       href="/{{ craft.app.config.general.cpTrigger }}/{{ pluginHandle }}/keychain"
-                    >Manage key pairs</a>
-                </div>
-                <div class="saml-instructions">
-                    <p>
-                        Note: It is <strong>highly recommended</strong> to create and assign a key pair.
-                    </p>
-                </div>
-                {% do view.registerAssetBundle("flipbox\\keychain\\web\\assets\\bundles\\GenerateKeyPair") %}
-                {% js %}
-                    new Craft.GenerateKeyPair(
-                    $('#generate-key'),
-                    $('#keychain'),
-                    "{{ pluginHandle }}"
-                    );
-                {% endjs %}
-            {% endif %}
         </div>
         {% if provider.id %}
             <hr>
@@ -172,7 +144,140 @@
     {#
         Default showing
     #}
-    <div id="metadata">
+    <div id="security" >
+        {% if createType == myType %}
+            <br/>
+            <div class="readable">
+                <h2>Key Pairs</h2>
+            </div>
+            <div class="field">
+                <div class="heading">
+                    {% if provider.keychain %}
+                        <a target="_blank"
+                           class="go"
+                           href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
+                            Download Certificate
+                        </a>
+                        <br/>
+                    {% endif %}
+                    <a class="go"
+                       href="/{{ craft.app.config.general.cpTrigger }}/{{ pluginHandle }}/keychain"
+                    >Manage key pairs</a>
+                    <div class="instructions">
+                        <p>Be careful when changing the keys. You need to exchange the certificate with the other
+                            provider to make new keys work correctly.</p>
+                        <p>
+                            Note: It is <strong>highly recommended</strong> to create and assign a key pair.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {{ forms.selectField({
+                label: "Select Existing Key Pair"|t(pluginHandle),
+                id: 'keychain',
+                name: 'keychain',
+                value: provider.keychain ? provider.keychain.id : '',
+                errors: provider.getErrors('keychain'),
+                options: allkeypairs|merge([{label:'None',value:null}]),
+                required: true
+            }) }}
+            <div class="field">
+                <div class="heading">
+                    <label>Automatically Generate and Assign a New Key Pair</label>
+                </div>
+                <div class="input ltr">
+                    <a id="generate-key" class="btn submit">Generate key pair</a>
+                </div>
+                {% do view.registerAssetBundle("flipbox\\keychain\\web\\assets\\bundles\\GenerateKeyPair") %}
+                {% js %}
+                    new Craft.GenerateKeyPair(
+                    $('#generate-key'),
+                    $('#keychain'),
+                    "{{ pluginHandle }}"
+                    );
+                {% endjs %}
+            </div>
+        {% endif %}
+        {% if myType == 'idp' and provider.type == 'sp' %}
+            <br/>
+            <div class="field">
+                <div class="heading">
+                    <label>{{ "Wants Encrypt Assertions"|t(pluginHandle) }}</label>
+                </div>
+                {{ forms.lightswitch({
+                    label: "Encrypt Assertions"|t(pluginHandle),
+                    id: 'encryptAssertions',
+                    name: 'encryptAssertions',
+                    on: provider.encryptAssertions,
+                    errors: provider.getErrors('encryptAssertion'),
+                }) }}
+
+            </div>
+            {{ forms.selectField({
+                label: "Encryption Algorithm"|t(pluginHandle),
+                id: 'encryptionAlgorithm',
+                name: 'encryptionAlgorithm',
+                value: '',
+                options: [{
+                    label: 'AES128_CBC',
+                    value: 'AES128_CBC',
+                },{
+                    label: 'AES192_CBC',
+                    value: 'AES192_CBC',
+                },{
+                    label: 'AES256_CBC',
+                    value: 'AES256_CBC',
+                    default: true,
+                },{
+                    label: 'RSA_1_5',
+                    value: 'RSA_1_5',
+                },{
+                    label: 'RSA_OAEP_MGF1P',
+                    value: 'RSA_OAEP_MGF1P',
+                }],
+            }) }}
+        {% endif %}
+    </div>
+
+    <div id="configure" class="hidden">
+        {% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}
+            <br/>
+            <div class="readable">
+                <h2>Login/Logout Paths</h2>
+            </div>
+            {{ forms.textField({
+                label: "Login Path"|t(pluginHandle ),
+                instructions: "Use this as the `loginPath` value in the `general.php` configuration file."|t(pluginHandle ),
+                name: "loginPath",
+                id: 'loginPath',
+                class: "code",
+                value: provider.loginPath,
+                readonly: true,
+                disabled: true
+            }) }}
+
+            {{ forms.textField({
+                label: "Logout Path"|t(pluginHandle ),
+                instructions: "Use this for your logout button if you provider supports Single Logout (SLO)."~
+                " Using the twig variable looks like this: `{{ craft.samlSp.settings.logoutRequestEndpoint }}`"|t(pluginHandle ),
+                name: "logoutPath",
+                id: 'logoutPath',
+                class: "code",
+                value: provider.logoutPath,
+                readonly: true,
+                disabled: true
+            }) }}
+        {% endif %}
+
+        {% if (myType == 'sp' and provider.type == 'idp') or (myType == 'idp' and provider.type == 'sp') %}
+            {% import 'saml-core/_cp/metadata/_macros' as  macros %}
+            {{ macros.mappingInputTable(
+                provider, craftMappingOptions, pluginHandle
+            ) }}
+        {% endif %}
+
+    </div>
+    <div id="metadata" class="hidden">
         {% if provider.id %}
             <br/>
             <div class="readable">
@@ -234,15 +339,6 @@
         <div class="readable">
             <h2>Metadata</h2>
         </div>
-        {% if provider.keychain and createType == myType %}
-            <p>
-                <a target="_blank"
-                   class="btn large"
-                   href="{{ actionUrl(pluginHandle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
-                    Download Certificate
-                </a>
-            </p>
-        {% endif %}
 
         {{ forms.textareaField({
             label: "Metadata XML"|t(pluginHandle ),
@@ -258,67 +354,5 @@
             rows: 10
         }) }}
     </div>
-
-    <div id="configure" class="hidden">
-        {#{% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}#}
-            <br/>
-            <div class="readable">
-                <h2>Login/Logout Paths</h2>
-            </div>
-            {{ forms.textField({
-                label: "Login Path"|t(pluginHandle ),
-                instructions: "Use this as the `loginPath` value in the `general.php` configuration file."|t(pluginHandle ),
-                name: "loginPath",
-                id: 'loginPath',
-                class: "code",
-                value: provider.loginPath,
-                readonly: true,
-                disabled: true
-            }) }}
-
-            {{ forms.textField({
-                label: "Logout Path"|t(pluginHandle ),
-                instructions: "Use this for your logout button if you provider supports Single Logout (SLO)."~
-                " Using the twig variable looks like this: `{{ craft.samlSp.settings.logoutRequestEndpoint }}`"|t(pluginHandle ),
-                name: "logoutPath",
-                id: 'logoutPath',
-                class: "code",
-                value: provider.logoutPath,
-                readonly: true,
-                disabled: true
-            }) }}
-
-            {% if provider.type == 'idp' %}
-                <div class="readable">
-                    <h2>Mapping</h2>
-                </div>
-                {% set cols = {
-                    'attibuteName':{
-                        type: 'singleline',
-                        heading: 'Attribute Name',
-                    },
-                    'craftProperty' : {
-                        type: 'select',
-                        heading: 'Craft Property',
-                        options: craftMappingOptions
-                    }
-                } %}
-
-                {% set rows = provider.getMapping() %}
-                {{ forms.editableTableField({
-                    label: "User Attribute Mapping"|t(pluginHandle),
-                    instructions: "Each mapping on a different row."|t(pluginHandle),
-                    id: 'mapping',
-                    name: 'mapping',
-                    addRowLabel: "Add a new mapping",
-                    cols: cols,
-                    rows: rows,
-                    errors: provider.getErrors('mapping')
-                }) }}
-            {% endif %}
-        {#{% endif %}#}
-
-    </div>
-
 {% endblock %}
 

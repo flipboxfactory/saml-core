@@ -9,6 +9,7 @@
 namespace flipbox\saml\core\records;
 
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\models\SettingsInterface;
 use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecordInterface;
@@ -32,8 +33,8 @@ use yii\db\ActiveRecordInterface;
 interface ProviderInterface extends ActiveRecordInterface
 {
 
-    const TYPE_IDP = 'idp';
-    const TYPE_SP = 'sp';
+    const TYPE_IDP = SettingsInterface::IDP;
+    const TYPE_SP = SettingsInterface::SP;
 
     /**
      * @return EntityDescriptor

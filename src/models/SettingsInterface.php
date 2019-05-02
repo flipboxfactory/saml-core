@@ -10,8 +10,8 @@ namespace flipbox\saml\core\models;
 
 interface SettingsInterface
 {
-    const SP = 'sp';
     const IDP = 'idp';
+    const SP = 'sp';
 
     /**
      * @return string

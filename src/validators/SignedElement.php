@@ -3,8 +3,8 @@
 
 namespace flipbox\saml\core\validators;
 
+
 use RobRichards\XMLSecLibs\XMLSecurityKey;
-use SAML2\Response\Validation\Result;
 use SAML2\SignedElement as SamlSignedElement;
 
 class SignedElement
@@ -12,23 +12,24 @@ class SignedElement
     /**
      * @var XMLSecurityKey
      */
-    private $x509Certificate;
-
-    public function __construct(XMLSecurityKey $x509Certificate)
-    {
-        $this->x509Certificate = $x509Certificate;
-    }
+    private $xmlSecurityKey;
 
     /**
-     * @param Response $response
-     * @param Result $result
-     * @return void
+     * SignedElement constructor.
+     * @param XMLSecurityKey $xmlSecurityKey
      */
-    public function validate(SamlSignedElement $element, $result)
+    public function __construct(XMLSecurityKey $xmlSecurityKey)
+    {
+        $this->xmlSecurityKey = $xmlSecurityKey;
+    }
+
+
+    public function validate(SamlSignedElement $signedElement, $result)
     {
 
-        $element->validate($this->x509Certificate);
+        $signedElement->validate($this->xmlSecurityKey);
 
+        return $result;
     }
 
 }

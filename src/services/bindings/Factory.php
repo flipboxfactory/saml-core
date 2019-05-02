@@ -3,7 +3,6 @@
 namespace flipbox\saml\core\services\bindings;
 
 use craft\base\Component;
-use flipbox\saml\core\containers\Saml2Container;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\records\AbstractProvider;
@@ -25,6 +24,7 @@ class Factory extends Component
      */
     public static function receive()
     {
+        $request = \Craft::$app->request;
         switch ($request->getMethod()) {
             case 'POST':
                 $binding = new HTTPPost;
@@ -65,18 +65,18 @@ class Factory extends Component
         if (MessageHelper::isRequest($message)) {
 
             // Get POST by default
-            $endpoint = $provider->getFirstSpAcsService(
+            $endpoint = $provider->firstSpAcsService(
                     Constants::BINDING_HTTP_POST
-                ) ?? $provider->getFirstSpAcsService(
+                ) ?? $provider->firstSpAcsService(
                     Constants::BINDING_HTTP_REDIRECT
                 );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
         } else {
 
             // Get POST by default
-            $endpoint = $provider->getFirstSpSloService(
+            $endpoint = $provider->firstSpSloService(
                     Constants::BINDING_HTTP_POST
-                ) ?? $provider->getFirstSpSloService(
+                ) ?? $provider->firstSpSloService(
                     Constants::BINDING_HTTP_REDIRECT
                 );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
@@ -97,18 +97,18 @@ class Factory extends Component
         if (MessageHelper::isRequest($message)) {
 
             // Get POST by default
-            $endpoint = $provider->getFirstIdpSsoService(
+            $endpoint = $provider->firstIdpSsoService(
                     Constants::BINDING_HTTP_POST
-                ) ?? $provider->getFirstIdpSsoService(
+                ) ?? $provider->firstIdpSsoService(
                     Constants::BINDING_HTTP_REDIRECT
                 );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
         } else {
 
             // Get POST by default
-            $endpoint = $provider->getFirstSpSloService(
+            $endpoint = $provider->firstSpSloService(
                     Constants::BINDING_HTTP_POST
-                ) ?? $provider->getFirstSpSloService(
+                ) ?? $provider->firstSpSloService(
                     Constants::BINDING_HTTP_REDIRECT
                 );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
@@ -117,9 +117,4 @@ class Factory extends Component
         return $binding;
     }
 
-    protected static function attachContainer()
-    {
-        $container = new Saml2Container();
-
-    }
 }

@@ -13,7 +13,7 @@ use flipbox\craft\psr3\Logger;
 class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 {
 
-    const TEMPLATE_PATH = 'saml-idp/_components/post-binding-submit.twig';
+    const TEMPLATE_PATH = 'saml-core/_components/post-binding-submit.twig';
     /**
      * @var \Psr\Log\LoggerInterface
      */
@@ -66,6 +66,10 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function debugMessage($message, $type)
     {
+        if($message instanceof \DOMDocument || $message instanceof \DOMElement) {
+            $message = $message->ownerDocument->saveXML();
+        }
+
         $this->getLogger()->debug($message, ['type' => $type]);
     }
 

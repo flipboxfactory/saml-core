@@ -11,6 +11,7 @@ use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\EnsureSAMLPlugin;
+use flipbox\saml\core\models\SettingsInterface;
 
 /**
  * Class AbstractDefaultController
@@ -32,20 +33,20 @@ abstract class AbstractDefaultController extends AbstractController implements E
         $variables['myProvider'] = null;
         $variables['spProviders'] = [];
         $variables['idpProviders'] = [];
-        $variables['idpListInstructions'] = $this->getListInstructions($plugin::IDP);
-        $variables['spListInstructions'] = $this->getListInstructions($plugin::SP);
+        $variables['idpListInstructions'] = $this->getListInstructions(SettingsInterface::IDP);
+        $variables['spListInstructions'] = $this->getListInstructions(SettingsInterface::SP);
 
         /**
          * Breadcrumbs
          */
         $variables['crumbs'] = [
             [
-                'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
-                'label' => $this->getPlugin()->name
+                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
+                'label' => $this->getPlugin()->name,
             ],
             [
-                'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()) . '/metadata',
-                'label' => 'Provider List'
+                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()) . '/metadata',
+                'label' => 'Provider List',
             ],
         ];
 
@@ -90,8 +91,8 @@ abstract class AbstractDefaultController extends AbstractController implements E
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getPlugin();
         if (! in_array($providerType, [
-            $plugin::SP,
-            $plugin::IDP,
+            SettingsInterface::SP,
+            SettingsInterface::IDP,
         ])) {
             throw new \Exception($providerType . ' is not a valid type.');
         }
@@ -99,7 +100,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
         /**
          * TODO - Fix this for the IdP
          */
-        return $plugin::SP === $providerType ? Craft::t(
+        return SettingsInterface::SP === $providerType ? Craft::t(
             $this->getPlugin()->getHandle(),
             'These are your CraftCMS sites (this website). '
         ) : Craft::t(

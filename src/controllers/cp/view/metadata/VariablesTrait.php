@@ -185,7 +185,7 @@ trait VariablesTrait
             ],
             [
                 'label' => $user->getAttributeLabel('lastName'),
-                'value' => 'firstName',
+                'value' => 'lastName',
             ],
             [
                 'label' => $user->getAttributeLabel('email'),

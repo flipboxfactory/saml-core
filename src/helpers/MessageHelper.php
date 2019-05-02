@@ -10,6 +10,7 @@ use craft\helpers\StringHelper;
 use SAML2\Message as SamlMessage;
 use SAML2\Request as SamlRequest;
 use SAML2\StatusResponse as SamlResponse;
+use SAML2\XML\saml\Issuer;
 
 /**
  * Class MessageHelper
@@ -50,6 +51,19 @@ class MessageHelper
     public static function getParameterKeyByMessage(SamlMessage $message)
     {
         return static::isRequest($message) ? static::REQUEST_PARAMETER : static::RESPONSE_PARAMETER;
+    }
+
+    /**
+     * @param $issuer
+     * @return string|null
+     */
+    public static function getIssuer($issuer)
+    {
+        if ($issuer instanceof Issuer) {
+            return $issuer->getValue();
+        }
+
+        return $issuer;
     }
 
 }

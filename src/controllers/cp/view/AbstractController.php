@@ -11,6 +11,7 @@ namespace flipbox\saml\core\controllers\cp\view;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\AbstractController as BaseController;
 use flipbox\saml\core\EnsureSAMLPlugin;
+use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\web\assets\bundles\SamlCore;
 use SAML2\XML\md\IDPSSODescriptor;
@@ -147,7 +148,7 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
         /**
          * Add SP URLs
          */
-        if ($provider->getType() === $plugin::SP) {
+        if ($provider->getType() === AbstractSettings::SP) {
 
             foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
                 if (! ($roleDescriptor instanceof SPSSODescriptor)) {
@@ -169,7 +170,7 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
         /**
          * Add IDP URLs
          */
-        if ($provider->getType() === $plugin::IDP) {
+        if ($provider->getType() === AbstractSettings::IDP) {
             foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
 
                 if (! ($roleDescriptor instanceof IDPSSODescriptor)) {
@@ -197,8 +198,6 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
      */
     protected function getTitle($type)
     {
-        /** @var AbstractPlugin $plugin */
-        $plugin = $this->getPlugin();
-        return $type === $plugin::SP ? 'Service Provider (SP)' : 'Identity Provider (IDP)';
+        return $type === AbstractSettings::SP ? 'Service Provider (SP)' : 'Identity Provider (IDP)';
     }
 }

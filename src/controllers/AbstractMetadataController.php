@@ -15,6 +15,7 @@ use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
 use flipbox\saml\core\controllers\cp\view\metadata\VariablesTrait;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
 use yii\web\NotFoundHttpException;
@@ -61,8 +62,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $record = $this->processSaveAction();
 
         $entityDescriptor = $this->getPlugin()->getMetadata()->create(
-            $record->keychain,
-            $entityId = Craft::$app->request->getParam('entityId', null)
+            $this->getPlugin()->getSettings(),
+            $record->keychain
         );
 
         $provider = $this->getPlugin()->getProvider()->create(
@@ -216,6 +217,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $metadata = Craft::$app->request->getParam('metadata');
         $mapping = Craft::$app->request->getParam('mapping');
         $label = Craft::$app->request->getRequiredParam('label');
+
         $plugin = $this->getPlugin();
 
         $recordClass = $this->getPlugin()->getProviderRecordClass();
@@ -242,6 +244,10 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $record->metadata = $metadata;
         $record->mapping = $mapping;
         $record->providerType = $providerType;
+
+        if ($this->getPlugin()->getMyType() === SettingsInterface::IDP) {
+            $record->encryptAssertions = Craft::$app->request->getParam('encryptAssertions') ?: 0;
+        }
 
         /**
          * check for label and add error if it's empty

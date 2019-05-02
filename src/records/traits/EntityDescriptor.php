@@ -133,6 +133,31 @@ trait EntityDescriptor
         return $this->certificateToXMLSecurityKey($certificate);
     }
 
+    public function encryptionKey()
+    {
+        if (! $certificate = $this->firstCertificateForEncryption()) {
+            return null;
+        }
+
+        $pem = Certificate::convertToCertificate(
+            SecurityHelper::cleanCertificateWhiteSpace(
+                $certificate->getCertificate()
+            )
+        );
+
+        $xmlSecurityKey = new XMLSecurityKey(
+            XMLSecurityKey::AES256_CBC,
+            [
+                'type' => 'public',
+            ]
+        );
+
+
+        $xmlSecurityKey->loadKey($pem, false, true);
+
+        return $xmlSecurityKey;
+    }
+
     /**
      * @param X509Certificate $certificate
      * @return XMLSecurityKey

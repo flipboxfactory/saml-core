@@ -1,0 +1,29 @@
+{% macro mappingInputTable(provider, craftMappingOptions, pluginHandle) %}
+    {% import "_includes/forms" as forms %}
+    <div class="readable">
+        <h2>Mapping</h2>
+    </div>
+    {% set cols = {
+        'attibuteName':{
+            type: 'singleline',
+            heading: 'Attribute Name',
+        },
+        'craftProperty' : {
+            type: 'select',
+            heading: 'Craft User Property',
+            options: craftMappingOptions
+        }
+    } %}
+
+    {% set rows = provider.getMapping() %}
+    {{ forms.editableTableField({
+        label: "User Attribute Mapping"|t(pluginHandle),
+        instructions: "Each mapping on a different row."|t(pluginHandle),
+        id: 'mapping',
+        name: 'mapping',
+        addRowLabel: "Add a new mapping",
+        cols: cols,
+        rows: rows,
+        errors: provider.getErrors('mapping')
+    }) }}
+{% endmacro %}

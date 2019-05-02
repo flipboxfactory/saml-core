@@ -33,6 +33,8 @@ use yii\base\Event;
 abstract class AbstractPlugin extends Plugin
 {
 
+    const SAML_CORE_HANDLE = 'saml-core';
+
     /**
      * @var bool
      */
@@ -80,6 +82,16 @@ abstract class AbstractPlugin extends Plugin
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
+            }
+        );
+
+        Event::on(
+            View::class,
+            View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
+            function (RegisterTemplateRootsEvent $e) {
+                if (is_dir($baseDir = (dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates'))) {
+                    $e->roots[static::SAML_CORE_HANDLE] = $baseDir;
+                }
             }
         );
 

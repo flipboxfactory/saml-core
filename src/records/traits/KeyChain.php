@@ -37,6 +37,18 @@ trait KeyChain
         return $xmlSecurityKey;
     }
 
+    public function decryptionKey()
+    {
+
+        $xmlSecurityKey = new XMLSecurityKey(XMLSecurityKey::AES256_CBC,[
+            'type' => 'public',
+        ]);
+
+        $xmlSecurityKey->loadKey($this->keychain->getDecryptedCertificate(), false,true);
+
+        return $xmlSecurityKey;
+    }
+
     /**
      * @return XMLSecurityKey
      * @throws \Exception

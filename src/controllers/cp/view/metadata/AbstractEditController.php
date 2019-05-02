@@ -14,6 +14,7 @@ use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\EnsureSAMLPlugin;
+use flipbox\saml\core\models\SettingsInterface;
 
 /**
  * Class AbstractEditController
@@ -65,10 +66,10 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $plugin = $this->getPlugin();
         $providerRecord = $this->getPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
-            'title' => 'New ' . $this->getTitle($plugin::IDP),
-            'createType' => $plugin::IDP,
+            'title' => 'New ' . $this->getTitle(SettingsInterface::IDP),
+            'createType' => SettingsInterface::IDP,
             'provider' => new $providerRecord([
-                'providerType' => $plugin::IDP,
+                'providerType' => SettingsInterface::IDP,
             ]),
             'crumbs' => [
                 [
@@ -120,10 +121,10 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $plugin = $this->getPlugin();
         $providerRecord = $this->getPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
-            'title' => 'New ' . $this->getTitle($plugin::SP),
-            'createType' => $plugin::SP,
+            'title' => 'New ' . $this->getTitle(SettingsInterface::SP),
+            'createType' => SettingsInterface::SP,
             'provider' => new $providerRecord([
-                'providerType' => $plugin::SP,
+                'providerType' => SettingsInterface::SP,
             ]),
             'crumbs' => [
                 [
