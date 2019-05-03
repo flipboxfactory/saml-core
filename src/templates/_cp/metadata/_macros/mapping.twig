@@ -1,8 +1,6 @@
 {% macro mappingInputTable(provider, craftMappingOptions, pluginHandle) %}
     {% import "_includes/forms" as forms %}
-    <div class="readable">
-        <h2>Mapping</h2>
-    </div>
+    <h2 class="saml-cp-header">Mapping</h2>
     {% set cols = {
         'attibuteName':{
             type: 'singleline',

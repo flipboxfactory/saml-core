@@ -24,6 +24,11 @@ use yii\db\ActiveRecordInterface;
  * @property string $sha256
  * @property string $providerType
  * @property string $mapping
+ * @property string $denyGroupAccess
+ * @property bool $syncGroups
+ * @property bool $groupsAttributeName
+ * @property bool $encryptAssertions
+ * @property string $encryptionMethod
  * @property KeyChainRecord|null $keychain
  * @property bool $enabled
  * @property \DateTime $dateCreated

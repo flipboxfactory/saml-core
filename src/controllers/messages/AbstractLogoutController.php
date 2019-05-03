@@ -8,16 +8,14 @@ namespace flipbox\saml\core\controllers\messages;
 
 use craft\web\Controller;
 use craft\web\Request;
-use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use LightSaml\Model\Assertion\Issuer;
-use LightSaml\Model\Protocol\AbstractRequest;
-use LightSaml\Model\Protocol\LogoutResponse;
-use LightSaml\Model\Protocol\LogoutRequest;
-use LightSaml\Model\Protocol\SamlMessage;
-use LightSaml\Model\Protocol\StatusResponse;
 use yii\web\HttpException;
 
+/**
+ * TODO
+ * Class AbstractLogoutController
+ * @package flipbox\saml\core\controllers\messages
+ */
 abstract class AbstractLogoutController extends Controller implements \flipbox\saml\core\EnsureSAMLPlugin
 {
 

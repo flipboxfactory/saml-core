@@ -21,6 +21,7 @@ use SAML2\XML\md\SPSSODescriptor;
  * Trait EntityDescriptor
  * @package flipbox\saml\core\records\traits
  * @method SAML2EntityDescriptor getMetadataModel
+ * @mixin AbstractProvider
  */
 trait EntityDescriptor
 {
@@ -121,18 +122,12 @@ trait EntityDescriptor
     }
 
     /**
-     * @return XMLSecurityKey
+     * @return XMLSecurityKey|null
      * @throws \Exception
+     *
+     * For Decryption
+     * @see SecurityHelper::decryptAssertion()
      */
-    public function encryptionXMLSecurityKey()
-    {
-        if (! $certificate = $this->firstCertificateForEncryption()) {
-            return null;
-        }
-
-        return $this->certificateToXMLSecurityKey($certificate);
-    }
-
     public function encryptionKey()
     {
         if (! $certificate = $this->firstCertificateForEncryption()) {
@@ -146,7 +141,7 @@ trait EntityDescriptor
         );
 
         $xmlSecurityKey = new XMLSecurityKey(
-            XMLSecurityKey::AES256_CBC,
+            $this->encryptionMethod,
             [
                 'type' => 'public',
             ]

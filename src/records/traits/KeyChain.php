@@ -5,12 +5,14 @@ namespace flipbox\saml\core\records\traits;
 
 
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\records\AbstractProvider;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 /**
  * Trait KeyPair
  * @package flipbox\saml\core\records\traits
  * @property KeyChainRecord $keychain
+ * @mixin AbstractProvider
  */
 trait KeyChain
 {
@@ -36,33 +38,4 @@ trait KeyChain
 
         return $xmlSecurityKey;
     }
-
-    public function decryptionKey()
-    {
-
-        $xmlSecurityKey = new XMLSecurityKey(XMLSecurityKey::AES256_CBC,[
-            'type' => 'public',
-        ]);
-
-        $xmlSecurityKey->loadKey($this->keychain->getDecryptedCertificate(), false,true);
-
-        return $xmlSecurityKey;
-    }
-
-    /**
-     * @return XMLSecurityKey
-     * @throws \Exception
-     */
-    public function keychainPublicXmlSecurityKey()
-    {
-        $xmlSecurityKey = new XMLSecurityKey($this->defaultCipherType(), [
-            'type' => 'public',
-        ]);
-
-        $xmlSecurityKey->loadKey($this->keychain->getDecryptedCertificate());
-
-        return $xmlSecurityKey;
-
-    }
-
 }

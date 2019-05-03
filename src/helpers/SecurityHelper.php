@@ -2,19 +2,10 @@
 
 namespace flipbox\saml\core\helpers;
 
-use flipbox\keychain\records\KeyChainRecord;
-use LightSaml\Credential\KeyHelper;
-use LightSaml\Credential\KeyHelper as LightSamlKeyHelper;
-use LightSaml\Credential\X509Certificate;
-use LightSaml\Error\LightSamlSecurityException;
-use LightSaml\Model\Metadata\KeyDescriptor;
-use LightSaml\Model\Protocol\SamlMessage;
-use LightSaml\Model\XmlDSig\SignatureWriter;
-use LightSaml\Model\XmlDSig\SignatureXmlReader;
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
+use flipbox\saml\core\AbstractPlugin;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
+use SAML2\EncryptedAssertion;
 use SAML2\Utilities\Certificate;
-use SAML2\Utils;
 
 class SecurityHelper
 {
@@ -28,10 +19,16 @@ class SecurityHelper
         'RSA-SHA512' => XMLSecurityKey::RSA_SHA512,
     ];
 
-    public static function castAssertionEncryptionKey(XMLSecurityKey $key)
-    {
-        return Utils::castKey($key, XMLSecurityKey::RSA_1_5);
-    }
+    public static $validEncryptionMethods = [
+        XMLSecurityKey::TRIPLEDES_CBC,
+        // Prefered
+        XMLSecurityKey::AES128_CBC,
+        XMLSecurityKey::AES192_CBC,
+        XMLSecurityKey::AES256_CBC,
+
+        XMLSecurityKey::RSA_1_5,
+        XMLSecurityKey::RSA_OAEP_MGF1P,
+    ];
 
     /**
      * @param string $certificate
@@ -57,11 +54,21 @@ class SecurityHelper
         return static::cleanCertificateWhiteSpace($matches[1]);
     }
 
+    /**
+     * @param string $certificate
+     * @return string|string[]|null
+     */
     public static function cleanCertificateWhiteSpace(string $certificate)
     {
         return preg_replace('/\s+/', '', $certificate);
     }
 
+    /**
+     * @param $pem
+     * @return mixed|string|null
+     * @throws \Exception
+     * Thank you lightsaml/lightsaml
+     */
     public static function getPemAlgorithm($pem)
     {
         $res = openssl_x509_read($pem);
@@ -100,10 +107,54 @@ class SecurityHelper
         }
 
         if (! $signatureAlgorithm) {
-            throw new LightSamlSecurityException('Unrecognized signature algorithm');
+            throw new \Exception('Unrecognized signature algorithm');
         }
 
         return $signatureAlgorithm;
+    }
+
+    /**
+     * @param EncryptedAssertion $encryptedAssertion
+     * @param $pemString
+     * @param array $blacklist
+     * @return \SAML2\Assertion
+     * @throws \Exception
+     */
+    public static function decryptAssertion(EncryptedAssertion $encryptedAssertion, $pemString, array $blacklist = [])
+    {
+
+        $lastException = null;
+        foreach (static::$validEncryptionMethods as $method) {
+
+            if (in_array($method, $blacklist)) {
+                \Craft::debug('Decryption with key #' . $method . ' blacklisted.', AbstractPlugin::SAML_CORE_HANDLE);
+                continue;
+            }
+            $xmlSecurityKey = new XMLSecurityKey($method, [
+                'type' => 'public',
+            ]);
+
+            $xmlSecurityKey->loadKey(
+                $pemString,
+                false,
+                true
+            );
+
+            try {
+                $assertion = $encryptedAssertion->getAssertion(
+                    $xmlSecurityKey
+                );
+                \Craft::debug('Decryption with key #' . $method . ' succeeded.', AbstractPlugin::SAML_CORE_HANDLE);
+                return $assertion;
+            } catch (\Exception $e) {
+                $lastException = $e;
+                \Craft::debug('Decryption with key #' . $method . ' failed.', AbstractPlugin::SAML_CORE_HANDLE);
+            }
+        }
+
+        // Finally, throw it
+        throw $lastException;
+
     }
 
 }

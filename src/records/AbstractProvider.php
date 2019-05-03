@@ -1,4 +1,5 @@
 <?php
+
 namespace flipbox\saml\core\records;
 
 use flipbox\ember\records\ActiveRecord;
@@ -17,6 +18,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     use traits\EntityDescriptor, traits\KeyChain;
 
     const METADATA_HASH_ALGORITHM = 'sha256';
+    const DEFAULT_GROUPS_ATTRIBUTE_NAME = 'groups';
 
     protected $metadataModel;
     protected $cachedKeychain;
@@ -50,7 +52,11 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         }
 
         if (is_array($this->mapping)) {
-            $this->mapping = json_encode($this->mapping);
+            $this->mapping = \json_encode($this->mapping);
+        }
+
+        if (is_array($this->denyGroupAccess)) {
+            $this->denyGroupAccess = \json_encode($this->denyGroupAccess);
         }
 
         $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
@@ -151,7 +157,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function getMapping()
     {
@@ -162,4 +168,41 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         return $this->mapping;
     }
 
+    /**
+     * @param array $ids
+     * @return $this
+     */
+    public function setDenyGroupAccess(array $ids)
+    {
+        $this->denyGroupAccess = array_filter($ids, function ($id) {
+            return is_numeric($id);
+        });
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDenyGroupAccess()
+    {
+        if (is_string($this->denyGroupAccess)) {
+            $this->denyGroupAccess = json_decode($this->denyGroupAccess, true);
+        }
+
+        return $this->denyGroupAccess;
+    }
+
+    /**
+     * @param $groupId
+     * @return bool
+     */
+    public function hasDenyGroupAccess($groupId): bool
+    {
+        if (! is_array($this->getDenyGroupAccess())) {
+            return false;
+        }
+
+        return in_array($groupId, $this->getDenyGroupAccess());
+    }
 }

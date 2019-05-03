@@ -3,15 +3,15 @@
 
 namespace flipbox\saml\core\validators;
 
+use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
-use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\records\AbstractProvider;
 use SAML2\Assertion as SamlAssertion;
-use SAML2\Assertion\Validation\Result;
-use SAML2\Assertion\Validation\ConstraintValidator;
-use SAML2\Configuration\Destination;
 use SAML2\Assertion\Validation\AssertionConstraintValidator;
+use SAML2\Assertion\Validation\ConstraintValidator;
+use SAML2\Assertion\Validation\Result;
 use SAML2\Assertion\Validation\SubjectConfirmationConstraintValidator;
+use SAML2\Configuration\Destination;
 use SAML2\EncryptedAssertion;
 
 
@@ -87,18 +87,11 @@ class Assertion
         // Decrypt if needed
         if ($assertion instanceof EncryptedAssertion) {
 
-            // Need to do all of this below
-            //\LightSaml\Model\Assertion\EncryptedElementReader::decrypt
-            // overwrite assertion with decrypted assertion
-            $assertion = $assertion->getAssertion(
-//                $this->serviceProvider->keychainPrivateXmlSecurityKey()
-                $this->serviceProvider->decryptionKey()
+            $assertion = SecurityHelper::decryptAssertion(
+                $assertion,
+                $this->serviceProvider->keychain->getDecryptedCertificate()
             );
         }
-
-        SerializeHelper::xmlContentType();
-        echo $assertion->toXML()->ownerDocument->saveXML();
-        exit;
 
         /** @var SamlAssertion $assertion */
 
@@ -117,6 +110,14 @@ class Assertion
                 /** @var SignedElement|AssertionConstraintValidator $validator */
                 $validator->validate($assertion, $result);
             }
+            \Craft::debug(
+                sprintf(
+                    "%s validation errors: %s",
+                    \get_class($validator),
+                    \json_encode($result->getErrors())
+                ),
+                AbstractPlugin::SAML_CORE_HANDLE
+            );
         }
 
         return $result;

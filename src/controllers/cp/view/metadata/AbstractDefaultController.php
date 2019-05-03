@@ -102,7 +102,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
          */
         return SettingsInterface::SP === $providerType ? Craft::t(
             $this->getPlugin()->getHandle(),
-            'These are your CraftCMS sites (this website). '
+            'These are your Craft CMS sites (this website). '
         ) : Craft::t(
             $this->getPlugin()->getHandle(),
             'These are the remote providers where the user ' .

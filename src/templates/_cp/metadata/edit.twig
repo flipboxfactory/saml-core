@@ -110,46 +110,13 @@
             value: provider.label,
             errors: provider.getErrors('label'),
         }) }}
-
-        {% if myType == provider.type or myType == createType %}
-            {{ forms.textField({
-                label: "Entity ID"|t(pluginHandle ),
-                instructions: "Important: It's recommended to use the value provided. " ~
-                " If this value matches a seperate environment, verify it matchs the other environment's "~
-                "`baseUrl` exactly. If it's absolutely nessesary to change this value, the config property in the "~
-                "`config/"~pluginHandle~".php`."
-                |t(pluginHandle ),
-                name: "entityId",
-                id: 'entityId',
-                class: "code",
-                value: provider.entityId ?: ownEntityId,
-                errors: provider.getErrors('entityId'),
-                readonly: false,
-                disabled: false
-            }) }}
-        {% else %}
-            {{ forms.textField({
-                label: "Entity ID"|t(pluginHandle ),
-                instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
-                name: "entityId",
-                id: 'entityId',
-                class: "code",
-                value: provider.entityId,
-                errors: provider.getErrors('entityId'),
-                readonly: true,
-                disabled: true
-            }) }}
-        {% endif %}
     </div>
     {#
         Default showing
     #}
-    <div id="security" >
+    <div id="security">
         {% if createType == myType %}
-            <br/>
-            <div class="readable">
-                <h2>Key Pairs</h2>
-            </div>
+            <h2 class="saml-cp-header">Key Pairs</h2>
             <div class="field">
                 <div class="heading">
                     {% if provider.keychain %}
@@ -199,8 +166,8 @@
             </div>
         {% endif %}
         {% if myType == 'idp' and provider.type == 'sp' %}
-            <br/>
             <div class="field">
+                <h2 class="saml-cp-header">Encryption</h2>
                 <div class="heading">
                     <label>{{ "Wants Encrypt Assertions"|t(pluginHandle) }}</label>
                 </div>
@@ -210,41 +177,43 @@
                     name: 'encryptAssertions',
                     on: provider.encryptAssertions,
                     errors: provider.getErrors('encryptAssertion'),
+                    toggle: 'assertion-encryption-settings',
                 }) }}
 
             </div>
-            {{ forms.selectField({
-                label: "Encryption Algorithm"|t(pluginHandle),
-                id: 'encryptionAlgorithm',
-                name: 'encryptionAlgorithm',
-                value: '',
-                options: [{
-                    label: 'AES128_CBC',
-                    value: 'AES128_CBC',
-                },{
-                    label: 'AES192_CBC',
-                    value: 'AES192_CBC',
-                },{
-                    label: 'AES256_CBC',
-                    value: 'AES256_CBC',
-                    default: true,
-                },{
-                    label: 'RSA_1_5',
-                    value: 'RSA_1_5',
-                },{
-                    label: 'RSA_OAEP_MGF1P',
-                    value: 'RSA_OAEP_MGF1P',
-                }],
-            }) }}
+            <div id="assertion-encryption-settings">
+                {{ forms.selectField({
+                    label: "Encryption Method"|t(pluginHandle),
+                    id: 'encryptionMethod',
+                    name: 'encryptionMethod',
+                    errors: provider.getErrors('encryptionMethod'),
+                    value: provider.encryptionMethod,
+                    options: [{
+                        label: 'AES128_CBC',
+                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES128_CBC'),
+                    },{
+                        label: 'AES192_CBC',
+                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES192_CBC'),
+                    },{
+                        label: 'AES256_CBC',
+                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES256_CBC'),
+                    },{
+                        label: 'RSA_1_5',
+                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_1_5'),
+                    },{
+                        label: 'RSA_OAEP_MGF1P',
+                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_OAEP_MGF1P'),
+                    }],
+                }) }}
+
+            </div>
         {% endif %}
     </div>
 
     <div id="configure" class="hidden">
         {% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}
             <br/>
-            <div class="readable">
-                <h2>Login/Logout Paths</h2>
-            </div>
+            <h2 class="saml-cp-header">Login/Logout Paths</h2>
             {{ forms.textField({
                 label: "Login Path"|t(pluginHandle ),
                 instructions: "Use this as the `loginPath` value in the `general.php` configuration file."|t(pluginHandle ),
@@ -269,20 +238,75 @@
             }) }}
         {% endif %}
 
+        {# Mapping #}
         {% if (myType == 'sp' and provider.type == 'idp') or (myType == 'idp' and provider.type == 'sp') %}
-            {% import 'saml-core/_cp/metadata/_macros' as  macros %}
-            {{ macros.mappingInputTable(
+            {% import 'saml-core/_cp/metadata/_macros/mapping' as  map %}
+            {{ map.mappingInputTable(
                 provider, craftMappingOptions, pluginHandle
             ) }}
+            <br/>
+        {% endif %}
+
+        {# Groups #}
+        {% if (myType == 'idp' and provider.type == 'sp') %}
+            {% import 'saml-core/_cp/metadata/_macros/groups' as  groups %}
+            <h2 class="saml-cp-header">Groups</h2>
+            {{ groups.syncOptions(provider, pluginHandle) }}
+
+            {{ groups.conditionalDeny(provider, pluginHandle) }}
+            <br>
+            <br>
         {% endif %}
 
     </div>
     <div id="metadata" class="hidden">
+        <h2 class="saml-cp-header">Metadata</h2>
+        {% if myType == provider.type or myType == createType %}
+            {{ forms.textField({
+                label: "Entity ID"|t(pluginHandle ),
+                instructions: "Important: It's recommended to use the value provided. " ~
+                " If this value matches a seperate environment, verify it matchs the other environment's "~
+                "`baseUrl` exactly. If it's absolutely nessesary to change this value, the config property in the "~
+                "`config/"~pluginHandle~".php`."
+                |t(pluginHandle ),
+                name: "entityId",
+                id: 'entityId',
+                class: "code",
+                value: provider.entityId ?: ownEntityId,
+                errors: provider.getErrors('entityId'),
+                readonly: false,
+                disabled: false
+            }) }}
+        {% else %}
+            {{ forms.textField({
+                label: "Entity ID"|t(pluginHandle ),
+                instructions: "This is pulled from the Metadata and is readonly."|t(pluginHandle ),
+                name: "entityId",
+                id: 'entityId',
+                class: "code",
+                value: provider.entityId,
+                errors: provider.getErrors('entityId'),
+                readonly: true,
+                disabled: true
+            }) }}
+        {% endif %}
+
+        {{ forms.textareaField({
+            label: "Metadata XML"|t(pluginHandle ),
+            instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
+            class: "code",
+            id: 'metadata',
+            name: 'metadata',
+            value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
+            readonly: createType == myType ? true : false,
+            disabled: createType == myType ? true : false,
+            errors: provider.getErrors('metadata'),
+            required: true,
+            rows: 10
+        }) }}
+
         {% if provider.id %}
-            <br/>
-            <div class="readable">
-                <h2>Bindings</h2>
-            </div>
+            <h2 class="saml-cp-header">Bindings</h2>
             {% if singleSignOnServices %}
                 {% for binding, singleSignOnService in singleSignOnServices %}
                     {{ forms.textField({
@@ -335,24 +359,6 @@
 
             {% endif %}
         {% endif %}
-
-        <div class="readable">
-            <h2>Metadata</h2>
-        </div>
-
-        {{ forms.textareaField({
-            label: "Metadata XML"|t(pluginHandle ),
-            instructions: "Paste Metadata XML from the provider."|t(pluginHandle ),
-            class: "code",
-            id: 'metadata',
-            name: 'metadata',
-            value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
-            readonly: createType == myType ? true : false,
-            disabled: createType == myType ? true : false,
-            errors: provider.getErrors('metadata'),
-            required: true,
-            rows: 10
-        }) }}
     </div>
 {% endblock %}
 

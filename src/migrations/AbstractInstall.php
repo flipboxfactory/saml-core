@@ -11,6 +11,9 @@ namespace flipbox\saml\core\migrations;
 use craft\db\Migration;
 use craft\records\User;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\AbstractPlugin;
+use flipbox\saml\core\models\SettingsInterface;
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
 
 abstract class AbstractInstall extends Migration
@@ -52,20 +55,25 @@ abstract class AbstractInstall extends Migration
     protected function getProviderFields()
     {
         return [
-            'id'           => $this->primaryKey(),
+            'id' => $this->primaryKey(),
             'label' => $this->string(64),
-            'entityId'     => $this->string()->notNull(),
-            'metadata'     => $this->text()->notNull(),
-            'sha256'       => $this->string()->notNull(),
+            'entityId' => $this->string()->notNull(),
+            'metadata' => $this->text()->notNull(),
+            'sha256' => $this->string()->notNull(),
             'providerType' => $this->enum('providerType', [
-                'idp',
-                'sp'
+                SettingsInterface::SP,
+                SettingsInterface::IDP,
             ])->notNull(),
+            'encryptAssertions' => $this->boolean()->defaultValue(false)->notNull(),
+            'encryptionMethod' => $this->string(64)->null(),
+            'denyGroupAccess' => $this->text(),
+            'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
+            'groupsAttributeName' => $this->string(64)->defaultValue(AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME),
             'mapping' => $this->text(),
-            'enabled'      => $this->boolean()->defaultValue(true)->notNull(),
-            'dateUpdated'  => $this->dateTime()->notNull(),
-            'dateCreated'  => $this->dateTime()->notNull(),
-            'uid'          => $this->uid()
+            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ];
     }
 
@@ -81,25 +89,25 @@ abstract class AbstractInstall extends Migration
         $this->createTable($this->getProviderTableName(), $this->getProviderFields());
 
         $this->createTable(LinkRecord::tableName(), [
-            'id'          => $this->primaryKey(),
-            'providerId'  => $this->integer()->notNull(),
-            'keyChainId'  => $this->integer()->notNull(),
+            'id' => $this->primaryKey(),
+            'providerId' => $this->integer()->notNull(),
+            'keyChainId' => $this->integer()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
-            'uid'         => $this->uid()
+            'uid' => $this->uid(),
         ]);
 
         $this->createTable($this->getIdentityTableName(), [
-            'id'            => $this->primaryKey(),
-            'providerId'    => $this->integer()->notNull(),
-            'userId'        => $this->integer()->notNull(),
-            'nameId'        => $this->string()->notNull(),
-            'sessionId'     => $this->string()->null(),
-            'enabled'       => $this->boolean()->defaultValue(true)->notNull(),
+            'id' => $this->primaryKey(),
+            'providerId' => $this->integer()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'nameId' => $this->string()->notNull(),
+            'sessionId' => $this->string()->null(),
+            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'lastLoginDate' => $this->dateTime()->notNull(),
-            'dateUpdated'   => $this->dateTime()->notNull(),
-            'dateCreated'   => $this->dateTime()->notNull(),
-            'uid'           => $this->uid()
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ]);
     }
 

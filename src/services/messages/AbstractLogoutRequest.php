@@ -10,14 +10,13 @@ use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\records\ProviderInterface;
-use LightSaml\Helper;
-use LightSaml\Model\Assertion\Issuer;
-use LightSaml\Model\Assertion\NameID;
-use LightSaml\Model\Protocol\AbstractRequest;
-use LightSaml\Model\Protocol\LogoutRequest as LogoutRequestModel;
-use LightSaml\SamlConstants;
 use yii\base\Event;
 
+/**
+ * TODO
+ * Class AbstractLogoutRequest
+ * @package flipbox\saml\core\services\messages
+ */
 abstract class AbstractLogoutRequest extends AbstractLogout implements EnsureSAMLPlugin
 {
 

@@ -245,9 +245,25 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $record->mapping = $mapping;
         $record->providerType = $providerType;
 
-        if ($this->getPlugin()->getMyType() === SettingsInterface::IDP) {
+        // IDP Plugin on SP Provider ONLY
+        if (
+            $this->getPlugin()->getMyType() === SettingsInterface::IDP
+            &&
+            $providerType === SettingsInterface::SP
+        ) {
+            // Encryption settings
             $record->encryptAssertions = Craft::$app->request->getParam('encryptAssertions') ?: 0;
+            $record->encryptionMethod = Craft::$app->request->getParam('encryptionMethod');
+            $record->setDenyGroupAccess(
+                array_values(
+                    Craft::$app->request->getParam('denyGroupAccess', []) ?: []
+                )
+            );
         }
+
+        // Group properties
+        $record->syncGroups = Craft::$app->request->getParam('syncGroups') ?: 0;
+        $record->groupsAttributeName = Craft::$app->request->getParam('groupsAttributeName') ?: AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME;
 
         /**
          * check for label and add error if it's empty

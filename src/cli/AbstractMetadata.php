@@ -8,19 +8,16 @@
 
 namespace flipbox\saml\core\cli;
 
-use craft\helpers\UrlHelper;
-use flipbox\keychain\KeyChain;
-use flipbox\saml\core\helpers\SerializeHelper;
-use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\SamlPluginInterface;
-use yii\console\Controller;
 use craft\helpers\Console;
+use flipbox\keychain\KeyChain;
 use flipbox\keychain\keypair\traits\OpenSSL;
 use flipbox\keychain\keypair\traits\OpenSSLCliUtil;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\EnsureSAMLPlugin;
+use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\ProviderInterface;
+use yii\console\Controller;
 use yii\console\ExitCode;
-use \flipbox\saml\core\EnsureSAMLPlugin;
 
 abstract class AbstractMetadata extends Controller implements EnsureSAMLPlugin
 {
