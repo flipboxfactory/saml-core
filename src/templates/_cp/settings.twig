@@ -3,7 +3,7 @@
 
 {#{% block sidebar %}#}
     {#{% include templateIndex ~ '/_cp/_components/nav.twig' with {#}
-        {#pluginHandle: pluginHandle,#}
+        {#plugin.handle: plugin.handle,#}
         {#sel: 'settings',#}
     {#} %}#}
 {#{% endblock %}#}
@@ -16,7 +16,7 @@
         <h2>Settings</h2>
     </div>
     {{ forms.textField({
-        label: "Default Entity ID"|t(pluginHandle ),
+        label: "Default Entity ID"|t(plugin.handle ),
         name:'entityId',
         id:'entityId',
         instructions: "Entity ID for this system.",
@@ -50,7 +50,7 @@
         {#<h3>Endpoints</h3>#}
     {#</div>#}
     {#{{ forms.textField({#}
-        {#label: "Default Login Request Endpoint"|t(pluginHandle ),#}
+        {#label: "Default Login Request Endpoint"|t(plugin.handle ),#}
         {#instructions: "This initiates login. Set the Craft CMS general config `loginPath` to the following value.",#}
         {#class: "code",#}
         {#value: settings.loginRequestEndpoint,#}
@@ -58,7 +58,7 @@
         {#disabled: true#}
     {#}) }}#}
     {#{{ forms.textField({#}
-        {#label: "Default Logout Request Endpoint"|t(pluginHandle ),#}
+        {#label: "Default Logout Request Endpoint"|t(plugin.handle ),#}
         {#instructions: "This initiates logout. Use the following link as the logout anchor link href or use" ~#}
         {#" the variable `{{ craft." ~ pluginVariable ~ ".settings.logoutRequestEndpoint }}`",#}
         {#class: "code",#}

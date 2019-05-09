@@ -1,25 +1,25 @@
-{% macro syncOptions(provider, pluginHandle) %}
+{% macro syncOptions(provider, plugin) %}
     {% import "_includes/forms" as forms %}
     <div class="field">
         <div class="heading">
-            <label>{{ "Sync User Groups"|t(pluginHandle) }}</label>
+            <label>{{ "Sync User Groups"|t(plugin.handle) }}</label>
             <div class="instructions">
                 Send the list of user groups the individual is assigned to?
             </div>
         </div>
         {{ forms.lightswitch({
-            label: "syncGroups"|t(pluginHandle),
+            label: "syncGroups"|t(plugin.handle),
             id: 'syncGroups',
             name: 'syncGroups',
             errors: provider.getErrors('syncCroups'),
             on: provider.syncGroups,
-            toggle: 'sync-group-settings',
+            toggle: '.sync-group-settings',
         }) }}
 
     </div>
-    <div id="sync-group-settings" class="{% if not provider.syncGroups %}hidden{% endif %}">
+    <div class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
         {{ forms.textField({
-            label: "User Groups Attribute Name"|t(pluginHandle),
+            label: "User Groups Attribute Name"|t(plugin.handle),
             instructions: "Name the User Groups will fall under.",
             placeholder: 'userGroups',
             id: 'groupsAttributeName',
@@ -31,12 +31,16 @@
     </div>
 {% endmacro %}
 
-{% macro conditionalDeny(provider, pluginHandle) %}
+{% macro conditionalDeny(provider, plugin) %}
     <div class="field">
         <div class="heading">
             <label>Conditional Group Access</label>
             <div class="instructions">
-                Deny group access here by toggling the lightswitch next to the desired group.
+                <p class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}"><strong>Sync</strong>
+                    groups with the user data by toggling the appropriate lightswitch next to the
+                    desire group.</p>
+                <p><strong>Deny</strong> group access by toggling the appropriate lightswitch next to the desire group.
+                </p>
             </div>
         </div>
     </div>
@@ -49,21 +53,40 @@
     {% if groups|length %}
         <table id="groups" class="data fullwidth collapsible">
             <thead>
+            <th scope="col">
+                <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
+                    {{ "Sync Group"|t('app') }}
+                </span>
+            </th>
             <th scope="col">{{ "Deny Access"|t('app') }}</th>
             <th scope="col">{{ "Name"|t('app') }}</th>
             <th scope="col">{{ "Handle"|t('app') }}</th>
             </thead>
             <tbody>
             {% for group in groups %}
+                {% set groupOptions = provider.getGroupOptions() %}
                 <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
                     <td class="thin">
+                        <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
                         {{ forms.lightswitch({
-                            label: "Deny Access"|t(pluginHandle),
-                            id: 'denyGroupAccess',
-                            name: 'denyGroupAccess[' ~ group.id ~ ']',
+                            label: "Sync Group"|t(plugin.handle),
+                            id: 'groupOptions-sync-' ~ group.id,
+                            name: 'groupOptions[sync][' ~ group.id ~ ']',
                             value: group.id,
-                            on: provider.hasDenyGroupAccess(group.id),
-                            errors: provider.getErrors('denyGroupAccess'),
+                            on: groupOptions.shouldSync(group.id),
+                            errors: provider.getErrors('groupOptions'),
+                            small: true
+                        }) }}
+                        </span>
+                    </td>
+                    <td class="thin">
+                        {{ forms.lightswitch({
+                            label: "Deny Access"|t(plugin.handle),
+                            id: 'groupOptions-deny-' ~ group.id,
+                            name: 'groupOptions[deny][' ~ group.id ~ ']',
+                            value: group.id,
+                            on: groupOptions.shouldDeny(group.id),
+                            errors: provider.getErrors('groupOptions'),
                             small: true
                         }) }}
 

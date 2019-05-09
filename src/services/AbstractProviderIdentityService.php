@@ -10,6 +10,7 @@ namespace flipbox\saml\core\services;
 
 use craft\elements\User;
 use flipbox\saml\core\EnsureSAMLPlugin;
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
 use flipbox\saml\core\records\ProviderIdentityInterface;
 use flipbox\saml\core\records\ProviderInterface;
@@ -29,7 +30,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     public function findByNameId(string $nameId, ProviderInterface $provider)
     {
         return $this->find([
-            'nameId'     => $nameId,
+            'nameId' => $nameId,
             'providerId' => $provider->id,
         ]);
     }
@@ -42,6 +43,19 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
         return $this->find([
             'userId' => $user->getId(),
         ]);
+    }
+
+    /**
+     * @param User $user
+     * @param AbstractProvider $provider
+     * @return ProviderInterface|null
+     */
+    public function findByUserAndProvider(User $user, AbstractProvider $provider)
+    {
+        return $this->find([
+            'userId' => $user->getId(),
+            'providerId' => $provider->id,
+        ])->one();
     }
 
     /**
@@ -69,7 +83,8 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
         ProviderIdentityInterface $record,
         $runValidation = true,
         $attributeNames = null
-    ): ProviderIdentityInterface {
+    ): ProviderIdentityInterface
+    {
 
         if (! $record->save($runValidation, $attributeNames)) {
             throw new \Exception(Json::encode($record->getErrors()));

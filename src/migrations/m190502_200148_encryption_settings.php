@@ -21,7 +21,7 @@ abstract class m190502_200148_encryption_settings extends Migration
 
         $this->addColumn(
             static::getProviderTableName(),
-            'denyGroupAccess',
+            'groupOptions',
             $this->text()
         );
         $this->addColumn(
@@ -55,7 +55,7 @@ abstract class m190502_200148_encryption_settings extends Migration
     {
         $this->dropColumn(
             static::getProviderTableName(),
-            'denyGroupAccess'
+            'groupOptions'
         );
         $this->dropColumn(
             static::getProviderTableName(),

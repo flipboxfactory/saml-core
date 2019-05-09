@@ -16,13 +16,14 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\craft\psr3\Logger;
 use flipbox\saml\core\models\SettingsInterface;
+use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\AbstractCp;
-use flipbox\saml\core\services\AbstractProviderService;
 use flipbox\saml\core\services\bindings\Factory;
-use flipbox\saml\core\services\messages\AbstractLogoutRequest;
-use flipbox\saml\core\services\messages\AbstractLogoutResponse;
+use flipbox\saml\core\services\messages\LogoutRequest;
+use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
+use flipbox\saml\core\services\ProviderServiceInterface;
 use SAML2\Compat\AbstractContainer;
 use yii\base\Event;
 
@@ -100,6 +101,8 @@ abstract class AbstractPlugin extends Plugin
                 'class' => Logger::class,
             ],
             'metadata' => Metadata::class,
+            'logoutRequest' => LogoutRequest::class,
+            'logoutResponse' => LogoutResponse::class,
         ]);
     }
 
@@ -317,11 +320,14 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @returns AbstractProviderService
+     * @noinspection PhpDocMissingThrowsInspection
+     * @returns ProviderServiceInterface
      */
     public function getProvider()
     {
 
+        /** @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('provider');
     }
 
@@ -349,7 +355,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return AbstractLogoutRequest
+     * @return LogoutRequest
      * @throws \yii\base\InvalidConfigException
      */
     public function getLogoutRequest()
@@ -361,7 +367,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return AbstractLogoutResponse
+     * @return LogoutResponse
      * @throws \yii\base\InvalidConfigException
      */
     public function getLogoutResponse()

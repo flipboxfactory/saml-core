@@ -66,7 +66,7 @@ abstract class AbstractInstall extends Migration
             ])->notNull(),
             'encryptAssertions' => $this->boolean()->defaultValue(false)->notNull(),
             'encryptionMethod' => $this->string(64)->null(),
-            'denyGroupAccess' => $this->text(),
+            'groupOptions' => $this->text(),
             'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
             'groupsAttributeName' => $this->string(64)->defaultValue(AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME),
             'mapping' => $this->text(),

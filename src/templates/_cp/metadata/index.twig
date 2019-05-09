@@ -43,9 +43,9 @@
                             <div class="element small hasstatus "
                                  data-status="active"
                                     {% if myProvider and myProvider.id == provider.id %}
-                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
                                     {% else %}
-                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                     {% endif %}
                                  data-level="" data-editable="">
                                 <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
@@ -53,9 +53,9 @@
                                     <span class="title">
                                         <a
                                                 {% if myProvider and myProvider.id == provider.id %}
-                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
                                                 {% else %}
-                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                                 {% endif %}
                                         >{{ provider.label }}
                                         </a>

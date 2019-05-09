@@ -3,7 +3,7 @@
 {% block content %}
     <div class="elements">
         <div class="saml-instructions readable">
-            <a href="{{ cpUrl("/" ~ pluginHandle ~"/metadata/new-sp") }}" class="btn large submit icon add" style="float: right;">Add Service Provider</a>
+            <a href="{{ cpUrl("/" ~ plugin.handle ~"/metadata/new-sp") }}" class="btn large submit icon add" style="float: right;">Add Service Provider</a>
             <h2>
                 Service Provider List
             </h2>
@@ -28,9 +28,9 @@
                             <div class="element small hasstatus "
                                  data-status="active"
                                     {% if myProvider and myProvider.id == provider.id %}
-                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
                                     {% else %}
-                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                     {% endif %}
                                  data-level="" data-editable="">
                                 <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
@@ -38,9 +38,9 @@
                                     <span class="title">
                                         <a
                                                 {% if myProvider and myProvider.id == provider.id %}
-                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
                                                 {% else %}
-                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                                 {% endif %}
                                         >{{ provider.label ?? 'Provider' }}
                                         </a>
@@ -60,7 +60,7 @@
             </table>
         </div>
         <div class="saml-instructions readable">
-            <a href="{{ cpUrl("/" ~ pluginHandle ~"/metadata/new-idp") }}" class="btn large submit icon add" style="float: right;">Add Identity Provider</a>
+            <a href="{{ cpUrl("/" ~ plugin.handle ~"/metadata/new-idp") }}" class="btn large submit icon add" style="float: right;">Add Identity Provider</a>
             <h2>
                 Identity Provider List
             </h2>
@@ -85,9 +85,9 @@
                             <div class="element small hasstatus "
                                  data-status="active"
                                     {% if myProvider and myProvider.id == provider.id %}
-                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
                                     {% else %}
-                                        data-url="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                     {% endif %}
                                  data-level="" data-editable="">
                                 <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
@@ -95,9 +95,9 @@
                                     <span class="title">
                                         <a
                                                 {% if myProvider and myProvider.id == provider.id %}
-                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/my-provider') }}"
+                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
                                                 {% else %}
-                                                    href="{{ cpUrl(pluginHandle ~ '/metadata/' ~ provider.id) }}"
+                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                                 {% endif %}
                                         >{{ provider.label ?? 'Provider' }}
                                         </a>

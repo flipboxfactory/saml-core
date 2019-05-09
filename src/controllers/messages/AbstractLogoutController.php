@@ -7,16 +7,19 @@
 namespace flipbox\saml\core\controllers\messages;
 
 use craft\web\Controller;
-use craft\web\Request;
+use flipbox\saml\core\helpers\MessageHelper;
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
+use flipbox\saml\core\services\bindings\Factory;
+use SAML2\LogoutRequest;
+use SAML2\LogoutResponse;
 use yii\web\HttpException;
 
 /**
- * TODO
  * Class AbstractLogoutController
  * @package flipbox\saml\core\controllers\messages
  */
-abstract class AbstractLogoutController extends Controller implements \flipbox\saml\core\EnsureSAMLPlugin
+abstract class AbstractLogoutController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
 
     protected $allowAnonymous = [
@@ -29,18 +32,6 @@ abstract class AbstractLogoutController extends Controller implements \flipbox\s
      * @return ProviderInterface
      */
     abstract protected function getRemoteProvider($uid = null);
-
-    /**
-     * @param AbstractRequest $samlMessage
-     * @param ProviderInterface $provider
-     */
-    abstract protected function send(SamlMessage $samlMessage, ProviderInterface $provider);
-
-    /**
-     * @param Request $request
-     * @return StatusResponse
-     */
-    abstract protected function receive(Request $request): StatusResponse;
 
     /**
      * @param \yii\base\Action $action
@@ -58,18 +49,13 @@ abstract class AbstractLogoutController extends Controller implements \flipbox\s
     /**
      * @return \yii\web\Response
      * @throws HttpException
-     * @throws \flipbox\saml\core\exceptions\InvalidIssuer
+     * @throws \flipbox\saml\core\exceptions\InvalidMetadata
      * @throws \yii\base\ExitException
+     * @throws \yii\base\InvalidConfigException
      */
     public function actionIndex()
     {
-        /** @var Request $request */
-        $request = \Craft::$app->request;
-
-        if (false === ($request instanceof Request)) {
-            throw new HttpException(400, 'Must be a web request.');
-        }
-        $message = $this->receive($request);
+        $message = Factory::receive();
 
         $isRequest = $message instanceof LogoutRequest;
         $isResponse = $message instanceof LogoutResponse;
@@ -87,22 +73,29 @@ abstract class AbstractLogoutController extends Controller implements \flipbox\s
             );
         }
 
-        /** @var Issuer $issuer */
-        $issuer = $message->getIssuer();
+        /** @var AbstractProvider $theirProvider */
+        $theirProvider = $this->getPlugin()->getProvider()->findByEntityId(
+            MessageHelper::getIssuer($message->getIssuer())
+        )->one();
 
-        /** @var ProviderInterface $provider */
-        $provider = $this->getPlugin()->getHttpPost()->getProviderByIssuer($issuer);
+        /** @var AbstractProvider $ourProvider */
+        $ourProvider = $this->getPlugin()->getProvider()->findOwn();
 
         if ($isRequest) {
-            /** @var AbstractRequest $message */
-            $response = $this->getPlugin()->getLogoutResponse()->create($message);
+            /** @var LogoutResponse $response */
+            $response = $this->getPlugin()->getLogoutResponse()->create(
+                $message,
+                $theirProvider,
+                $ourProvider
+            );
 
             /**
              * Add the request id to the the response.
              */
-            $response->setInResponseTo($message->getID());
+            $response->setInResponseTo($message->getId());
 
-            $this->send($response, $provider);
+            \Craft::$app->user->logout();
+            Factory::send($response, $theirProvider);
             \Craft::$app->end();
         }
 
@@ -113,22 +106,44 @@ abstract class AbstractLogoutController extends Controller implements \flipbox\s
 
 
     /**
+     * @param null $uid
+     * @throws \flipbox\saml\core\exceptions\InvalidMetadata
      * @throws \yii\base\ExitException
+     * @throws \yii\base\InvalidConfigException
      */
     public function actionRequest($uid = null)
     {
 
-        /** @var ProviderInterface $provider */
-        $provider = $this->getRemoteProvider($uid);
+        /** @var AbstractProvider $theirProvider */
+        $theirProvider = $this->getRemoteProvider($uid);
 
-        $logoutRequest = $this->getPlugin()->getLogoutRequest()->create($provider);
+        /** @var AbstractProvider $ourProvider */
+        $ourProvider = $this->getPlugin()->getProvider()->findOwn();
+
+        $user = \Craft::$app->user->getIdentity();
+
+        if (! $identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)) {
+            $saml = $this->getPlugin();
+            $saml::warning('Logout not available. User is not logged in.');
+            // Logout locally only
+            $this->redirect(
+                \Craft::$app->config->general->logoutPath
+            );
+        }
+
+        $logoutRequest = $this->getPlugin()->getLogoutRequest()->create(
+            $theirProvider,
+            $ourProvider,
+            $identity,
+            \Craft::$app->config->general->getPostLogoutRedirect()
+        );
 
         /**
          * Save id to session so we can validate the response.
          */
-        $this->getPlugin()->getSession()->setRequestId($logoutRequest->getID());
+        $this->getPlugin()->getSession()->setRequestId($logoutRequest->getId());
 
-        $this->send($logoutRequest, $provider);
+        Factory::send($logoutRequest, $theirProvider);
         \Craft::$app->end();
     }
 }

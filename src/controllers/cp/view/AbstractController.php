@@ -52,8 +52,9 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
     protected function getBaseVariables()
     {
         $variables = [
+            'plugin' => $this->getPlugin(),
             'title' => $this->getPlugin()->name,
-            'pluginHandle' => $this->getPlugin()->getHandle(),
+//            'pluginHandle' => $this->getPlugin()->getHandle(),
             'pluginVariable' => $this->getPlugin()->getPluginVariableHandle(),
             'ownEntityId' => $this->getPlugin()->getSettings()->getEntityId(),
             'settings' => $this->getPlugin()->getSettings(),

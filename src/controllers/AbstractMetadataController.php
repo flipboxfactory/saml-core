@@ -15,6 +15,7 @@ use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
 use flipbox\saml\core\controllers\cp\view\metadata\VariablesTrait;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
+use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
@@ -254,10 +255,10 @@ abstract class AbstractMetadataController extends AbstractController implements 
             // Encryption settings
             $record->encryptAssertions = Craft::$app->request->getParam('encryptAssertions') ?: 0;
             $record->encryptionMethod = Craft::$app->request->getParam('encryptionMethod');
-            $record->setDenyGroupAccess(
-                array_values(
-                    Craft::$app->request->getParam('denyGroupAccess', []) ?: []
-                )
+            $record->setGroupOptions(
+                new GroupOptions([
+                    'options' => Craft::$app->request->getParam('groupOptions', []) ?: [],
+                ])
             );
         }
 

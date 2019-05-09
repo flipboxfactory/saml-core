@@ -1,4 +1,4 @@
-{% macro mappingInputTable(provider, craftMappingOptions, pluginHandle) %}
+{% macro mappingInputTable(provider, craftMappingOptions, plugin) %}
     {% import "_includes/forms" as forms %}
     <h2 class="saml-cp-header">Mapping</h2>
     {% set cols = {
@@ -15,8 +15,8 @@
 
     {% set rows = provider.getMapping() %}
     {{ forms.editableTableField({
-        label: "User Attribute Mapping"|t(pluginHandle),
-        instructions: "Each mapping on a different row."|t(pluginHandle),
+        label: "User Attribute Mapping"|t(plugin.handle),
+        instructions: "Each mapping on a different row."|t(plugin.handle),
         id: 'mapping',
         name: 'mapping',
         addRowLabel: "Add a new mapping",

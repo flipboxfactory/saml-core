@@ -4,6 +4,7 @@ namespace flipbox\saml\core\records;
 
 use flipbox\ember\records\ActiveRecord;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\models\GroupOptions;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
@@ -55,8 +56,8 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
             $this->mapping = \json_encode($this->mapping);
         }
 
-        if (is_array($this->denyGroupAccess)) {
-            $this->denyGroupAccess = \json_encode($this->denyGroupAccess);
+        if ($this->groupOptions instanceof GroupOptions) {
+            $this->serializeGroupOptions();
         }
 
         $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
@@ -161,7 +162,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      */
     public function getMapping()
     {
-        if (is_string($this->mapping)) {
+        if (is_string($this->mapping) && $this->hasMapping()) {
             $this->mapping = json_decode($this->mapping, true);
         }
 
@@ -169,40 +170,76 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     }
 
     /**
-     * @param array $ids
+     * @param GroupOptions $groupOptions
      * @return $this
      */
-    public function setDenyGroupAccess(array $ids)
+    public function setGroupOptions(GroupOptions $groupOptions)
     {
-        $this->denyGroupAccess = array_filter($ids, function ($id) {
-            return is_numeric($id);
-        });
+        $this->groupOptions = $groupOptions;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getDenyGroupAccess()
+    public function getGroupOptions(): GroupOptions
     {
-        if (is_string($this->denyGroupAccess)) {
-            $this->denyGroupAccess = json_decode($this->denyGroupAccess, true);
+        if ($this->hasGroupOptions()) {
+            $this->unserializeGroupOptions();
+        } elseif (! $this->groupOptions) {
+            $this->groupOptions = new GroupOptions();
         }
 
-        return $this->denyGroupAccess;
+        return $this->groupOptions;
     }
 
     /**
-     * @param $groupId
+     * @return false|string
+     */
+    protected function serializeGroupOptions()
+    {
+        return $this->groupOptions = json_encode($this->groupOptions);
+    }
+
+    /**
+     * @return GroupOptions|string
+     */
+    protected function unserializeGroupOptions()
+    {
+        if ($this->hasGroupOptions()) {
+            $this->groupOptions = new GroupOptions(json_decode($this->groupOptions, true));
+        }
+        return $this->groupOptions;
+    }
+
+    /**
      * @return bool
      */
-    public function hasDenyGroupAccess($groupId): bool
+    protected function hasMapping()
     {
-        if (! is_array($this->getDenyGroupAccess())) {
+        return $this->hasJsonProperty('mapping');
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasGroupOptions(): bool
+    {
+        return $this->hasJsonProperty('groupOptions');
+    }
+
+    /**
+     * @param string $property
+     * @return bool
+     */
+    protected function hasJsonProperty(string $property)
+    {
+        if (! $this->{$property}) {
             return false;
         }
-
-        return in_array($groupId, $this->getDenyGroupAccess());
+        try {
+            json_decode($this->{$property}, true);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
