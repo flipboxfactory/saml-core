@@ -19,6 +19,7 @@ use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
+use SAML2\XML\md\EntityDescriptor;
 use yii\web\NotFoundHttpException;
 
 abstract class AbstractMetadataController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
@@ -36,18 +37,17 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $this->requireAdmin();
 
+        /** @var AbstractProvider $provider */
         $provider = $this->getPlugin()->getProvider()->findByEntityId(
             $this->getPlugin()->getSettings()->getEntityId()
         )->one();
 
-        if ($provider) {
-            $metadata = $provider->getMetadataModel();
-        } else {
+        if (! $provider) {
             throw new InvalidMetadata('Metadata for this server is missing. Please configure this plugin.');
         }
 
         SerializeHelper::xmlContentType();
-        return SerializeHelper::toXml($metadata);
+        return $provider->toXmlString();
     }
 
     /**

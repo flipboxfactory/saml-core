@@ -98,15 +98,30 @@ abstract class AbstractDefaultController extends AbstractController implements E
         }
 
         /**
-         * TODO - Fix this for the IdP
+         * Base return off of getMyType and the provider type passed
          */
-        return SettingsInterface::SP === $providerType ? Craft::t(
-            $this->getPlugin()->getHandle(),
-            'These are your Craft CMS sites (this website). '
-        ) : Craft::t(
-            $this->getPlugin()->getHandle(),
-            'These are the remote providers where the user ' .
-            'authenticates, ie, OKTA, Microsoft AD, or Google, etc. To configure and IDP, simply obtain the metadata.'
-        );
+        switch ($this->getPlugin()->getMyType()) {
+            case SettingsInterface::IDP:
+                $return = SettingsInterface::SP === $providerType ? Craft::t(
+                    $this->getPlugin()->getHandle(),
+                    'These are the remote providers using this Craft CMS instance to authenticate. '
+                ) : Craft::t(
+                    $this->getPlugin()->getHandle(),
+                    'Your provider configuration(s).'
+                );
+                break;
+            case SettingsInterface::SP:
+                $return = SettingsInterface::SP === $providerType ? Craft::t(
+                    $this->getPlugin()->getHandle(),
+                    'Your provider configuration(s). '
+                ) : Craft::t(
+                    $this->getPlugin()->getHandle(),
+                    'These are the remote providers where the user ' .
+                    'authenticates, ie, OKTA, Microsoft AD, or Google, etc. To configure and IDP, simply obtain the metadata.'
+                );
+                break;
+        }
+
+        return $return;
     }
 }

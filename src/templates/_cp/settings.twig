@@ -1,13 +1,6 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{#{% block sidebar %}#}
-    {#{% include templateIndex ~ '/_cp/_components/nav.twig' with {#}
-        {#plugin.handle: plugin.handle,#}
-        {#sel: 'settings',#}
-    {#} %}#}
-{#{% endblock %}#}
-
 {% block content %}
     <input type="hidden" name="action" value="{{ baseActionPath }}/save">
     {{ redirectInput(baseCpPath) }}
@@ -22,48 +15,4 @@
         instructions: "Entity ID for this system.",
         value: settings.entityId,
     }) }}
-    <hr>
-    {#{% set cols = {#}
-        {#'attibuteName':{#}
-            {#type: 'singleline',#}
-            {#heading: 'Attribute Name',#}
-        {#},#}
-        {#'craftProperty' : {#}
-            {#type: 'singleline',#}
-            {#heading: 'Craft Property',#}
-        {#}#}
-    {#} %}#}
-
-    {#{% set rows = [] %}#}
-    {#{{ forms.editableTableField({#}
-        {#label: "Environments"|t('patron'),#}
-        {#instructions: "Enter each environment on a new row."|t('patron'),#}
-        {#id: 'environments',#}
-        {#name: 'environments',#}
-        {#addRowLabel: "Add an environment",#}
-        {#cols: cols,#}
-        {#rows: rows,#}
-        {#errors: settings.getErrors('environments')#}
-    {#}) }}#}
-
-    {#<div class="readable">#}
-        {#<h3>Endpoints</h3>#}
-    {#</div>#}
-    {#{{ forms.textField({#}
-        {#label: "Default Login Request Endpoint"|t(plugin.handle ),#}
-        {#instructions: "This initiates login. Set the Craft CMS general config `loginPath` to the following value.",#}
-        {#class: "code",#}
-        {#value: settings.loginRequestEndpoint,#}
-        {#readonly: true,#}
-        {#disabled: true#}
-    {#}) }}#}
-    {#{{ forms.textField({#}
-        {#label: "Default Logout Request Endpoint"|t(plugin.handle ),#}
-        {#instructions: "This initiates logout. Use the following link as the logout anchor link href or use" ~#}
-        {#" the variable `{{ craft." ~ pluginVariable ~ ".settings.logoutRequestEndpoint }}`",#}
-        {#class: "code",#}
-        {#value: settings.logoutRequestEndpoint,#}
-        {#readonly: true,#}
-        {#disabled: true#}
-    {#}) }}#}
 {% endblock %}

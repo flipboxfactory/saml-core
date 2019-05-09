@@ -181,7 +181,7 @@
                 }) }}
 
             </div>
-            <div id="assertion-encryption-settings">
+            <div id="assertion-encryption-settings" class="{% if not provider.encryptAssertions %}hidden{% endif %}">
                 {{ forms.selectField({
                     label: "Encryption Method"|t(plugin.handle),
                     id: 'encryptionMethod',

@@ -12,6 +12,7 @@ use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\helpers\MappingHelper;
+use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\ProviderInterface;
 
 /**
@@ -139,7 +140,7 @@ trait VariablesTrait
             $record = $this->getPlugin()->getProviderRecordClass();
 
             $provider = $variables['provider'] = new $record([
-                'providerType' => 'idp',
+                'providerType' => SettingsInterface::IDP,
             ]);
 
             $variables['title'] .= ': Create';
