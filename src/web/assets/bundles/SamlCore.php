@@ -27,6 +27,10 @@ class SamlCore extends AssetBundle
             'css/saml-core.css',
         ];
 
+        $this->js = [
+            'js/saml-core.js',
+        ];
+
         parent::init();
     }
 }

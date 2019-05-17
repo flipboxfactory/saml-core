@@ -58,6 +58,21 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
         ])->one();
     }
 
+    public function findByUserAndProviderOrCreate(User $user, AbstractProvider $provider)
+    {
+        $recordClass = $this->getPlugin()->getProviderIdentityRecordClass();
+        return
+            $this->findByUserAndProvider($user, $provider)
+            ??
+            new $recordClass([
+                'nameId' => $provider->assignNameId($user),
+                'providerId' => $provider->id,
+                'enabled' => true,
+                'userId' => $user->getId(),
+                'lastLoginDate' => new \DateTime,
+            ]);
+    }
+
     /**
      * @inheritdoc
      */

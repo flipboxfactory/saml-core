@@ -125,6 +125,22 @@ abstract class AbstractSettings extends Model implements SettingsInterface
     }
 
     /**
+     * @return bool
+     */
+    public function isIDP()
+    {
+        return $this->getMyType() === self::IDP;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSP()
+    {
+        return $this->getMyType() === self::SP;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getDefaultLoginEndpoint()

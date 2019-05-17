@@ -79,10 +79,6 @@ trait VariablesTrait
         );
 
 
-        $user = new User();
-
-        $variables['craftMappingOptions'] = $this->getCraftMappingOptions();
-
         /**
          * TYPES
          */
@@ -178,31 +174,6 @@ trait VariablesTrait
 
     protected function getCraftMappingOptions()
     {
-        $user = new User();
-        $options = [
-            [
-                'label' => $user->getAttributeLabel('firstName'),
-                'value' => 'firstName',
-            ],
-            [
-                'label' => $user->getAttributeLabel('lastName'),
-                'value' => 'lastName',
-            ],
-            [
-                'label' => $user->getAttributeLabel('email'),
-                'value' => 'email',
-            ],
-        ];
-        foreach ($user->getFieldLayout()->getFields() as $field) {
-            if (MappingHelper::isSupportedField($field)) {
-                $options[] = [
-                    'label' => $field->name,
-                    'value' => $field->handle,
-                ];
-            }
-        }
-
-        return $options;
     }
 
 }

@@ -12,6 +12,7 @@ class Session extends Component
 {
     const CORE_NAMESPACE = 'saml.core';
     const REQUEST_ID_KEY = 'request.id';
+    const HASH_ALGO = 'sha256';
 
     /**
      * @param $id
@@ -33,6 +34,14 @@ class Session extends Component
             $this->getName(static::REQUEST_ID_KEY)
         );
     }
+    
+    /**
+     * @return string
+     */
+    public function getId()
+    {
+        return hash(static::HASH_ALGO, \Craft::$app->session->getId());
+    }
 
     /**
      * @param $key
@@ -42,4 +51,5 @@ class Session extends Component
     {
         return static::CORE_NAMESPACE . '/' . $key;
     }
+
 }

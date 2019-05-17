@@ -69,6 +69,7 @@ abstract class AbstractInstall extends Migration
             'groupOptions' => $this->text(),
             'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
             'groupsAttributeName' => $this->string(64)->defaultValue(AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME),
+            'nameIdOverride' => $this->text(),
             'mapping' => $this->text(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

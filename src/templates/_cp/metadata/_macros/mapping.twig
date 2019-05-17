@@ -1,19 +1,32 @@
-{% macro mappingInputTable(provider, craftMappingOptions, plugin) %}
-    {% import "_includes/forms" as forms %}
+{% macro mappingInputTable(provider, plugin) %}
+    {% import _self as forms %}
+
+    {% if provider.getType() == constant('\\flipbox\\saml\\core\\models\\SettingsInterface::SP') and plugin.settings.isIDP() %}
+        {{ forms.nameIdSection(provider, plugin) }}
+    {% endif %}
+
     <h2 class="saml-cp-header">Mapping</h2>
     {% set cols = {
-        'attibuteName':{
+        attributeName: {
             type: 'singleline',
             heading: 'Attribute Name',
         },
-        'craftProperty' : {
+        craftProperty: {
             type: 'select',
             heading: 'Craft User Property',
-            options: craftMappingOptions
-        }
+            options: craft.samlCp.getMappingFieldOptions(),
+        },
     } %}
 
-    {% set rows = provider.getMapping() %}
+    {% if plugin.settings.isIDP() %}
+        {% set cols = cols | merge({
+            templateOverride: {
+                type: 'singleline',
+                heading: 'Templated Override',
+            }
+        }) %}
+    {% endif %}
+
     {{ forms.editableTableField({
         label: "User Attribute Mapping"|t(plugin.handle),
         instructions: "Each mapping on a different row."|t(plugin.handle),
@@ -21,7 +34,57 @@
         name: 'mapping',
         addRowLabel: "Add a new mapping",
         cols: cols,
-        rows: rows,
+        rows: provider.getMapping(),
         errors: provider.getErrors('mapping')
     }) }}
+
+    <div class="input ltr">
+        <a id="show-mapping-preview" role="button" class="btn">Preview Mapping</a>
+    </div>
+    <pre>
+        <code id="preview-mapping" class="html">
+        </code>
+    </pre>
+
+    {% do view.registerJsFile("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js") %}
+    {% do view.registerCssFile("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-blue.min.css") %}
+    {% js %}
+        hljs.initHighlightingOnLoad();
+    {% endjs %}
+    {% css %}
+        #show-mapping-preview {
+            margin: 20px 0;
+        }
+    {% endcss %}
+
+    {% do view.registerAssetBundle("flipbox\\saml\\core\\web\\assets\\bundles\\SamlCore") %}
+    {% js %}
+        new Craft.SamlCoreMetadata(
+            $('#show-mapping-preview'),
+            $('#preview-mapping'),
+            '{{ plugin.handle }}',
+            '{{ provider.id }}',
+            '{{ currentUser.id }}'
+        );
+    {% endjs %}
+{% endmacro %}
+
+{% macro editableTableField(config) %}
+    {% include 'saml-core/_cp/metadata/_includes/editableTable' with config only %}
+{% endmacro %}
+
+{% macro nameIdSection(provider, plugin) %}
+    {% import '_includes/forms' as forms %}
+    <h2 class="saml-cp-header">NameID</h2>
+
+    {{ forms.autosuggest({
+        label: "NameID Override/Mapping"|t(plugin.handle),
+        id: 'nameIdOverride',
+        name: 'nameIdOverride',
+        placeholder: "{username}",
+        value: provider.nameIdOverride,
+        suggestions: craft.samlCp.getMappingAutoSuggestions(),
+        errors: provider.getErrors('nameIdOverride')
+    }) }}
+
 {% endmacro %}

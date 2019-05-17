@@ -16,7 +16,7 @@ use yii\db\ActiveQuery;
 abstract class AbstractProvider extends ActiveRecord implements ProviderInterface
 {
 
-    use traits\EntityDescriptor, traits\KeyChain;
+    use traits\EntityDescriptor, traits\KeyChain, traits\MapUser;
 
     const METADATA_HASH_ALGORITHM = 'sha256';
     const DEFAULT_GROUPS_ATTRIBUTE_NAME = 'groups';
@@ -53,7 +53,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         }
 
         if (is_array($this->mapping)) {
-            $this->mapping = \json_encode($this->mapping);
+            $this->serializeMapping();
         }
 
         if ($this->groupOptions instanceof GroupOptions) {
@@ -158,12 +158,25 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     }
 
     /**
+     * @param array $mapping
+     * @return $this
+     */
+    public function setMapping(array $mapping)
+    {
+        $this->mapping = $mapping;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getMapping()
     {
-        if (is_string($this->mapping) && $this->hasMapping()) {
-            $this->mapping = json_decode($this->mapping, true);
+        if ($this->hasMapping()) {
+            $this->unserializeMapping();
+        } elseif (! $this->mapping) {
+            $this->mapping = [];
         }
 
         return $this->mapping;
@@ -194,6 +207,25 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @return false|string
      */
+    protected function serializeMapping()
+    {
+        return $this->mapping = json_encode($this->mapping);
+    }
+
+    /**
+     * @return GroupOptions|string
+     */
+    protected function unserializeMapping()
+    {
+        if ($this->hasMapping()) {
+            $this->mapping = json_decode($this->mapping, true);
+        }
+        return $this->mapping;
+    }
+
+    /**
+     * @return false|string
+     */
     protected function serializeGroupOptions()
     {
         return $this->groupOptions = json_encode($this->groupOptions);
@@ -213,7 +245,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @return bool
      */
-    protected function hasMapping()
+    public function hasMapping()
     {
         return $this->hasJsonProperty('mapping');
     }
@@ -221,7 +253,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @return bool
      */
-    protected function hasGroupOptions(): bool
+    public function hasGroupOptions(): bool
     {
         return $this->hasJsonProperty('groupOptions');
     }

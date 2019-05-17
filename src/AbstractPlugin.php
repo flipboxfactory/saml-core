@@ -19,6 +19,7 @@ use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\AbstractCp;
 use flipbox\saml\core\services\bindings\Factory;
+use flipbox\saml\core\services\Cp;
 use flipbox\saml\core\services\messages\LogoutRequest;
 use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
@@ -73,6 +74,16 @@ abstract class AbstractPlugin extends Plugin
         \Craft::setAlias('@flipbox/saml/core/web/assets', __DIR__ . '/web/assets');
         $this->registerTemplates();
 
+        $this->setComponents([
+            'cp' => Cp::class,
+            'psr3logger' => [
+                'class' => Logger::class,
+            ],
+            'metadata' => Metadata::class,
+            'logoutRequest' => LogoutRequest::class,
+            'logoutResponse' => LogoutResponse::class,
+        ]);
+
         /**
          * Set saml plugin to the craft variable
          */
@@ -83,6 +94,7 @@ abstract class AbstractPlugin extends Plugin
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
+                $variable->set('samlCp', $this->getCp());
             }
         );
 
@@ -95,15 +107,6 @@ abstract class AbstractPlugin extends Plugin
                 }
             }
         );
-
-        $this->setComponents([
-            'psr3logger' => [
-                'class' => Logger::class,
-            ],
-            'metadata' => Metadata::class,
-            'logoutRequest' => LogoutRequest::class,
-            'logoutResponse' => LogoutResponse::class,
-        ]);
     }
 
     /**
@@ -332,13 +335,10 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
      * @returns ProviderIdentityServiceInterface
      */
     public function getProviderIdentity()
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('providerIdentity');
     }
 

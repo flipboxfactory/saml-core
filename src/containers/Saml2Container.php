@@ -30,7 +30,9 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function __construct(AbstractPlugin $plugin)
     {
-        $this->logger = new Logger();
+        $this->logger = new Logger([
+            'category' => 'saml-core',
+        ]);
         $this->plugin = $plugin;
     }
 
@@ -66,7 +68,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function debugMessage($message, $type)
     {
-        if($message instanceof \DOMDocument || $message instanceof \DOMElement) {
+        if ($message instanceof \DOMDocument || $message instanceof \DOMElement) {
             $message = $message->ownerDocument->saveXML();
         }
 

@@ -45,6 +45,11 @@ abstract class m190502_200148_encryption_settings extends Migration
             'encryptionMethod',
             $this->string(64)->null()
         );
+        $this->addColumn(
+            static::getProviderTableName(),
+            'nameIdOverride',
+            $this->text()
+        );
         return true;
     }
 
@@ -69,10 +74,13 @@ abstract class m190502_200148_encryption_settings extends Migration
             static::getProviderTableName(),
             'encryptAssertions'
         );
-
         $this->dropColumn(
             static::getProviderTableName(),
             'encryptionMethod'
+        );
+        $this->dropColumn(
+            static::getProviderTableName(),
+            'nameIdOverride'
         );
         return true;
     }

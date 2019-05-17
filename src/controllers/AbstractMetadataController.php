@@ -19,7 +19,6 @@ use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
-use SAML2\XML\md\EntityDescriptor;
 use yii\web\NotFoundHttpException;
 
 abstract class AbstractMetadataController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
@@ -216,8 +215,9 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $keyId = Craft::$app->request->getParam('keychain');
         $providerType = Craft::$app->request->getParam('providerType');
         $metadata = Craft::$app->request->getParam('metadata');
-        $mapping = Craft::$app->request->getParam('mapping');
+        $mapping = Craft::$app->request->getParam('mapping', []);
         $label = Craft::$app->request->getRequiredParam('label');
+        $nameIdOverride = Craft::$app->request->getParam('nameIdOverride');
 
         $plugin = $this->getPlugin();
 
@@ -243,8 +243,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
          * Populate some vars
          */
         $record->metadata = $metadata;
-        $record->mapping = $mapping;
+        if (is_array($mapping)) {
+            $record->setMapping(
+                $mapping
+            );
+        }
         $record->providerType = $providerType;
+        $record->nameIdOverride = $nameIdOverride;
 
         // IDP Plugin on SP Provider ONLY
         if (

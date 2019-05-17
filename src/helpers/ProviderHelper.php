@@ -19,7 +19,7 @@ class ProviderHelper
 
         $newMap = [];
         foreach ($mapping as $map) {
-            $newMap[$map['attibuteName']] = $map['craftProperty'];
+            $newMap[$map['attributeName']] = $map['craftProperty'];
         }
 
         return $newMap;
