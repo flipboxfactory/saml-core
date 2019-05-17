@@ -35,7 +35,6 @@ class Factory extends Component
         }
 
         return $binding->receive();
-
     }
 
     /**
@@ -63,22 +62,20 @@ class Factory extends Component
     public static function determineBindingFromSp(SamlMessage $message, AbstractProvider $provider)
     {
         if (MessageHelper::isRequest($message)) {
-
             // Get POST by default
             $endpoint = $provider->firstSpAcsService(
-                    Constants::BINDING_HTTP_POST
-                ) ?? $provider->firstSpAcsService(
-                    Constants::BINDING_HTTP_REDIRECT
-                );
+                Constants::BINDING_HTTP_POST
+            ) ?? $provider->firstSpAcsService(
+                Constants::BINDING_HTTP_REDIRECT
+            );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
         } else {
-
             // Get POST by default
             $endpoint = $provider->firstSpSloService(
-                    Constants::BINDING_HTTP_POST
-                ) ?? $provider->firstSpSloService(
-                    Constants::BINDING_HTTP_REDIRECT
-                );
+                Constants::BINDING_HTTP_POST
+            ) ?? $provider->firstSpSloService(
+                Constants::BINDING_HTTP_REDIRECT
+            );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
         }
 
@@ -95,26 +92,23 @@ class Factory extends Component
     {
 
         if (MessageHelper::isRequest($message)) {
-
             // Get POST by default
             $endpoint = $provider->firstIdpSsoService(
-                    Constants::BINDING_HTTP_POST
-                ) ?? $provider->firstIdpSsoService(
-                    Constants::BINDING_HTTP_REDIRECT
-                );
+                Constants::BINDING_HTTP_POST
+            ) ?? $provider->firstIdpSsoService(
+                Constants::BINDING_HTTP_REDIRECT
+            );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
         } else {
-
             // Get POST by default
             $endpoint = $provider->firstSpSloService(
-                    Constants::BINDING_HTTP_POST
-                ) ?? $provider->firstSpSloService(
-                    Constants::BINDING_HTTP_REDIRECT
-                );
+                Constants::BINDING_HTTP_POST
+            ) ?? $provider->firstSpSloService(
+                Constants::BINDING_HTTP_REDIRECT
+            );
             $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
         }
 
         return $binding;
     }
-
 }

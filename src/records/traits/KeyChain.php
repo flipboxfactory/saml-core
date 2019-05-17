@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\records\traits;
 
-
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\records\AbstractProvider;
 use RobRichards\XMLSecLibs\XMLSecurityKey;

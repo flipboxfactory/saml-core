@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\validators;
 
-
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use SAML2\SignedElement as SamlSignedElement;
 
@@ -31,5 +30,4 @@ class SignedElement
 
         return $result;
     }
-
 }

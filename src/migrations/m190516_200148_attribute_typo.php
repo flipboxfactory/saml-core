@@ -24,8 +24,7 @@ abstract class m190516_200148_attribute_typo extends Migration
         /** @var AbstractProvider[] $providers */
         $providers = $providerRecord::find()->all();
 
-        foreach ($providers as $provider)
-        {
+        foreach ($providers as $provider) {
             $provider->mapping = preg_replace('/attibuteName/', 'attributeName', $provider->mapping);
             $provider->save();
         }

@@ -36,8 +36,7 @@ class Response
     public function __construct(
         AbstractProvider $identityProvider,
         AbstractProvider $serviceProvider
-    )
-    {
+    ) {
 
         $this->identityProvider = $identityProvider;
         $this->serviceProvider = $serviceProvider;
@@ -76,7 +75,6 @@ class Response
 
 
         return $responseResult;
-
     }
 
     /**
@@ -97,7 +95,6 @@ class Response
 
             $this->addErrorsToResult($responseResult, $assertionResult);
         }
-
     }
 
     /**
@@ -110,6 +107,4 @@ class Response
             $reponseResult->addError($error);
         }
     }
-
-
 }

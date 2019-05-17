@@ -75,5 +75,4 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
             ]
         );
     }
-
 }

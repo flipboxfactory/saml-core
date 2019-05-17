@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\records\traits;
 
-
 use craft\elements\User;
 use flipbox\saml\core\records\AbstractProvider;
 
@@ -36,5 +35,4 @@ trait MapUser
 
         return $nameId;
     }
-
 }

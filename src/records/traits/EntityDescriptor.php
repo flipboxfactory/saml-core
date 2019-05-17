@@ -276,5 +276,4 @@ trait EntityDescriptor
     {
         return $this->toXmlString();
     }
-
 }

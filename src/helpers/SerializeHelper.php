@@ -40,6 +40,4 @@ class SerializeHelper
             (strpos($location, '?') === false ? '?' : '&') .
             http_build_query($parameters);
     }
-
-
 }

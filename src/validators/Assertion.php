@@ -14,7 +14,6 @@ use SAML2\Assertion\Validation\SubjectConfirmationConstraintValidator;
 use SAML2\Configuration\Destination;
 use SAML2\EncryptedAssertion;
 
-
 class Assertion
 {
     /**
@@ -42,8 +41,7 @@ class Assertion
         \SAML2\Response $response,
         AbstractProvider $identityProvider,
         AbstractProvider $serviceProvider
-    )
-    {
+    ) {
         $this->identityProvider = $identityProvider;
         $this->serviceProvider = $serviceProvider;
         $this->response = $response;
@@ -86,7 +84,6 @@ class Assertion
     {
         // Decrypt if needed
         if ($assertion instanceof EncryptedAssertion) {
-
             $assertion = SecurityHelper::decryptAssertion(
                 $assertion,
                 $this->serviceProvider->keychain->getDecryptedCertificate()
@@ -98,7 +95,6 @@ class Assertion
         $result = new Result();
 
         foreach ($this->validators as $validator) {
-
             if ($validator instanceof SubjectConfirmationConstraintValidator) {
                 $this->validateSubjectConfirmations(
                     $validator,
@@ -121,7 +117,6 @@ class Assertion
         }
 
         return $result;
-
     }
 
     /**
@@ -132,11 +127,9 @@ class Assertion
         SubjectConfirmationConstraintValidator $validator,
         array $subjectConfirmations,
         Result $result
-    )
-    {
+    ) {
         foreach ($subjectConfirmations as $subjectConfirmation) {
             $validator->validate($subjectConfirmation, $result);
         }
     }
-
 }

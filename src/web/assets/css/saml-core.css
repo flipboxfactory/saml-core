@@ -12,3 +12,12 @@
     letter-spacing: 0.1rem;
     font-weight: 300;
 }
+.saml-cp-header-small {
+    padding-top: 2rem;
+    border-bottom: solid thin #d5d8dd;
+    padding-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: #6a737e;
+    letter-spacing: 0.1rem;
+    font-weight: 300;
+}

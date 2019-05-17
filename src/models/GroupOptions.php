@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\models;
 
-
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
 
@@ -29,7 +28,6 @@ class GroupOptions extends Model implements \JsonSerializable
     public function setSync(array $groups)
     {
         return $this->setOption(self::OPTION_SYNC, $groups);
-
     }
 
     /**
@@ -124,5 +122,4 @@ class GroupOptions extends Model implements \JsonSerializable
             'deny' => $this->deny,
         ];
     }
-
 }

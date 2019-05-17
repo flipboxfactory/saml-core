@@ -252,8 +252,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $record->nameIdOverride = $nameIdOverride;
 
         // IDP Plugin on SP Provider ONLY
-        if (
-            $this->getPlugin()->getMyType() === SettingsInterface::IDP
+        if ($this->getPlugin()->getMyType() === SettingsInterface::IDP
             &&
             $providerType === SettingsInterface::SP
         ) {

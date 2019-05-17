@@ -37,8 +37,7 @@ class LogoutRequest extends Component
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
         string $relayState = ''
-    )
-    {
+    ) {
 
         $logout = new SamlLogoutRequest();
 

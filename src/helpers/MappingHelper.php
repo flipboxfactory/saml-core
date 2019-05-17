@@ -18,5 +18,4 @@ class MappingHelper
 
         return ! $field instanceof AbstractExternalIdentity;
     }
-
 }

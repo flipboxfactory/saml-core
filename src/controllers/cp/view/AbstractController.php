@@ -150,7 +150,6 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
          * Add SP URLs
          */
         if ($provider->getType() === AbstractSettings::SP) {
-
             foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
                 if (! ($roleDescriptor instanceof SPSSODescriptor)) {
                     continue;
@@ -173,7 +172,6 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
          */
         if ($provider->getType() === AbstractSettings::IDP) {
             foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
-
                 if (! ($roleDescriptor instanceof IDPSSODescriptor)) {
                     continue;
                 }
@@ -186,7 +184,6 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
                 $ssoLocation = $roleDescriptor->getSingleSignOnService()[0]->getLocation();
                 $variables['singleSignOnServices'][$ssoBinding] = $ssoLocation;
             }
-
         }
 
         return $variables;

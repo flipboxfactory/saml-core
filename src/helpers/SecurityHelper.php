@@ -125,7 +125,6 @@ class SecurityHelper
 
         $lastException = null;
         foreach (static::$validEncryptionMethods as $method) {
-
             if (in_array($method, $blacklist)) {
                 \Craft::debug('Decryption with key #' . $method . ' blacklisted.', AbstractPlugin::SAML_CORE_HANDLE);
                 continue;
@@ -154,7 +153,5 @@ class SecurityHelper
 
         // Finally, throw it
         throw $lastException;
-
     }
-
 }

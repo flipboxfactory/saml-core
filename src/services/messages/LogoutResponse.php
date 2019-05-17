@@ -29,8 +29,7 @@ class LogoutResponse extends Component
         LogoutRequest $request,
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider
-    )
-    {
+    ) {
         $logout = new SamlLogoutResponse();
 
         /**
@@ -40,16 +39,16 @@ class LogoutResponse extends Component
 
             $theirProvider->getType() === SettingsInterface::SP ?
                 $theirProvider->firstSpSloService(
-                /**
-                 * We only support post right now
-                 */
+                    /**
+                    * We only support post right now
+                    */
                     Constants::BINDING_HTTP_POST
                 )->getResponseLocation() :
                 $theirProvider->firstIdpSloService(
 
-                /**
-                 * We only support post right now
-                 */
+                    /**
+                    * We only support post right now
+                    */
                     Constants::BINDING_HTTP_POST
                 )->getResponseLocation()
         );

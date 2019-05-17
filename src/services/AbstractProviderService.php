@@ -146,8 +146,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         KeyChainRecord $keyChain,
         $runValidation = true,
         $attributeNames = null
-    )
-    {
+    ) {
         if (! $provider->id && ! $keyChain->id) {
             throw new \Exception('Provider id and keychain id must exist before linking.');
         }

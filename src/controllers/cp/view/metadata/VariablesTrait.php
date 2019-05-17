@@ -175,5 +175,4 @@ trait VariablesTrait
     protected function getCraftMappingOptions()
     {
     }
-
 }

@@ -51,5 +51,4 @@ class Session extends Component
     {
         return static::CORE_NAMESPACE . '/' . $key;
     }
-
 }

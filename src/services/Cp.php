@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use craft\base\Component;
 use craft\elements\User;
 use flipbox\saml\core\helpers\MappingHelper;
@@ -15,6 +14,10 @@ class Cp extends Component
     {
         $user = new User();
         $options = [
+            [
+                'label' => 'N/A (using override)',
+                'value' => '',
+            ],
             [
                 'label' => $user->getAttributeLabel('firstName'),
                 'value' => 'firstName',
@@ -111,5 +114,4 @@ class Cp extends Component
 
         return $return;
     }
-
 }

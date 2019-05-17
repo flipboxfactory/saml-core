@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\helpers;
 
-
 use flipbox\saml\core\AbstractPlugin;
 use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\EntityDescriptor;
@@ -74,7 +73,6 @@ class EntityDescriptorHelper
         }
 
         return $descriptors;
-
     }
 
     /**
@@ -184,7 +182,8 @@ class EntityDescriptorHelper
 
         \Craft::info(
             sprintf(
-                'Looping thru %s role descriptors', count($roleDescriptors)
+                'Looping thru %s role descriptors',
+                count($roleDescriptors)
             ),
             'saml-core'
         );
@@ -198,16 +197,13 @@ class EntityDescriptorHelper
 
         $return = null;
         foreach ($roleDescriptors as $descriptor) {
-
-            if (
-            $return = static::getFirstIndexedEndpointType(
+            if ($return = static::getFirstIndexedEndpointType(
                 call_user_func([$descriptor, $serviceMethod]),
                 $binding
             )
             ) {
                 break;
             }
-
         }
 
         return $return;

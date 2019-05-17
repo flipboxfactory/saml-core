@@ -84,5 +84,4 @@ interface ProviderInterface extends ActiveRecordInterface
      * @return string
      */
     public function toXmlString();
-
 }

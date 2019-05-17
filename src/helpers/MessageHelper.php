@@ -65,5 +65,4 @@ class MessageHelper
 
         return $issuer;
     }
-
 }

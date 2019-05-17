@@ -13,15 +13,14 @@
         $plugin: null,
 
         $providerId: null,
-        $userId: null,
+        $userIdInput: null,
         $spinner: null,
-        init: function ($button, $previewEl, $plugin, $providerId, $userId) {
+        init: function ($button, $previewEl, $plugin, $providerId, $userIdInput) {
             this.$button = $button;
             this.$previewEl = $previewEl;
             this.$plugin = $plugin;
             this.$providerId = $providerId;
-            this.$userId = $userId;
-            this.$previewEl.fadeToggle();
+            this.$userIdInput = $userIdInput;
             this.$spinner = $('<div class="spinner hidden"/>').insertAfter(this.$button.parent());
             this.addListener(this.$button, 'click', 'onClick');
         },
@@ -30,7 +29,7 @@
             Craft.postActionRequest(
                 `${this.$plugin}/cp/view/metadata/preview/mapping`,
                 {
-                    userId: this.$userId,
+                    userId: this.$userIdInput.val(),
                     providerId: this.$providerId,
                 },
                 $.proxy(function (response, textStatus) {
@@ -40,7 +39,9 @@
                         if (response.xml != undefined) {
                             this.$previewEl.text(response.xml).html()
                             hljs.highlightBlock(this.$previewEl[0]);
-                            this.$previewEl.fadeToggle();
+                            if (this.$previewEl.hasClass('hidden')) {
+                                this.$previewEl.removeClass('hidden');
+                            }
                         }
                     }
                 }, this)

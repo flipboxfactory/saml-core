@@ -144,5 +144,4 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
     {
         return static::TEMPLATE_PATH;
     }
-
 }
