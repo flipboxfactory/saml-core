@@ -32,14 +32,26 @@
 {% endmacro %}
 
 {% macro conditionalDeny(provider, plugin) %}
+    <h3 class="saml-cp-header-small">
+        Syncing and Access Control
+    </h3>
     <div class="field">
         <div class="heading">
-            <label>Conditional Group Access</label>
+            <label>Sync Groups</label>
             <div class="instructions">
-                <p class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}"><strong>Sync</strong>
-                    groups with the user data by toggling the appropriate lightswitch next to the
-                    desire group.</p>
-                <p><strong>Deny</strong> group access by toggling the appropriate lightswitch next to the desire group.
+                <p class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
+                    Sync groups with the user data by toggling the appropriate lightswitch next to the
+                    desire group.
+                </p>
+            </div>
+            <br/>
+            <label>Denying Groups</label>
+            <div class="instructions">
+                <p>
+                    Deny group access by toggling the appropriate lightswitch next to the desire group.
+                    "<strong>No Group Assigned</strong>" encompasses all users that aren't associated to a Craft CMS
+                    User Group. When deny is set here, users must be assigned to a group (furthermore, a group that is
+                    not denied).
                 </p>
             </div>
         </div>
@@ -50,54 +62,77 @@
         {{ "No groups exist yet."|t('app') }}
     </p>
 
-    {% if groups|length %}
-        <table id="groups" class="data fullwidth collapsible">
-            <thead>
-            <th scope="col">
-                <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
-                    {{ "Sync Group"|t('app') }}
-                </span>
-            </th>
-            <th scope="col">{{ "Deny Access"|t('app') }}</th>
-            <th scope="col">{{ "Name"|t('app') }}</th>
-            <th scope="col">{{ "Handle"|t('app') }}</th>
-            </thead>
-            <tbody>
-            {% for group in groups %}
-                {% set groupOptions = provider.getGroupOptions() %}
-                <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
-                    <td class="thin">
-                        <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
-                        {{ forms.lightswitch({
-                            label: "Sync Group"|t(plugin.handle),
-                            id: 'groupOptions-sync-' ~ group.id,
-                            name: 'groupOptions[sync][' ~ group.id ~ ']',
-                            value: group.id,
-                            on: groupOptions.shouldSync(group.id),
-                            errors: provider.getErrors('groupOptions'),
-                            small: true
-                        }) }}
-                        </span>
-                    </td>
-                    <td class="thin">
-                        {{ forms.lightswitch({
-                            label: "Deny Access"|t(plugin.handle),
-                            id: 'groupOptions-deny-' ~ group.id,
-                            name: 'groupOptions[deny][' ~ group.id ~ ']',
-                            value: group.id,
-                            on: groupOptions.shouldDeny(group.id),
-                            errors: provider.getErrors('groupOptions'),
-                            small: true
-                        }) }}
+    <table id="groups" class="data fullwidth collapsible">
+        <thead>
+        <th scope="col">
+            <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
+                {{ "Sync Group"|t('app') }}
+            </span>
+        </th>
+        <th scope="col">{{ "Deny Access"|t('app') }}</th>
+        <th scope="col">{{ "Name"|t('app') }}</th>
+        <th scope="col">{{ "Handle"|t('app') }}</th>
+        </thead>
+        <tbody>
+        {% set nogroup = {
+            id: 'nogroup',
+            handle: 'n/a',
+            name: 'No Group Assigned',
+        } %}
+        {% set groupOptions = provider.getGroupOptions() %}
+        <tr data-id="{{ nogroup.id }}" data-name="{{ nogroup.handle }}">
+            <td class="thin">
+            </td>
+            <td class="thin">
+                {{ forms.lightswitch({
+                    label: "Deny Access"|t(plugin.handle),
+                    id: 'groupOptions-deny-' ~ nogroup.id,
+                    name: 'groupOptions[deny][' ~ nogroup.id ~ ']',
+                    value: nogroup.id,
+                    on: groupOptions.shouldDeny(nogroup.id),
+                    errors: provider.getErrors('groupOptions'),
+                    small: true
+                }) }}
 
-                    </td>
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a
-                                href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t('site') }}</a>
-                    </th>
-                    <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+            </td>
+            <th scope="row" data-title="{{ 'Name'|t('app') }}">
+                {{ nogroup.name|t(plugin.handle) }}
+            </th>
+            <td data-title="{{ 'Handle'|t(plugin.handle) }}"><code>{{ nogroup.handle }}</code></td>
+        </tr>
+        {% for group in groups %}
+            <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
+                <td class="thin">
+                    <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
+                    {{ forms.lightswitch({
+                        label: "Sync Group"|t(plugin.handle),
+                        id: 'groupOptions-sync-' ~ group.id,
+                        name: 'groupOptions[sync][' ~ group.id ~ ']',
+                        value: group.id,
+                        on: groupOptions.shouldSync(group.id),
+                        errors: provider.getErrors('groupOptions'),
+                        small: true
+                    }) }}
+                    </span>
+                </td>
+                <td class="thin">
+                    {{ forms.lightswitch({
+                        label: "Deny Access"|t(plugin.handle),
+                        id: 'groupOptions-deny-' ~ group.id,
+                        name: 'groupOptions[deny][' ~ group.id ~ ']',
+                        value: group.id,
+                        on: groupOptions.shouldDeny(group.id),
+                        errors: provider.getErrors('groupOptions'),
+                        small: true
+                    }) }}
+
+                </td>
+                <th scope="row" data-title="{{ 'Name'|t('app') }}"><a
+                            href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t('site') }}</a>
+                </th>
+                <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endmacro %}

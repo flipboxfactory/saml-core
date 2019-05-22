@@ -3,6 +3,7 @@
 
 namespace flipbox\saml\core\models;
 
+use craft\elements\User;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
 
@@ -42,7 +43,7 @@ class GroupOptions extends Model implements \JsonSerializable
      * @param $id
      * @return bool
      */
-    public function shouldSync($id)
+    public function shouldSync($id): bool
     {
         return in_array($id, $this->sync);
     }
@@ -69,9 +70,18 @@ class GroupOptions extends Model implements \JsonSerializable
      * @param $id
      * @return bool
      */
-    public function shouldDeny($id)
+    public function shouldDeny($id): bool
     {
         return in_array($id, $this->deny);
+    }
+
+    /**
+     * @param User $user
+     * @return bool
+     */
+    public function shouldDenyNoGroup(User $user): bool
+    {
+        return empty($user->getGroups()) && in_array('nogroup', $this->deny);
     }
 
     /**
@@ -104,9 +114,10 @@ class GroupOptions extends Model implements \JsonSerializable
         }
 
         foreach ($groups as $group) {
-            if (is_numeric($group)) {
-                $this->{$option}[] = (int)$group;
+            if (empty($group)) {
+                continue;
             }
+            $this->{$option}[] = is_numeric($group) ? (int)$group : $group;
         }
 
         return $this;
