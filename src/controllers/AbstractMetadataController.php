@@ -260,7 +260,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             $record->encryptAssertions = Craft::$app->request->getParam('encryptAssertions') ?: 0;
             $record->encryptionMethod = Craft::$app->request->getParam('encryptionMethod');
             $record->setGroupOptions(
-                new GroupOptions([
+                $groupOptions = new GroupOptions([
                     'options' => Craft::$app->request->getParam('groupOptions', []) ?: [],
                 ])
             );

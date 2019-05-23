@@ -253,7 +253,7 @@
             <h2 class="saml-cp-header">Groups</h2>
             {{ groups.syncOptions(provider, plugin) }}
 
-            {{ groups.conditionalDeny(provider, plugin) }}
+            {{ groups.conditionalAllow(provider, plugin) }}
             <br>
             <br>
         {% endif %}

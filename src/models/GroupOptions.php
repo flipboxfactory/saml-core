@@ -10,7 +10,7 @@ use yii\base\Model;
 class GroupOptions extends Model implements \JsonSerializable
 {
     const OPTION_SYNC = 'sync';
-    const OPTION_DENY = 'deny';
+    const OPTION_ALLOW = 'allow';
 
     /**
      * @var int[]
@@ -20,7 +20,7 @@ class GroupOptions extends Model implements \JsonSerializable
     /**
      * @var int[]
      */
-    private $deny = [];
+    private $allow = [];
 
     /**
      * @param array $groups
@@ -52,36 +52,36 @@ class GroupOptions extends Model implements \JsonSerializable
      * @param array $groups
      * @return GroupOptions
      */
-    public function setDeny(array $groups)
+    public function setAllow(array $groups)
     {
-        return $this->setOption(self::OPTION_DENY, $groups);
+        return $this->setOption(self::OPTION_ALLOW, $groups);
     }
 
 
     /**
      * @return int[]
      */
-    public function getDeny()
+    public function getAllow()
     {
-        return $this->deny;
+        return $this->allow;
     }
 
     /**
      * @param $id
      * @return bool
      */
-    public function shouldDeny($id): bool
+    public function shouldAllow($id): bool
     {
-        return in_array($id, $this->deny);
+        return in_array($id, $this->allow);
     }
 
     /**
      * @param User $user
      * @return bool
      */
-    public function shouldDenyNoGroup(User $user): bool
+    public function shouldDenyNoGroupAssigned(User $user): bool
     {
-        return empty($user->getGroups()) && in_array('nogroup', $this->deny);
+        return empty($user->getGroups()) && in_array('nogroup', $this->allow);
     }
 
     /**
@@ -95,8 +95,8 @@ class GroupOptions extends Model implements \JsonSerializable
             $this->setSync($options[self::OPTION_SYNC]);
         }
 
-        if (isset($options[self::OPTION_DENY])) {
-            $this->setDeny($options[self::OPTION_DENY]);
+        if (isset($options[self::OPTION_ALLOW])) {
+            $this->setAllow($options[self::OPTION_ALLOW]);
         }
 
         return $this;
@@ -109,7 +109,7 @@ class GroupOptions extends Model implements \JsonSerializable
      */
     private function setOption($option, array $groups)
     {
-        if (! in_array($option, [static::OPTION_SYNC, static::OPTION_DENY])) {
+        if (! in_array($option, [static::OPTION_SYNC, static::OPTION_ALLOW])) {
             throw new InvalidArgumentException('Option not valid.');
         }
 
@@ -130,7 +130,7 @@ class GroupOptions extends Model implements \JsonSerializable
     {
         return [
             'sync' => $this->sync,
-            'deny' => $this->deny,
+            'allow' => $this->allow,
         ];
     }
 }

@@ -31,7 +31,7 @@
     </div>
 {% endmacro %}
 
-{% macro conditionalDeny(provider, plugin) %}
+{% macro conditionalAllow(provider, plugin) %}
     <h3 class="saml-cp-header-small">
         Syncing and Access Control
     </h3>
@@ -45,13 +45,13 @@
                 </p>
             </div>
             <br/>
-            <label>Denying Groups</label>
+            <label>Access Control</label>
             <div class="instructions">
                 <p>
-                    Deny group access by toggling the appropriate lightswitch next to the desire group.
+                    Allow group access by toggling the appropriate switch next to the desire group. If the user is assigned
+                    to a group that is not explicitly allowed AND a group that is allowed, the user will be denied.
                     "<strong>No Group Assigned</strong>" encompasses all users that aren't associated to a Craft CMS
-                    User Group. When deny is set here, users must be assigned to a group (furthermore, a group that is
-                    not denied).
+                    User Group. When "Allow" is set here, users not assigned to a group are allowed to login to the Service Provider.
                 </p>
             </div>
         </div>
@@ -69,7 +69,7 @@
                 {{ "Sync Group"|t('app') }}
             </span>
         </th>
-        <th scope="col">{{ "Deny Access"|t('app') }}</th>
+        <th scope="col">{{ "Allow Access"|t('app') }}</th>
         <th scope="col">{{ "Name"|t('app') }}</th>
         <th scope="col">{{ "Handle"|t('app') }}</th>
         </thead>
@@ -85,11 +85,11 @@
             </td>
             <td class="thin">
                 {{ forms.lightswitch({
-                    label: "Deny Access"|t(plugin.handle),
-                    id: 'groupOptions-deny-' ~ nogroup.id,
-                    name: 'groupOptions[deny][' ~ nogroup.id ~ ']',
+                    label: "Allow Access"|t(plugin.handle),
+                    id: 'groupOptions-allow-' ~ nogroup.id,
+                    name: 'groupOptions[allow][' ~ nogroup.id ~ ']',
                     value: nogroup.id,
-                    on: groupOptions.shouldDeny(nogroup.id),
+                    on: groupOptions.shouldAllow(nogroup.id),
                     errors: provider.getErrors('groupOptions'),
                     small: true
                 }) }}
@@ -117,11 +117,11 @@
                 </td>
                 <td class="thin">
                     {{ forms.lightswitch({
-                        label: "Deny Access"|t(plugin.handle),
-                        id: 'groupOptions-deny-' ~ group.id,
-                        name: 'groupOptions[deny][' ~ group.id ~ ']',
+                        label: "Allow Access"|t(plugin.handle),
+                        id: 'groupOptions-allow-' ~ group.id,
+                        name: 'groupOptions[allow][' ~ group.id ~ ']',
                         value: group.id,
-                        on: groupOptions.shouldDeny(group.id),
+                        on: groupOptions.shouldAllow(group.id),
                         errors: provider.getErrors('groupOptions'),
                         small: true
                     }) }}
