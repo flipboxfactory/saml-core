@@ -61,7 +61,8 @@ class Factory extends Component
      */
     public static function determineBindingFromSp(SamlMessage $message, AbstractProvider $provider)
     {
-        if (MessageHelper::isRequest($message)) {
+
+        if (MessageHelper::isResponse($message)) {
             // Get POST by default
             $endpoint = $provider->firstSpAcsService(
                 Constants::BINDING_HTTP_POST
