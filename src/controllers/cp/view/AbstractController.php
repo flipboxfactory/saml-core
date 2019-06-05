@@ -14,6 +14,7 @@ use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\web\assets\bundles\SamlCore;
+use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\IDPSSODescriptor;
 use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\SPSSODescriptor;
@@ -155,12 +156,14 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
                     continue;
                 }
 
-                $sloBinding = $roleDescriptor->getSingleLogoutService()[0]->getBinding();
-                $sloResponseLocation = $roleDescriptor->getSingleLogoutService()[0]->getResponseLocation();
-                $variables['singleLogoutServices'][$sloBinding] = $sloResponseLocation;
+                if ($endpoint = $this->getFirstEndpoint($roleDescriptor->getSingleLogoutService())) {
+                    $sloBinding = $endpoint->getBinding();
+                    $sloResponseLocation = $endpoint->getResponseLocation();
+                    $variables['singleLogoutServices'][$sloBinding] = $sloResponseLocation;
+                }
 
                 /** @var IndexedEndpointType $firstACS */
-                $firstACS = $roleDescriptor->getAssertionConsumerService()[0];
+                $firstACS = $this->getFirstEndpoint($roleDescriptor->getAssertionConsumerService());
                 $acsBinding = $firstACS->getBinding();
                 $acsLocation = $firstACS->getLocation();
                 $variables['assertionConsumerServices'][$acsBinding] = $acsLocation;
@@ -176,17 +179,33 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
                     continue;
                 }
 
-                $sloBinding = $roleDescriptor->getSingleLogoutService()[0]->getBinding();
-                $sloLocation = $roleDescriptor->getSingleLogoutService()[0]->getLocation();
-                $variables['singleLogoutServices'][$sloBinding] = $sloLocation;
+                if ($endpoint = $this->getFirstEndpoint($roleDescriptor->getSingleLogoutService())) {
+                    $sloBinding = $endpoint->getBinding();
+                    $sloResponseLocation = $endpoint->getResponseLocation();
+                    $variables['singleLogoutServices'][$sloBinding] = $sloResponseLocation;
+                }
 
-                $ssoBinding = $roleDescriptor->getSingleSignOnService()[0]->getBinding();
-                $ssoLocation = $roleDescriptor->getSingleSignOnService()[0]->getLocation();
+                $sso = $this->getFirstEndpoint($roleDescriptor->getSingleSignOnService());
+                $ssoBinding = $sso->getBinding();
+                $ssoLocation = $sso->getLocation();
                 $variables['singleSignOnServices'][$ssoBinding] = $ssoLocation;
             }
         }
 
         return $variables;
+    }
+
+    /**
+     * @param $endpoints
+     * @return EndpointType|null
+     */
+    protected function getFirstEndpoint($endpoints)
+    {
+        if (is_null($endpoints) || empty($endpoints)) {
+            return null;
+        }
+
+        return array_shift($endpoints);
     }
 
 
