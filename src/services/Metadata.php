@@ -182,10 +182,11 @@ class Metadata extends Component
         if (property_exists($settings, 'wantsSignedAssertions') &&
             is_bool($settings->wantsSignedAssertions)
         ) {
-            $descriptor->setAuthnRequestsSigned(
+            $descriptor->setWantAssertionsSigned(
                 $settings->wantsSignedAssertions
             );
         }
+
 
         // ACS
         $acsEndpoint = new IndexedEndpointType();
