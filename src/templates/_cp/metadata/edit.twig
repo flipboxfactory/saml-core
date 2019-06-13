@@ -211,7 +211,7 @@
     </div>
 
     <div id="configure" class="hidden">
-        {% if myType == 'sp' and provider.type == 'idp' and provider.loginPath %}
+        {% if (( myType == 'sp' and provider.type == 'idp' ) or ( myType == 'idp' and provider.type == 'sp' )) and provider.loginPath %}
             <br/>
             <h2 class="saml-cp-header">Login/Logout Paths</h2>
             {{ forms.textField({
@@ -359,6 +359,7 @@
 
             {% endif %}
         {% endif %}
+
     </div>
 {% endblock %}
 

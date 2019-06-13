@@ -123,6 +123,10 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 
         $data['destination'] = $url;
 
+        if(!isset($data['RelayState'])) {
+            $data['RelayState'] = '';
+        }
+
         $view = \Craft::$app->getView();
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
         \Craft::$app->response->data = $view->renderTemplate(
