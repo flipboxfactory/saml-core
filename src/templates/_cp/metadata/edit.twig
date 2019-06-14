@@ -227,8 +227,7 @@
 
             {{ forms.textField({
                 label: "Logout Path"|t(plugin.handle ),
-                instructions: "Use this for your logout button if you provider supports Single Logout (SLO)."~
-                " Using the twig variable looks like this: `{{ craft.samlSp.settings.logoutRequestEndpoint }}`"|t(plugin.handle ),
+                instructions: "Use this for your logout button if your provider supports Single Logout (SLO)."|t(plugin.handle ),
                 name: "logoutPath",
                 id: 'logoutPath',
                 class: "code",
