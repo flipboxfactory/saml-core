@@ -20,6 +20,15 @@ class SerializeHelper
     }
 
     /**
+     * @param string $str
+     * @return bool
+     */
+    public static function isBase64String(string $str): bool
+    {
+        return base64_encode(base64_decode($str)) === $str;
+    }
+
+    /**
      * set proper headers to present xml correctly
      */
     public static function xmlContentType()

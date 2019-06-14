@@ -123,7 +123,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 
         $data['destination'] = $url;
 
-        if(!isset($data['RelayState'])) {
+        if (!isset($data['RelayState'])) {
             $data['RelayState'] = '';
         }
 
