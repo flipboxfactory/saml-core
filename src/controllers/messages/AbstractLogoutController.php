@@ -24,6 +24,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
 
     protected $allowAnonymous = [
         'actionIndex',
+        'actionRequest',
     ];
 
     public $enableCsrfValidation = false;

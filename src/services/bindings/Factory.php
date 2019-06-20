@@ -4,13 +4,16 @@ namespace flipbox\saml\core\services\bindings;
 
 use craft\base\Component;
 use flipbox\saml\core\exceptions\InvalidMetadata;
-use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
 use SAML2\Constants;
+use SAML2\AuthnRequest;
 use SAML2\HTTPPost;
 use SAML2\HTTPRedirect;
+use SAML2\LogoutRequest;
+use SAML2\LogoutResponse;
 use SAML2\Message as SamlMessage;
+use SAML2\Response;
 
 /**
  * Class Factory
@@ -45,11 +48,7 @@ class Factory extends Component
      */
     public static function send(SamlMessage $message, AbstractProvider $provider)
     {
-        if ($provider->getType() === $provider::TYPE_IDP) {
-            $binding = static::determineBindingFromIdp($message, $provider);
-        } else {
-            $binding = static::determineBindingFromSp($message, $provider);
-        }
+        $binding = static::determineSendBinding($message, $provider);
 
         $binding->send($message);
     }
@@ -59,57 +58,43 @@ class Factory extends Component
      * @param AbstractProvider $provider
      * @return HTTPPost|HTTPRedirect
      */
-    public static function determineBindingFromSp(SamlMessage $message, AbstractProvider $provider)
+    protected static function determineSendBinding(SamlMessage $message, AbstractProvider $provider)
     {
-
-        if (MessageHelper::isResponse($message)) {
-            // Get POST by default
-            $endpoint = $provider->firstSpAcsService(
-                Constants::BINDING_HTTP_POST
-            ) ?? $provider->firstSpAcsService(
-                Constants::BINDING_HTTP_REDIRECT
-            );
-            $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
-        } else {
-            // Get POST by default
-            $endpoint = $provider->firstSpSloService(
-                Constants::BINDING_HTTP_POST
-            ) ?? $provider->firstSpSloService(
-                Constants::BINDING_HTTP_REDIRECT
-            );
-            $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
+        $binding = null;
+        switch (true) {
+            case ($message instanceof AuthnRequest):
+                $binding = $provider->firstIdpSsoService(Constants::BINDING_HTTP_POST)
+                    ??
+                    $provider->firstIdpSsoService();
+                break;
+            case ($message instanceof Response):
+                $binding = $provider->firstSpAcsService(Constants::BINDING_HTTP_POST)
+                    ??
+                    $provider->firstSpAcsService();
+                break;
+            case ($message instanceof LogoutRequest):
+            case ($message instanceof LogoutResponse):
+                $binding = static::getSLOEndpoint($provider);
+                break;
         }
-
-
-        return $binding;
+        return $binding->getBinding() === Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
     }
 
     /**
      * @param SamlMessage $message
      * @param AbstractProvider $provider
-     * @return HTTPPost|HTTPRedirect
+     * @return \SAML2\XML\md\IndexedEndpointType|null
      */
-    public static function determineBindingFromIdp(SamlMessage $message, AbstractProvider $provider)
+    protected static function getSLOEndpoint(AbstractProvider $provider)
     {
-
-        if (MessageHelper::isRequest($message)) {
-            // Get POST by default
-            $endpoint = $provider->firstIdpSsoService(
-                Constants::BINDING_HTTP_POST
-            ) ?? $provider->firstIdpSsoService(
-                Constants::BINDING_HTTP_REDIRECT
-            );
-            $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
-        } else {
-            // Get POST by default
-            $endpoint = $provider->firstSpSloService(
-                Constants::BINDING_HTTP_POST
-            ) ?? $provider->firstSpSloService(
-                Constants::BINDING_HTTP_REDIRECT
-            );
-            $binding = $endpoint->getBinding() == Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
-        }
-
-        return $binding;
+        return $provider->getType() === $provider::TYPE_IDP ? (
+            $provider->firstIdpSloService(Constants::BINDING_HTTP_POST)
+            ??
+            $provider->firstIdpSloService()
+        ) : (
+            $provider->firstSpSloService(Constants::BINDING_HTTP_POST)
+            ??
+            $provider->firstSpSloService()
+        );
     }
 }
