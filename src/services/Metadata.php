@@ -156,9 +156,6 @@ class Metadata extends Component
         $sloEndpoint->setIndex(1);
         $sloEndpoint->setBinding($binding);
         $sloEndpoint->setLocation(
-            $settings->getDefaultLogoutRequestEndpoint()
-        );
-        $sloEndpoint->setResponseLocation(
             $settings->getDefaultLogoutEndpoint()
         );
 
@@ -205,9 +202,6 @@ class Metadata extends Component
         $sloEndpoint->setIndex(1);
         $sloEndpoint->setBinding($binding);
         $sloEndpoint->setLocation(
-            $settings->getDefaultLogoutRequestEndpoint()
-        );
-        $sloEndpoint->setResponseLocation(
             $settings->getDefaultLogoutEndpoint()
         );
         $descriptor->setSingleLogoutService([

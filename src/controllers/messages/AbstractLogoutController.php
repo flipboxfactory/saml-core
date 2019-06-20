@@ -133,7 +133,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
             $saml = $this->getPlugin();
             $saml::warning('Logout not available. User is not logged in.');
             // Logout locally only
-            $this->redirect(
+            return $this->redirect(
                 \Craft::$app->config->general->logoutPath
             );
         }
