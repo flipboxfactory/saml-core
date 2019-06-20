@@ -46,8 +46,8 @@ class LogoutRequest extends Component
          */
         $logout->setDestination(
             $theirProvider->getType() === SettingsInterface::SP ?
-                $theirProvider->firstSpSloService(Constants::BINDING_HTTP_POST)->getResponseLocation() :
-                $theirProvider->firstIdpSloService(Constants::BINDING_HTTP_POST)->getResponseLocation()
+                $theirProvider->firstSpSloService(Constants::BINDING_HTTP_POST)->getLocation() :
+                $theirProvider->firstIdpSloService(Constants::BINDING_HTTP_POST)->getLocation()
         );
 
         /**
