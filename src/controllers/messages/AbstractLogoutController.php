@@ -40,7 +40,13 @@ abstract class AbstractLogoutController extends AbstractController implements \f
      */
     public function beforeAction($action)
     {
-        if ($action->actionMethod === 'actionIndex') {
+        if (in_array(
+            $action->actionMethod,
+            [
+            'actionIndex',
+            'actionRequest',
+            ]
+        )) {
             return true;
         }
         return parent::beforeAction($action);
