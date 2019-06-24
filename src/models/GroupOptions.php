@@ -12,6 +12,9 @@ class GroupOptions extends Model implements \JsonSerializable
     const OPTION_SYNC = 'sync';
     const OPTION_ALLOW = 'allow';
 
+    const NO_GROUP = 'nogroup';
+    const ALLOW_ANY = 'allowany';
+
     /**
      * @var int[]
      */
@@ -81,7 +84,15 @@ class GroupOptions extends Model implements \JsonSerializable
      */
     public function shouldAllowNoGroupAssigned(User $user): bool
     {
-        return empty($user->getGroups()) && in_array('nogroup', $this->allow);
+        return empty($user->getGroups()) && in_array(static::NO_GROUP, $this->allow);
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldAllowAny(): bool
+    {
+        return in_array(static::ALLOW_ANY, $this->allow);
     }
 
     /**

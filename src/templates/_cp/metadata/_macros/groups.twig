@@ -74,12 +74,37 @@
         <th scope="col">{{ "Handle"|t('app') }}</th>
         </thead>
         <tbody>
+        {% set allowany = {
+            id: 'allowany',
+            handle: 'n/a',
+            name: 'Allow Any',
+        } %}
+        {% set groupOptions = provider.getGroupOptions() %}
+        <tr data-id="{{ allowany.id }}" data-name="{{ allowany.handle }}">
+            <td class="thin">
+            </td>
+            <td class="thin">
+                {{ forms.lightswitch({
+                    label: "Allow Access"|t(plugin.handle),
+                    id: 'groupOptions-allow-' ~ allowany.id,
+                    name: 'groupOptions[allow][' ~ allowany.id ~ ']',
+                    value: allowany.id,
+                    on: groupOptions.shouldAllow(allowany.id),
+                    errors: provider.getErrors('groupOptions'),
+                    small: true
+                }) }}
+
+            </td>
+            <th scope="row" data-title="{{ 'Name'|t('app') }}">
+                {{ allowany.name|t(plugin.handle) }}
+            </th>
+            <td data-title="{{ 'Handle'|t(plugin.handle) }}"><code>{{ allowany.handle }}</code></td>
+        </tr>
         {% set nogroup = {
             id: 'nogroup',
             handle: 'n/a',
             name: 'No Group Assigned',
         } %}
-        {% set groupOptions = provider.getGroupOptions() %}
         <tr data-id="{{ nogroup.id }}" data-name="{{ nogroup.handle }}">
             <td class="thin">
             </td>
