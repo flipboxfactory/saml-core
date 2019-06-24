@@ -11,12 +11,15 @@ use SAML2\Constants;
 use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
+use SAML2\XML\md\AttributeConsumingService;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
 use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\KeyDescriptor;
+use SAML2\XML\md\RequestedAttribute;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
+use SAML2\XML\saml\Attribute;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
@@ -128,7 +131,6 @@ class Metadata extends Component
             $descriptor = $this->createIdpDescriptor($binding, $settings);
         }
 
-
         return $descriptor;
     }
 
@@ -163,6 +165,12 @@ class Metadata extends Component
             $sloEndpoint,
         ]);
 
+        // todo add attributes from mapping
+//        $attribute = new Attribute();
+//        $attribute->setName('Username');
+//        $descriptor->addAttribute(
+//            $attribute
+//        );
 
         return $descriptor;
     }
@@ -208,6 +216,11 @@ class Metadata extends Component
             $sloEndpoint,
         ]);
 
+        //todo add attribute consuming service
+//        $attributeConsumingService = new AttributeConsumingService();
+//        $attributeConsumingService->addRequestedAttribute($att = new RequestedAttribute());
+//        $att->setName('username');
+//        $descriptor->addAttributeConsumingService($attributeConsumingService);
 
         return $descriptor;
     }

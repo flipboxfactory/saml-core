@@ -79,7 +79,7 @@ class GroupOptions extends Model implements \JsonSerializable
      * @param User $user
      * @return bool
      */
-    public function shouldDenyNoGroupAssigned(User $user): bool
+    public function shouldAllowNoGroupAssigned(User $user): bool
     {
         return empty($user->getGroups()) && in_array('nogroup', $this->allow);
     }
