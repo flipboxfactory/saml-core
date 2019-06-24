@@ -1,5 +1,15 @@
 Changelog
 =========
+# 2.0.3.7
+### Changed
+- Changing AccessDenied Exception to a yii HttpException which returns a 403 status
+
+# 2.0.0
+### Changed
+- Lots of changes!
+- Switched from the php LightSaml package to the simplesamlphp core lib.
+- Code clean up and considation
+
 # 1.0.1
 ### Fixed
 - Refactoring for cleanup
