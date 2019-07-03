@@ -149,7 +149,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
          * Save id to session so we can validate the response.
          */
         $this->getPlugin()->getSession()->setRequestId($logoutRequest->getId());
-
+        \Craft::$app->user->logout(); 
         Factory::send($logoutRequest, $theirProvider);
         \Craft::$app->end();
     }
