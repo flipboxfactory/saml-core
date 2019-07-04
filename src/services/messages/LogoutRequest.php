@@ -44,9 +44,13 @@ class LogoutRequest extends Component
         /**
          * Set remote destination
          */
+        $service = $theirProvider->firstSpSloService(Constants::BINDING_HTTP_POST);
+        if (null === $service) {
+            $service = $theirProvider->firstSpSloService(Constants::BINDING_HTTP_REDIRECT);
+        }
         $logout->setDestination(
             $theirProvider->getType() === SettingsInterface::SP ?
-                $theirProvider->firstSpSloService(Constants::BINDING_HTTP_POST)->getLocation() :
+                $service->getLocation() :
                 $theirProvider->firstIdpSloService(Constants::BINDING_HTTP_POST)->getLocation()
         );
 
