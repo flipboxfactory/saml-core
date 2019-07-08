@@ -287,11 +287,11 @@ abstract class AbstractPlugin extends Plugin
                  */
                 'POST,GET /sso/login' => $handle . '/login',
                 sprintf(
-                    'GET %s',
+                    'POST,GET %s',
                     (string)static::getInstance()->getSettings()->loginRequestEndpoint
                 ) => $handle . '/login/request',
                 sprintf(
-                    'GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
+                    'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     (string)static::getInstance()->getSettings()->loginRequestEndpoint
                 ) => $handle . '/login/request',
                 /**
@@ -299,11 +299,11 @@ abstract class AbstractPlugin extends Plugin
                  */
                 'POST,GET /sso/logout' => $handle . '/logout',
                 sprintf(
-                    'GET %s',
+                    'POST,GET %s',
                     (string)static::getInstance()->getSettings()->logoutRequestEndpoint
                 ) => $handle . '/logout/request',
                 sprintf(
-                    'GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
+                    'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     (string)static::getInstance()->getSettings()->logoutRequestEndpoint
                 ) => $handle . '/logout/request',
 

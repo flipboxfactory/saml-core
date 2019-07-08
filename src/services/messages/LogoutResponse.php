@@ -39,18 +39,9 @@ class LogoutResponse extends Component
 
             $theirProvider->getType() === SettingsInterface::SP ?
                 $theirProvider->firstSpSloService(
-                    /**
-                    * We only support post right now
-                    */
-                    Constants::BINDING_HTTP_POST
-                )->getResponseLocation() :
+                )->getLocation() :
                 $theirProvider->firstIdpSloService(
-
-                    /**
-                    * We only support post right now
-                    */
-                    Constants::BINDING_HTTP_POST
-                )->getResponseLocation()
+                )->getLocation()
         );
 
         /**
