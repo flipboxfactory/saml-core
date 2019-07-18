@@ -24,6 +24,10 @@ class AttributeMap extends Model
     public function renderValue(User $user)
     {
         $value = null;
+        if (! $this->templateOverride && ! $this->craftProperty) {
+            return '';
+        }
+
         if ($this->templateOverride) {
             $value = \Craft::$app->view->renderObjectTemplate(
                 $this->templateOverride,
