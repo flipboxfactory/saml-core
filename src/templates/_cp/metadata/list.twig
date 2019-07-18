@@ -3,7 +3,7 @@
 {% block content %}
     <div class="elements">
         <div class="saml-instructions readable">
-            <a href="{{ cpUrl("/" ~ pluginHandle ~"/metadata/new-sp") }}" class="btn large submit icon add" style="float: right;">Add Service Provider</a>
+            <a href="{{ cpUrl(pluginHandle ~"/metadata/new-sp") }}" class="btn large submit icon add" style="float: right;">Add Service Provider</a>
             <h2>
                 Service Provider List
             </h2>
@@ -60,7 +60,7 @@
             </table>
         </div>
         <div class="saml-instructions readable">
-            <a href="{{ cpUrl("/" ~ pluginHandle ~"/metadata/new-idp") }}" class="btn large submit icon add" style="float: right;">Add Identity Provider</a>
+            <a href="{{ cpUrl(pluginHandle ~"/metadata/new-idp") }}" class="btn large submit icon add" style="float: right;">Add Identity Provider</a>
             <h2>
                 Identity Provider List
             </h2>
