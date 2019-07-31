@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.5
+### Fixed
+- Fixed issue with cp links on the list page 
+
 # 2.0.3.7
 ### Changed
 - Changing AccessDenied Exception to a yii HttpException which returns a 403 status
