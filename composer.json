@@ -1,7 +1,7 @@
 {
   "name": "flipboxfactory/saml-core",
   "description": "SAML SSO Core",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "type": "library",
   "keywords": [
     "cms",
@@ -16,7 +16,7 @@
     "craftcms/cms": "^3.2.0",
     "simplesamlphp/saml2": "<3.4",
     "flipboxfactory/craft-ember": "^1.0.0-rc.18",
-    "flipboxfactory/keychain":"1.0.0",
+    "flipboxfactory/keychain":"^1.0.0",
     "flipboxfactory/craft-psr3":"^1.1.0"
   },
   "require-dev": {
