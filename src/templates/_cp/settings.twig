@@ -8,11 +8,22 @@
     <div class="readable">
         <h2>Settings</h2>
     </div>
-    {{ forms.textField({
+
+    {{ forms.autosuggestField({
         label: "Default Entity ID"|t(plugin.handle ),
         name:'entityId',
         id:'entityId',
-        instructions: "Entity ID for this system.",
+        instructions: "The unique id for the site."|t('app'),
+        suggestEnvVars: true,
         value: settings.entityId,
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: "SSO Endpoint Prefix"|t(plugin.handle ),
+        name:'endpointPrefix',
+        id:'endpointPrefix',
+        instructions: "The endpoint prefix."|t('app'),
+        suggestEnvVars: true,
+        value: settings.endpointPrefix,
     }) }}
 {% endblock %}

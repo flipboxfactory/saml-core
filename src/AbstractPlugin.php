@@ -15,8 +15,8 @@ use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\craft\psr3\Logger;
+use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
-use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\AbstractCp;
 use flipbox\saml\core\services\bindings\Factory;
 use flipbox\saml\core\services\Cp;
@@ -285,30 +285,44 @@ abstract class AbstractPlugin extends Plugin
                 /**
                  * LOGIN
                  */
-                'POST,GET /sso/login' => $handle . '/login',
                 sprintf(
                     'POST,GET %s',
-                    (string)static::getInstance()->getSettings()->loginRequestEndpoint
+                    static::getInstance()->getSettings()->getDefaultLoginEndpoint()
+                ) => $handle . '/login',
+                sprintf(
+                    'POST,GET %s',
+                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestEndpoint()
                 ) => $handle . '/login/request',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    (string)static::getInstance()->getSettings()->loginRequestEndpoint
+                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestEndpoint()
                 ) => $handle . '/login/request',
                 /**
                  * LOGOUT
                  */
-                'POST,GET /sso/logout' => $handle . '/logout',
                 sprintf(
                     'POST,GET %s',
-                    (string)static::getInstance()->getSettings()->logoutRequestEndpoint
+                    static::getInstance()->getSettings()->getDefaultLogoutEndpoint()
+                ) => $handle . '/logout',
+                sprintf(
+                    'POST,GET %s',
+                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestEndpoint()
                 ) => $handle . '/logout/request',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    (string)static::getInstance()->getSettings()->logoutRequestEndpoint
+                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestEndpoint()
                 ) => $handle . '/logout/request',
 
             ]
         );
+    }
+
+    /**
+     * @return AbstractSettings
+     */
+    public function getSettings()
+    {
+        return parent::getSettings();
     }
 
     /**

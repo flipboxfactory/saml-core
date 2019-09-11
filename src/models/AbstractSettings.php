@@ -15,6 +15,8 @@ use craft\helpers\UrlHelper;
 abstract class AbstractSettings extends Model implements SettingsInterface
 {
 
+    const ENDPOINT_PREFIX = 'sso';
+
     /**
      * @var string
      */
@@ -26,12 +28,9 @@ abstract class AbstractSettings extends Model implements SettingsInterface
     protected $entityId;
 
     /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
      * @var string
      */
-    public $loginEndpoint = '/sso/login';
+    public $endpointPrefix = self::ENDPOINT_PREFIX;
 
     /**
      * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
@@ -39,7 +38,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      *
      * @var string
      */
-    public $logoutEndpoint = '/sso/logout';
+    protected $loginEndpoint = 'login';
 
     /**
      * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
@@ -47,7 +46,15 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      *
      * @var string
      */
-    public $loginRequestEndpoint = '/sso/login/request';
+    protected $logoutEndpoint = 'logout';
+
+    /**
+     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
+     * @see GeneralConfig::$loginPath
+     *
+     * @var string
+     */
+    protected $loginRequestEndpoint = 'login/request';
 
     /**
      * This is the endpoint used to initiate logout. In this case, `logoutPath` cannot be used.
@@ -55,7 +62,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      *
      * @var string
      */
-    public $logoutRequestEndpoint = '/sso/logout/request';
+    protected $logoutRequestEndpoint = 'logout/request';
 
     /**
      * @inheritdoc
@@ -95,7 +102,12 @@ abstract class AbstractSettings extends Model implements SettingsInterface
             $this->entityId = UrlHelper::baseUrl();
         }
 
-        return $this->entityId;
+        return \Craft::parseEnv($this->entityId);
+    }
+
+    public function getEndpointPrefix()
+    {
+        return \Craft::parseEnv($this->endpointPrefix);
     }
 
     /**
@@ -140,12 +152,21 @@ abstract class AbstractSettings extends Model implements SettingsInterface
         return $this->getMyType() === self::SP;
     }
 
+    protected function buildEndpointUrl($url)
+    {
+        return sprintf('/%s/%s', $this->getEndpointPrefix(), $url);
+    }
+
     /**
      * @inheritdoc
      */
     public function getDefaultLoginEndpoint()
     {
-        return UrlHelper::siteUrl($this->loginEndpoint);
+        return UrlHelper::siteUrl(
+            $this->buildEndpointUrl(
+                $this->loginEndpoint
+            )
+        );
     }
 
     /**
@@ -153,7 +174,9 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      */
     public function getDefaultLogoutEndpoint()
     {
-        return UrlHelper::siteUrl($this->logoutEndpoint);
+        return UrlHelper::siteUrl(
+            $this->buildEndpointUrl($this->logoutEndpoint)
+        );
     }
 
     /**
@@ -161,7 +184,9 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      */
     public function getDefaultLogoutRequestEndpoint()
     {
-        return UrlHelper::siteUrl($this->logoutRequestEndpoint);
+        return UrlHelper::siteUrl(
+            $this->buildEndpointUrl($this->logoutRequestEndpoint)
+        );
     }
 
     /**
@@ -169,6 +194,8 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      */
     public function getDefaultLoginRequestEndpoint()
     {
-        return UrlHelper::siteUrl($this->loginRequestEndpoint);
+        return UrlHelper::siteUrl(
+            $this->buildEndpointUrl($this->loginRequestEndpoint)
+        );
     }
 }

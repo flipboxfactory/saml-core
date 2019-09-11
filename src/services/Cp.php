@@ -10,14 +10,10 @@ use flipbox\saml\core\helpers\MappingHelper;
 class Cp extends Component
 {
 
-    public function getMappingFieldOptions()
+    public function getMappingFieldOptions($isIdp = true)
     {
         $user = new User();
         $options = [
-            [
-                'label' => 'N/A (using override)',
-                'value' => '',
-            ],
             [
                 'label' => $user->getAttributeLabel('firstName'),
                 'value' => 'firstName',
@@ -34,15 +30,23 @@ class Cp extends Component
                 'label' => $user->getAttributeLabel('username'),
                 'value' => 'username',
             ],
-            [
+        ];
+
+        if ($isIdp) {
+            array_unshift($options, [
+                'label' => 'N/A (using override)',
+                'value' => '',
+            ]);
+            $options[] = [
                 'label' => $user->getAttributeLabel('uid'),
                 'value' => 'uid',
-            ],
-            [
+            ];
+            $options[] = [
                 'label' => $user->getAttributeLabel('id'),
                 'value' => 'id',
-            ],
-        ];
+            ];
+        }
+
         foreach ($user->getFieldLayout()->getFields() as $field) {
             if (MappingHelper::isSupportedField($field)) {
                 $options[] = [

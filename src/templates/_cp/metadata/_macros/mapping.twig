@@ -39,7 +39,9 @@
         craftProperty: {
             type: 'select',
             heading: 'Craft User Property',
-            options: craft.samlCp.getMappingFieldOptions(),
+            options: craft.samlCp.getMappingFieldOptions(
+                plugin.settings.isIDP()
+            ),
         },
     } %}
 

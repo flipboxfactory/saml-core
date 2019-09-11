@@ -11,7 +11,6 @@ namespace flipbox\saml\core\controllers;
 use Craft;
 use craft\helpers\ArrayHelper;
 use flipbox\saml\core\AbstractPlugin;
-use yii\base\Action;
 
 /**
  * Class AbstractGeneralController
@@ -28,23 +27,23 @@ abstract class AbstractSettingsController extends AbstractController implements 
         return ArrayHelper::merge(
             parent::behaviors(),
             [
-                'error'    => [
-                    'default' => 'save'
+                'error' => [
+                    'default' => 'save',
                 ],
                 'redirect' => [
-                    'only'    => ['save'],
+                    'only' => ['save'],
                     'actions' => [
-                        'save' => [200]
-                    ]
+                        'save' => [200],
+                    ],
                 ],
-                'flash'    => [
+                'flash' => [
                     'actions' => [
                         'save' => [
                             200 => \Craft::t('saml-sp', "Settings successfully updated."),
-                            401 => \Craft::t('saml-sp', "Failed to update settings.")
-                        ]
-                    ]
-                ]
+                            401 => \Craft::t('saml-sp', "Failed to update settings."),
+                        ],
+                    ],
+                ],
             ]
         );
     }
@@ -55,7 +54,7 @@ abstract class AbstractSettingsController extends AbstractController implements 
     protected function verbs(): array
     {
         return [
-            'save' => ['post', 'put']
+            'save' => ['post', 'put'],
         ];
     }
 
@@ -65,12 +64,12 @@ abstract class AbstractSettingsController extends AbstractController implements 
      */
     public function actionSave()
     {
-        $entityId = Craft::$app->request->getRequiredParam('entityId');
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getPlugin();
 
         $settings = [
-            'entityId' => $entityId
+            'entityId' => Craft::$app->request->getRequiredParam('entityId'),
+            'endpointPrefix' => Craft::$app->request->getRequiredParam('endpointPrefix'),
         ];
 
         Craft::$app->plugins->savePluginSettings(
