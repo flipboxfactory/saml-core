@@ -216,7 +216,13 @@
             <h2 class="saml-cp-header">Login/Logout Paths</h2>
             {{ forms.textField({
                 label: "Login Path"|t(plugin.handle ),
-                instructions: "Use this as the `loginPath` value in the `general.php` configuration file."|t(plugin.handle ),
+                instructions: myType == 'sp' ?
+                    "Use this as the `loginPath` value in the `general.php` configuration file."|t(plugin.handle ) :
+                    "URL to initiate SSO via IDP. In human terms, " ~
+                    "goto this link to initiate login with this Service Provider. " ~
+                    "<a "~
+                    "href=\"https://saml-idp.flipboxfactory.com/initiating-sso.html#identity-provider-idp-initiated\" "~
+                    "target=\"_blank\">More info.</a>",
                 name: "loginPath",
                 id: 'loginPath',
                 class: "code",
@@ -227,7 +233,7 @@
 
             {{ forms.textField({
                 label: "Logout Path"|t(plugin.handle ),
-                instructions: "Use this for your logout button if your provider supports Single Logout (SLO)."|t(plugin.handle ),
+                instructions: "Use this URL to initiate Single Logout (SLO) with this provider."|t(plugin.handle ),
                 name: "logoutPath",
                 id: 'logoutPath',
                 class: "code",
