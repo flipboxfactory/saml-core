@@ -11,7 +11,8 @@
     <input type="hidden" name="{{ name }}" value="">
 {% endif %}
 
-<table id="{{ id }}" class="shadow-box editable"
+<table width="100%" id="{{ id }}" class="shadow-box editable"
+
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
     <tr>

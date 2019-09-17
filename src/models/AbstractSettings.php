@@ -198,4 +198,37 @@ abstract class AbstractSettings extends Model implements SettingsInterface
             $this->buildEndpointUrl($this->loginRequestEndpoint)
         );
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLoginPath()
+    {
+        return $this->buildEndpointUrl($this->loginEndpoint);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLogoutPath()
+    {
+        return $this->buildEndpointUrl($this->logoutEndpoint);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLogoutRequestPath()
+    {
+        return $this->buildEndpointUrl($this->logoutRequestEndpoint);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultLoginRequestPath()
+    {
+        return
+            $this->buildEndpointUrl($this->loginRequestEndpoint);
+    }
 }

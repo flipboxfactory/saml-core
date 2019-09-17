@@ -287,30 +287,30 @@ abstract class AbstractPlugin extends Plugin
                  */
                 sprintf(
                     'POST,GET %s',
-                    static::getInstance()->getSettings()->getDefaultLoginEndpoint()
+                    static::getInstance()->getSettings()->getDefaultLoginPath()
                 ) => $handle . '/login',
                 sprintf(
                     'POST,GET %s',
-                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestEndpoint()
+                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestPath()
                 ) => $handle . '/login/request',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestEndpoint()
+                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestPath()
                 ) => $handle . '/login/request',
                 /**
                  * LOGOUT
                  */
                 sprintf(
                     'POST,GET %s',
-                    static::getInstance()->getSettings()->getDefaultLogoutEndpoint()
+                    static::getInstance()->getSettings()->getDefaultLogoutPath()
                 ) => $handle . '/logout',
                 sprintf(
                     'POST,GET %s',
-                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestEndpoint()
+                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestPath()
                 ) => $handle . '/logout/request',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestEndpoint()
+                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestPath()
                 ) => $handle . '/logout/request',
 
             ]

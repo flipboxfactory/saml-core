@@ -5,6 +5,10 @@
     <input type="hidden" name="action" value="{{ baseActionPath }}/save">
     {{ redirectInput(baseCpPath) }}
 
+    {%- set warning -%}
+        ** WARNING: ** If this value is changed, you must recreate "My Provider" and exchange the metadata or values with the other provider (IdP or SP).
+    {%- endset -%}
+
     <div class="readable">
         <h2>Settings</h2>
     </div>
@@ -13,7 +17,7 @@
         label: "Default Entity ID"|t(plugin.handle ),
         name:'entityId',
         id:'entityId',
-        instructions: "The unique id for the site."|t('app'),
+        instructions: "The unique id for the site. " ~ warning|t('app'),
         suggestEnvVars: true,
         value: settings.entityId,
     }) }}
@@ -22,7 +26,7 @@
         label: "SSO Endpoint Prefix"|t(plugin.handle ),
         name:'endpointPrefix',
         id:'endpointPrefix',
-        instructions: "The endpoint prefix."|t('app'),
+        instructions: "The endpoint prefix. " ~ warning|t('app'),
         suggestEnvVars: true,
         value: settings.endpointPrefix,
     }) }}
