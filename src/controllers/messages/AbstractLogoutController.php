@@ -43,8 +43,8 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         if (in_array(
             $action->actionMethod,
             [
-            'actionIndex',
-            'actionRequest',
+                'actionIndex',
+                'actionRequest',
             ]
         )) {
             return true;
@@ -120,6 +120,11 @@ abstract class AbstractLogoutController extends AbstractController implements \f
      */
     public function actionRequest($uid = null)
     {
+        // Backwards compatibility with 1.0
+        // The request shouldn't get here with a SAMLResponse
+        if (\Craft::$app->request->getBodyParam('SAMLResponse')) {
+            return $this->actionIndex();
+        }
 
         /** @var AbstractProvider $theirProvider */
         $theirProvider = $this->getRemoteProvider($uid);
