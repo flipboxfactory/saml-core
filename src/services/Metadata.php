@@ -12,6 +12,7 @@ use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
 use SAML2\XML\md\EndpointType;
+use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
 use SAML2\XML\md\KeyDescriptor;
@@ -200,7 +201,8 @@ class Metadata extends Component
 
 
         // ACS
-        $acsEndpoint = new EndpointType();
+        $acsEndpoint = new IndexedEndpointType();
+        $acsEndpoint->setIndex(1);
         $acsEndpoint->setBinding($binding);
         $acsEndpoint->setLocation(
             $settings->getDefaultLoginEndpoint()
