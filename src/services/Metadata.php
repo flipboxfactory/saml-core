@@ -190,6 +190,9 @@ class Metadata extends Component
     {
 
         $descriptor = new SPSSODescriptor();
+        $descriptor->setProtocolSupportEnumeration([
+            static::PROTOCOL,
+        ]);
 
         if (property_exists($settings, 'wantsSignedAssertions') &&
             is_bool($settings->wantsSignedAssertions)
