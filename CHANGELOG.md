@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.11 - 2019-09-25
+### Fixed
+- Fixed xsd schema compatibility. Changed Indexed Endpoints to normal Endpoints (removing invalid index attribute).
+
 # 2.0.5
 ### Fixed
 - Fixed issue with cp links on the list page 

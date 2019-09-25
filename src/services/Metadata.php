@@ -11,15 +11,12 @@ use SAML2\Constants;
 use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
-use SAML2\XML\md\AttributeConsumingService;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
-use SAML2\XML\md\IndexedEndpointType;
+use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\KeyDescriptor;
-use SAML2\XML\md\RequestedAttribute;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
-use SAML2\XML\saml\Attribute;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
@@ -143,8 +140,7 @@ class Metadata extends Component
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
 
         // SSO
-        $ssoEndpoint = new IndexedEndpointType();
-        $ssoEndpoint->setIndex(1);
+        $ssoEndpoint = new EndpointType();
         $ssoEndpoint->setBinding($binding);
         $ssoEndpoint->setLocation(
             $settings->getDefaultLoginEndpoint()
@@ -154,8 +150,7 @@ class Metadata extends Component
         ]);
 
         // SLO
-        $sloEndpoint = new IndexedEndpointType();
-        $sloEndpoint->setIndex(1);
+        $sloEndpoint = new EndpointType();
         $sloEndpoint->setBinding($binding);
         $sloEndpoint->setLocation(
             $settings->getDefaultLogoutEndpoint()
