@@ -64,6 +64,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      */
     protected $logoutRequestEndpoint = 'logout/request';
 
+
     /**
      * @inheritdoc
      */

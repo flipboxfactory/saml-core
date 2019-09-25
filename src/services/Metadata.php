@@ -11,9 +11,9 @@ use SAML2\Constants;
 use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
+use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
-use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\KeyDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
@@ -29,6 +29,7 @@ class Metadata extends Component
 
     const SET_SIGNING = Key::USAGE_SIGNING;
     const SET_ENCRYPTION = Key::USAGE_ENCRYPTION;
+    const PROTOCOL = Constants::NS_SAMLP;
 
     const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
@@ -72,7 +73,8 @@ class Metadata extends Component
     public function create(
         SettingsInterface $settings,
         KeyChainRecord $withKeyPair = null
-    ): EntityDescriptor {
+    ): EntityDescriptor
+    {
 
         $entityDescriptor = new EntityDescriptor();
 
@@ -138,6 +140,15 @@ class Metadata extends Component
     protected function createIdpDescriptor(string $binding, SettingsInterface $settings)
     {
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
+        $descriptor->setProtocolSupportEnumeration([
+            static::PROTOCOL,
+        ]);
+
+        if (property_exists($settings, 'wantsAuthnRequestsSigned')) {
+            $descriptor->setWantAuthnRequestsSigned(
+                $settings->wantsAuthnRequestsSigned
+            );
+        }
 
         // SSO
         $ssoEndpoint = new EndpointType();
@@ -189,8 +200,7 @@ class Metadata extends Component
 
 
         // ACS
-        $acsEndpoint = new IndexedEndpointType();
-        $acsEndpoint->setIndex(1);
+        $acsEndpoint = new EndpointType();
         $acsEndpoint->setBinding($binding);
         $acsEndpoint->setLocation(
             $settings->getDefaultLoginEndpoint()
@@ -201,8 +211,7 @@ class Metadata extends Component
         ]);
 
         //SLO
-        $sloEndpoint = new IndexedEndpointType();
-        $sloEndpoint->setIndex(1);
+        $sloEndpoint = new EndpointType();
         $sloEndpoint->setBinding($binding);
         $sloEndpoint->setLocation(
             $settings->getDefaultLogoutEndpoint()
@@ -228,7 +237,8 @@ class Metadata extends Component
         SSODescriptorType $ssoDescriptor,
         KeyChainRecord $keyChainRecord,
         string $signOrEncrypt
-    ) {
+    )
+    {
         /**
          * Validate use string
          */
