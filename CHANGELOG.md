@@ -1,5 +1,10 @@
 Changelog
 =========
+# 2.0.15 - 2019-09-25
+### Fixed
+- Fixing more xsd schema compatibility. Changed message ids to be compatible.
+- Fixed exception when the user tries to logout (SLO) when they are already logged out.
+
 # 2.0.11 - 2019-09-25
 ### Fixed
 - Fixed xsd schema compatibility. Changed Indexed Endpoints to normal Endpoints (removing invalid index attribute).

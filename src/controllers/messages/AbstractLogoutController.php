@@ -134,7 +134,12 @@ abstract class AbstractLogoutController extends AbstractController implements \f
 
         $user = \Craft::$app->user->getIdentity();
 
-        if (! $identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)) {
+        if (
+            ! $user || (
+                $user &&
+                ! $identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)
+            )
+        ) {
             $saml = $this->getPlugin();
             $saml::warning('Logout not available. User is not logged in.');
             // Logout locally only

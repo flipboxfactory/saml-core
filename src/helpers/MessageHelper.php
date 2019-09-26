@@ -20,10 +20,11 @@ class MessageHelper
 {
     const REQUEST_PARAMETER = 'SAMLRequest';
     const RESPONSE_PARAMETER = 'SAMLResponse';
+    const ID_LENGTH = 43;
 
     public static function generateId()
     {
-        return StringHelper::UUID();
+        return '_'.bin2hex(openssl_random_pseudo_bytes((int) ((self::ID_LENGTH - 1) / 2)));
     }
 
     /**
