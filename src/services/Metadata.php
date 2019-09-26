@@ -74,8 +74,7 @@ class Metadata extends Component
     public function create(
         SettingsInterface $settings,
         KeyChainRecord $withKeyPair = null
-    ): EntityDescriptor
-    {
+    ): EntityDescriptor {
 
         $entityDescriptor = new EntityDescriptor();
 
@@ -242,8 +241,7 @@ class Metadata extends Component
         SSODescriptorType $ssoDescriptor,
         KeyChainRecord $keyChainRecord,
         string $signOrEncrypt
-    )
-    {
+    ) {
         /**
          * Validate use string
          */

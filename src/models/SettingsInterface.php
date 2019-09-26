@@ -54,5 +54,4 @@ interface SettingsInterface
      * @return string
      */
     public function getMyType();
-
 }

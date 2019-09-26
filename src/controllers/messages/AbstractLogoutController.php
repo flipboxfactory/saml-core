@@ -134,8 +134,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
 
         $user = \Craft::$app->user->getIdentity();
 
-        if (
-            ! $user || (
+        if (! $user || (
                 $user &&
                 ! $identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)
             )
