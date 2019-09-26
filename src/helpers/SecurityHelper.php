@@ -27,6 +27,7 @@ class SecurityHelper
         XMLSecurityKey::AES256_CBC,
 
         XMLSecurityKey::RSA_1_5,
+        XMLSecurityKey::RSA_SHA1,
         XMLSecurityKey::RSA_OAEP_MGF1P,
     ];
 
@@ -125,18 +126,19 @@ class SecurityHelper
 
         $lastException = null;
         foreach (static::$validEncryptionMethods as $method) {
+            \Craft::debug('Trying method: '. $method);
             if (in_array($method, $blacklist)) {
                 \Craft::debug('Decryption with key #' . $method . ' blacklisted.', AbstractPlugin::SAML_CORE_HANDLE);
                 continue;
             }
             $xmlSecurityKey = new XMLSecurityKey($method, [
-                'type' => 'public',
+                'type' => 'private',
             ]);
 
             $xmlSecurityKey->loadKey(
                 $pemString,
                 false,
-                true
+                false
             );
 
             try {
@@ -147,7 +149,7 @@ class SecurityHelper
                 return $assertion;
             } catch (\Exception $e) {
                 $lastException = $e;
-                \Craft::debug('Decryption with key #' . $method . ' failed.', AbstractPlugin::SAML_CORE_HANDLE);
+                \Craft::debug('Decryption with key #' . $method . ' failed. ', AbstractPlugin::SAML_CORE_HANDLE);
             }
         }
 

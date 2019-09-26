@@ -1,5 +1,11 @@
 Changelog
 =========
+
+# 2.0.16 - 2019-09-26
+### Fixed
+- Issue with decrypting assertions
+- Link not rendering correctly on the edit screen for providers
+
 # 2.0.15 - 2019-09-25
 ### Fixed
 - Fixing more xsd schema compatibility. Changed message ids to be compatible.

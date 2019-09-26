@@ -141,14 +141,13 @@ trait EntityDescriptor
         );
 
         $xmlSecurityKey = new XMLSecurityKey(
-            $this->encryptionMethod,
+            XMLSecurityKey::RSA_OAEP_MGF1P,
             [
                 'type' => 'public',
             ]
         );
 
-
-        $xmlSecurityKey->loadKey($pem, false, true);
+        $xmlSecurityKey->loadKey($pem);
 
         return $xmlSecurityKey;
     }

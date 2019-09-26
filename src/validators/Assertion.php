@@ -86,7 +86,7 @@ class Assertion
         if ($assertion instanceof EncryptedAssertion) {
             $assertion = SecurityHelper::decryptAssertion(
                 $assertion,
-                $this->serviceProvider->keychain->getDecryptedCertificate()
+                $this->serviceProvider->keychain->getDecryptedKey()
             );
         }
 

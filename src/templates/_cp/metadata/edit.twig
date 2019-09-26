@@ -181,32 +181,32 @@
                 }) }}
 
             </div>
-            <div id="assertion-encryption-settings" class="{% if not provider.encryptAssertions %}hidden{% endif %}">
-                {{ forms.selectField({
-                    label: "Encryption Method"|t(plugin.handle),
-                    id: 'encryptionMethod',
-                    name: 'encryptionMethod',
-                    errors: provider.getErrors('encryptionMethod'),
-                    value: provider.encryptionMethod,
-                    options: [{
-                        label: 'AES128_CBC',
-                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES128_CBC'),
-                    },{
-                        label: 'AES192_CBC',
-                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES192_CBC'),
-                    },{
-                        label: 'AES256_CBC',
-                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES256_CBC'),
-                    },{
-                        label: 'RSA_1_5',
-                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_1_5'),
-                    },{
-                        label: 'RSA_OAEP_MGF1P',
-                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_OAEP_MGF1P'),
-                    }],
-                }) }}
+{#            <div id="assertion-encryption-settings" class="{% if not provider.encryptAssertions %}hidden{% endif %}">#}
+{#                {{ forms.selectField({#}
+{#                    label: "Encryption Method"|t(plugin.handle),#}
+{#                    id: 'encryptionMethod',#}
+{#                    name: 'encryptionMethod',#}
+{#                    errors: provider.getErrors('encryptionMethod'),#}
+{#                    value: provider.encryptionMethod,#}
+{#                    options: [{#}
+{#                        label: 'AES128_CBC',#}
+{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES128_CBC'),#}
+{#                    },{#}
+{#                        label: 'AES192_CBC',#}
+{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES192_CBC'),#}
+{#                    },{#}
+{#                        label: 'AES256_CBC',#}
+{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES256_CBC'),#}
+{#                    },{#}
+{#                        label: 'RSA_1_5',#}
+{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_1_5'),#}
+{#                    },{#}
+{#                        label: 'RSA_OAEP_MGF1P',#}
+{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_OAEP_MGF1P'),#}
+{#                    }],#}
+{#                }) }}#}
 
-            </div>
+{#            </div>#}
         {% endif %}
     </div>
 
@@ -220,9 +220,7 @@
                     "Use this as the `loginPath` value in the `general.php` configuration file."|t(plugin.handle ) :
                     "URL to initiate SSO via IDP. In human terms, " ~
                     "goto this link to initiate login with this Service Provider. " ~
-                    "<a "~
-                    "href=\"https://saml-idp.flipboxfactory.com/initiating-sso.html#identity-provider-idp-initiated\" "~
-                    "target=\"_blank\">More info.</a>",
+                    "[More Info](https://saml-idp.flipboxfactory.com/initiating-sso.html#identity-provider-idp-initiated)",
                 name: "loginPath",
                 id: 'loginPath',
                 class: "code",
