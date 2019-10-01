@@ -1,5 +1,11 @@
 Changelog
 =========
+# 2.0.17 - 2019-10-01
+### Fixed
+- Issue with HTTP-Redirect
+
+### Added
+- Support for HTTP-Redirect binding for SLO
 
 # 2.0.16 - 2019-09-26
 ### Fixed

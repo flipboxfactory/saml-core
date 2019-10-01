@@ -161,15 +161,10 @@ class Metadata extends Component
         ]);
 
         // SLO
-        $sloEndpoint = new EndpointType();
-        $sloEndpoint->setBinding($binding);
-        $sloEndpoint->setLocation(
-            $settings->getDefaultLogoutEndpoint()
+        $this->addSloEndpoint(
+            $descriptor,
+            $settings
         );
-
-        $descriptor->setSingleLogoutService([
-            $sloEndpoint,
-        ]);
 
         // todo add attributes from mapping
 //        $attribute = new Attribute();
@@ -215,14 +210,10 @@ class Metadata extends Component
         ]);
 
         //SLO
-        $sloEndpoint = new EndpointType();
-        $sloEndpoint->setBinding($binding);
-        $sloEndpoint->setLocation(
-            $settings->getDefaultLogoutEndpoint()
+        $this->addSloEndpoint(
+            $descriptor,
+            $settings
         );
-        $descriptor->setSingleLogoutService([
-            $sloEndpoint,
-        ]);
 
         //todo add attribute consuming service
 //        $attributeConsumingService = new AttributeConsumingService();
@@ -231,6 +222,30 @@ class Metadata extends Component
 //        $descriptor->addAttributeConsumingService($attributeConsumingService);
 
         return $descriptor;
+    }
+
+    protected function addSloEndpoint(SSODescriptorType $descriptorType, SettingsInterface $settings)
+    {
+        $sloEndpointRedirect = new EndpointType();
+        $sloEndpointRedirect->setBinding(
+            Constants::BINDING_HTTP_REDIRECT
+        );
+        $sloEndpointRedirect->setLocation(
+            $settings->getDefaultLogoutEndpoint()
+        );
+
+        $sloEndpointPost = new EndpointType();
+        $sloEndpointPost->setBinding(
+            Constants::BINDING_HTTP_POST
+        );
+        $sloEndpointPost->setLocation(
+            $settings->getDefaultLogoutEndpoint()
+        );
+
+        $descriptorType->setSingleLogoutService([
+            $sloEndpointRedirect,
+            $sloEndpointPost,
+        ]);
     }
 
     /**

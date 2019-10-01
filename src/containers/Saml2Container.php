@@ -89,25 +89,6 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 
         \Craft::$app->response->redirect($url);
 
-        // show a minimal web page with a clickable link to the URL
-        echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"';
-        echo ' "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
-        echo '<html xmlns="http://www.w3.org/1999/xhtml">' . "\n";
-        echo "  <head>\n";
-        echo '    <meta http-equiv="content-type" content="text/html; charset=utf-8">' . "\n";
-        echo '    <meta http-equiv="refresh" content="0;URL=\'' . htmlspecialchars($url) . '\'">' . "\n";
-        echo "    <title>Redirect</title>\n";
-        echo "  </head>\n";
-        echo "  <body>\n";
-        echo "    <h1>Redirect</h1>\n";
-        echo '      <p>You were redirected to: <a id="redirlink" href="' . htmlspecialchars($url) . '">';
-        echo htmlspecialchars($url) . "</a>\n";
-        echo '        <script type="text/javascript">document.getElementById("redirlink").focus();</script>' . "\n";
-        echo "      </p>\n";
-        echo "  </body>\n";
-        echo '</html>';
-
         \Craft::$app->end();
     }
 
