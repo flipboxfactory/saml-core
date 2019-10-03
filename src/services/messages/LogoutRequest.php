@@ -11,9 +11,10 @@ use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
 use SAML2\Constants;
+use SAML2\HTTPRedirect;
+use SAML2\LogoutRequest as SamlLogoutRequest;
 use SAML2\XML\saml\NameID;
 use yii\base\Event;
-use SAML2\LogoutRequest as SamlLogoutRequest;
 
 /**
  * Class LogoutRequest
@@ -93,8 +94,11 @@ class LogoutRequest extends Component
             $logout->setSignatureKey(
                 $ourProvider->keychainPrivateXmlSecurityKey()
             );
-        }
 
+            $logout->setCertificates([
+                $ourProvider->keychain->certificate
+            ]);
+        }
 
         /**
          * Kick off event here so people can manipulate this object if needed
@@ -108,5 +112,21 @@ class LogoutRequest extends Component
         $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
 
         return $logout;
+    }
+
+    public function createRedirectUrl(
+        AbstractProvider $theirProvider,
+        AbstractProvider $ourProvider,
+        AbstractProviderIdentity $identity,
+        string $relayState = ''
+    ) {
+        return (new HTTPRedirect())->getRedirectURL(
+            $this->create(
+                $theirProvider,
+                $ourProvider,
+                $identity,
+                $relayState
+            )
+        );
     }
 }

@@ -6,9 +6,11 @@
 
 namespace flipbox\saml\core\controllers\messages;
 
-use craft\web\Controller;
+use craft\db\Table;
 use flipbox\saml\core\helpers\MessageHelper;
+use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\AbstractProviderIdentity;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\bindings\Factory;
 use SAML2\LogoutRequest;
@@ -67,17 +69,9 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         $isRequest = $message instanceof LogoutRequest;
         $isResponse = $message instanceof LogoutResponse;
 
-        if ($isResponse && $this->getPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
+        if ((! $isRequest && ! $isResponse) ||
+            $isResponse && $this->getPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
             throw new HttpException(400, "Invalid request");
-        }
-
-        /**
-         * I guess we shouldn't be here. Just follow the normal logout.
-         */
-        if (\Craft::$app->getUser()->isGuest) {
-            return $this->redirect(
-                \Craft::$app->config->general->logoutPath
-            );
         }
 
         /** @var AbstractProvider $theirProvider */
@@ -89,6 +83,14 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         $ourProvider = $this->getPlugin()->getProvider()->findOwn();
 
         if ($isRequest) {
+            if (\Craft::$app->getUser()->isGuest) {
+                $this->destroySpecifiedSession(
+                    $message,
+                    $theirProvider,
+                    $this->getPlugin()->getSettings()
+                );
+            }
+
             /** @var LogoutResponse $response */
             $response = $this->getPlugin()->getLogoutResponse()->create(
                 $message,
@@ -101,7 +103,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
              */
             $response->setInResponseTo($message->getId());
 
-            \Craft::$app->user->logout();
+            \Craft::$app->user->logout(true);
             Factory::send($response, $theirProvider);
             \Craft::$app->end();
         }
@@ -109,6 +111,33 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         return $this->redirect(
             \Craft::$app->config->general->logoutPath
         );
+    }
+
+    /**
+     * @param LogoutRequest $message
+     * @param AbstractProvider $theirProvider
+     * @throws \yii\db\Exception
+     */
+    protected function destroySpecifiedSession(
+        LogoutRequest $message,
+        AbstractProvider $theirProvider,
+        AbstractSettings $settings
+    ) {
+        if (! $settings->sloDestroySpecifiedSessions) {
+            return;
+        }
+
+        /** @var AbstractProviderIdentity $user */
+        if ($user = $this->getPlugin()->getProviderIdentity()->findByNameId(
+            $message->getNameId()->getValue(),
+            $theirProvider
+        )->one()) {
+            \Craft::$app->getDb()->createCommand()
+                ->delete(Table::SESSIONS, [
+                    'userId' => $user->getUser()->getId(),
+                ])
+                ->execute();
+        }
     }
 
 

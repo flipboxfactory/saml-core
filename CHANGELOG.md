@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.18 - 2019-10-02
+### Added
+- Added config option `sloDestroySpecifiedSessions` to support SLO for specified users
+
 # 2.0.17 - 2019-10-01
 ### Fixed
 - Issue with HTTP-Redirect

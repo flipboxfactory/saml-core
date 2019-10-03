@@ -66,6 +66,18 @@ abstract class AbstractSettings extends Model implements SettingsInterface
 
 
     /**
+     * This setting will destroy sessions when the Name Id matches a user with existing sessions.
+     * A current user session doesn't have to exist, ie, `\Craft::$app->user->isGuest === true`.
+     *
+     * This can be useful if the LogoutRequest is sent over AJAX.
+     *
+     * Warning: this will delete all current sessions for the user
+     *
+     * @var bool
+     */
+    public $sloDestroySpecifiedSessions = false;
+
+    /**
      * @inheritdoc
      */
     public function attributes()

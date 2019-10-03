@@ -98,13 +98,13 @@ class Response
     }
 
     /**
-     * @param ResponseResult $reponseResult
+     * @param ResponseResult $responseResult
      * @param AssertionResult $assertionResult
      */
-    private function addErrorsToResult(ResponseResult $reponseResult, AssertionResult $assertionResult)
+    private function addErrorsToResult(ResponseResult $responseResult, AssertionResult $assertionResult)
     {
         foreach ($assertionResult->getErrors() as $error) {
-            $reponseResult->addError($error);
+            $responseResult->addError($error);
         }
     }
 }
