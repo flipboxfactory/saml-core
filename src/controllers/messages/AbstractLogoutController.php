@@ -128,13 +128,15 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         }
 
         /** @var AbstractProviderIdentity $user */
-        if ($user = $this->getPlugin()->getProviderIdentity()->findByNameId(
+        $user = $this->getPlugin()->getProviderIdentity()->findByNameId(
             $message->getNameId()->getValue(),
             $theirProvider
-        )->one()) {
+        )->one();
+
+        if ($user) {
             \Craft::$app->getDb()->createCommand()
                 ->delete(Table::SESSIONS, [
-                    'userId' => $user->getUser()->getId(),
+                    'userId' => $user->userId,
                 ])
                 ->execute();
         }
