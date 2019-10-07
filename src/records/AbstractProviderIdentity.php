@@ -9,8 +9,9 @@
 namespace flipbox\saml\core\records;
 
 use craft\validators\DateTimeValidator;
-use flipbox\ember\helpers\ModelHelper;
-use flipbox\ember\records\ActiveRecord;
+use craft\db\ActiveRecord;
+use flipbox\saml\core\records\traits\Ember;
+use yii\base\Model;
 use yii\db\ActiveQuery;
 
 /**
@@ -22,6 +23,7 @@ use yii\db\ActiveQuery;
  */
 abstract class AbstractProviderIdentity extends ActiveRecord implements ProviderIdentityInterface
 {
+    use Ember;
     /**
      * @var \craft\elements\User
      */
@@ -69,7 +71,7 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
                     ],
                     'safe',
                     'on' => [
-                        ModelHelper::SCENARIO_DEFAULT,
+                        Model::SCENARIO_DEFAULT,
                     ]
                 ]
             ]

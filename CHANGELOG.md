@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.20 - 2019-10-07
+### Removed
+- flipboxfactory/craft-ember package to easy updates with dependancies.
+
 # 2.0.18 - 2019-10-02
 ### Added
 - Added config option `sloDestroySpecifiedSessions` to support SLO for specified users

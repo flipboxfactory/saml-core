@@ -2,9 +2,10 @@
 
 namespace flipbox\saml\core\records;
 
-use flipbox\ember\records\ActiveRecord;
+use craft\db\ActiveRecord;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\GroupOptions;
+use flipbox\saml\core\records\traits\Ember;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
@@ -16,7 +17,7 @@ use yii\db\ActiveQuery;
 abstract class AbstractProvider extends ActiveRecord implements ProviderInterface
 {
 
-    use traits\EntityDescriptor, traits\KeyChain, traits\MapUser;
+    use traits\EntityDescriptor, traits\KeyChain, traits\MapUser, Ember;
 
     const METADATA_HASH_ALGORITHM = 'sha256';
     const DEFAULT_GROUPS_ATTRIBUTE_NAME = 'groups';

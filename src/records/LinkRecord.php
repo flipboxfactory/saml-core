@@ -7,12 +7,14 @@
  */
 namespace flipbox\saml\core\records;
 
-use flipbox\ember\records\ActiveRecord;
+use craft\db\ActiveRecord;
 use yii\db\ActiveQuery;
 use flipbox\keychain\records\KeyChainRecord;
 
 class LinkRecord extends ActiveRecord
 {
+
+    use traits\Ember;
     const TABLE_ALIAS = 'saml_provider_keychain_link';
 
     /**
