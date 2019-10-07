@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\records\traits;
 
-
 use yii\base\Model;
 
 /**
