@@ -15,7 +15,7 @@
   "require": {
     "craftcms/cms": "^3.2.0",
     "simplesamlphp/saml2": "<3.4",
-    "flipboxfactory/keychain":"^1.0.0",
+    "flipboxfactory/keychain":"^1.0.2",
     "flipboxfactory/craft-psr3":"^1.1.0"
   },
   "require-dev": {
