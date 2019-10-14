@@ -22,35 +22,6 @@ abstract class AbstractSettingsController extends AbstractController implements 
     /**
      * @return array
      */
-    public function behaviors()
-    {
-        return ArrayHelper::merge(
-            parent::behaviors(),
-            [
-                'error' => [
-                    'default' => 'save',
-                ],
-                'redirect' => [
-                    'only' => ['save'],
-                    'actions' => [
-                        'save' => [200],
-                    ],
-                ],
-                'flash' => [
-                    'actions' => [
-                        'save' => [
-                            200 => \Craft::t('saml-sp', "Settings successfully updated."),
-                            401 => \Craft::t('saml-sp', "Failed to update settings."),
-                        ],
-                    ],
-                ],
-            ]
-        );
-    }
-
-    /**
-     * @return array
-     */
     protected function verbs(): array
     {
         return [
