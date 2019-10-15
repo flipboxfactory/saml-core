@@ -211,7 +211,7 @@
     </div>
 
     <div id="configure" class="hidden">
-        {% if (( myType == 'sp' and provider.type == 'idp' ) or ( myType == 'idp' and provider.type == 'sp' )) and provider.loginPath %}
+        {% if (( myType == 'sp' and provider.isIdentityProvider() ) or ( myType == 'idp' and provider.isServiceProvider() )) and provider.loginPath %}
             <br/>
             <h2 class="saml-cp-header">Login/Logout Paths</h2>
             {{ forms.textField({
@@ -224,7 +224,7 @@
                 name: "loginPath",
                 id: 'loginPath',
                 class: "code",
-                value: provider.loginPath,
+                value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.loginRequestPath : provider.loginPath,
                 readonly: true,
                 disabled: true
             }) }}
@@ -235,7 +235,7 @@
                 name: "logoutPath",
                 id: 'logoutPath',
                 class: "code",
-                value: provider.logoutPath,
+                value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.logoutRequestPath : provider.logoutPath,
                 readonly: true,
                 disabled: true
             }) }}

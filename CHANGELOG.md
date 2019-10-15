@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.23 - 2019-10-15
+### Fixed
+- Fixed url in admin for SPs request login and logout
+
 # 2.0.20 - 2019-10-07
 ### Removed
 - flipboxfactory/craft-ember package to easy updates with dependancies.
