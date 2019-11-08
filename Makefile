@@ -1,5 +1,5 @@
 composer-install:
-	composer install
+	composer install --ignore-platform-reqs
 
 test: phpcbf
 phpcs: composer-install

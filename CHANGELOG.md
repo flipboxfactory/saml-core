@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.24 - 2019-11-07
+### Fixed
+- Issue with verifying signitures for providers with more than one signing key
+
 # 2.0.23 - 2019-10-15
 ### Fixed
 - Fixed url in admin for SPs request login and logout

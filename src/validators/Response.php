@@ -55,8 +55,8 @@ class Response
             ),
 
         ];
-        if ($key = $this->identityProvider->signingXMLSecurityKey()) {
-            $this->validators[] = new SignedElement($key);
+        if ($keyStore = $this->identityProvider->signingXMLSecurityKeyStore()) {
+            $this->validators[] = new SignedElement($keyStore);
         }
     }
 
