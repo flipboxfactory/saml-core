@@ -27,20 +27,22 @@ class SignedElement
     public function validate(SamlSignedElement $signedElement, $result)
     {
         /** @var \Exception $error */
-        $error = null;
+        $errors = [];
         $success = false;
         foreach ($this->xmlSecurityKeyStore as $key) {
-            $success = false;
             try {
-                $success = $signedElement->validate($key);
+                if ($success = $signedElement->validate($key)) {
+                    // return on success ... no need to continue
+                    return $result;
+                }
             } catch (\Exception $e) {
-                $error = $e;
+                $errors[] = $e;
                 \Craft::info($e->getMessage(), AbstractPlugin::SAML_CORE_HANDLE);
             }
         }
 
-        if (false === $success && ! is_null($error)) {
-            throw $e;
+        if (! empty($errors)) {
+            throw $errors[0];
         }
 
         return $result;

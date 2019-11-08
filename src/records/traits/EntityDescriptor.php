@@ -129,12 +129,14 @@ trait EntityDescriptor
     {
 
         $store = [];
-        if (! ($keyDescriptors = $this->getKeyDescriptors())) {
+        if (! ($keyDescriptors = $this->keyDescriptors())) {
             return $store;
         }
 
+        $keyDescriptors = $this->keyDescriptorsByType($keyDescriptors, Key::USAGE_SIGNING);
+
         foreach ($keyDescriptors as $keyDescriptor) {
-            $x509Certificates = $this->getX509Certificates($keyDescriptor);
+            $x509Certificates = $this->x509Certificates($keyDescriptor);
             $store = array_merge(
                 $store,
                 $this->certificatesToXMLSecurityKeyStore($x509Certificates)
@@ -195,7 +197,6 @@ trait EntityDescriptor
             ]
         );
 
-
         $xmlSecurityKey->loadKey($pem, false, true);
 
         return $xmlSecurityKey;
@@ -222,15 +223,10 @@ trait EntityDescriptor
      */
     protected function firstKeyDescriptor(array $keyDescriptors, string $signingOrEncrypt)
     {
-        /** @var KeyDescriptor[] $keyDescriptor */
-        $keyDescriptor = array_filter(
-            $keyDescriptors,
-            function (KeyDescriptor $keyDescriptor) use ($signingOrEncrypt) {
-                return $keyDescriptor->getUse() === $signingOrEncrypt;
-            }
-        );
+        /** @var KeyDescriptor[] $keyDescriptorFiltered */
+        $keyDescriptorFiltered = $this->keyDescriptorsByType($keyDescriptors, $signingOrEncrypt);
 
-        return count($keyDescriptor) > 0 ? array_shift($keyDescriptor) : null;
+        return count($keyDescriptorFiltered) > 0 ? array_shift($keyDescriptorFiltered) : null;
     }
 
     /**
@@ -255,7 +251,7 @@ trait EntityDescriptor
     protected function firstCertificate($use)
     {
 
-        if (! ($keyDescriptors = $this->getKeyDescriptors())) {
+        if (! ($keyDescriptors = $this->keyDescriptors())) {
             return null;
         }
 
@@ -266,14 +262,14 @@ trait EntityDescriptor
             return null;
         }
 
-        $certificates = $this->getX509Certificates($keyDescriptor);
+        $certificates = $this->x509Certificates($keyDescriptor);
         return ! empty($certificates) ? $certificates[0] : null;
     }
 
     /**
      * @return KeyDescriptor[]
      */
-    private function getKeyDescriptors()
+    private function keyDescriptors()
     {
 
         if (empty($this->spSsoDescriptors()) && empty($this->idpSsoDescriptors())) {
@@ -292,10 +288,29 @@ trait EntityDescriptor
     }
 
     /**
+     * @param array $keyDescriptors
+     * @param string $signingOrEncrypt
+     * @return KeyDescriptor[]
+     */
+    private function keyDescriptorsByType(array $keyDescriptors, string $signingOrEncrypt)
+    {
+
+        /** @var KeyDescriptor[] $keyDescriptorsFiltered */
+        $keyDescriptorsFiltered = array_filter(
+            $keyDescriptors,
+            function (KeyDescriptor $keyDescriptor) use ($signingOrEncrypt) {
+                return $keyDescriptor->getUse() === $signingOrEncrypt;
+            }
+        );
+
+        return $keyDescriptorsFiltered;
+    }
+
+    /**
      * @param KeyDescriptor $keyDescriptor
      * @return array|X509Certificate[]
      */
-    private function getX509Certificates(KeyDescriptor $keyDescriptor)
+    private function x509Certificates(KeyDescriptor $keyDescriptor)
     {
 
         $x509Datas = array_filter(

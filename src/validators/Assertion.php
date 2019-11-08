@@ -106,7 +106,7 @@ class Assertion
                 /** @var SignedElement|AssertionConstraintValidator $validator */
                 $validator->validate($assertion, $result);
             }
-            \Craft::debug(
+            \Craft::info(
                 sprintf(
                     "%s validation errors: %s",
                     \get_class($validator),

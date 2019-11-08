@@ -36,7 +36,6 @@ class LogoutResponse extends Component
          * Set remote destination
          */
         $logout->setDestination(
-
             $theirProvider->getType() === SettingsInterface::SP ?
                 $theirProvider->firstSpSloService(
                 )->getLocation() :

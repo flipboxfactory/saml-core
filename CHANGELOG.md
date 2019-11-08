@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.25 - 2019-11-07
+### Fixed
+- Patching issue with more than one signing key, filters signing key, and improved bail when signiture is verified
+
 # 2.0.24 - 2019-11-07
 ### Fixed
 - Issue with verifying signitures for providers with more than one signing key
