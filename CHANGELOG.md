@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.0.26 - 2020-01-03
+### Fixed
+- Issue with OneLogin signiture verification.
+
 # 2.0.25 - 2019-11-07
 ### Fixed
 - Patching issue with more than one signing key, filters signing key, and improved bail when signiture is verified

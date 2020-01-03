@@ -191,7 +191,7 @@ trait EntityDescriptor
         );
 
         $xmlSecurityKey = new XMLSecurityKey(
-            SecurityHelper::getPemAlgorithm($pem),
+            XMLSecurityKey::RSA_SHA256,
             [
                 'type' => 'public',
             ]
