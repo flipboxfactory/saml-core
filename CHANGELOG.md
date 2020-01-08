@@ -1,5 +1,14 @@
 Changelog
 =========
+# 2.1.0 - 2020-01-07
+### Fixed
+- Fixing issue with requiring admin when project config when `allowAdminChanges` general config is set.
+- Duplicate `metadata` html attribute id on the edit page
+- Fixed issue with large Metadata too big for the db metadata column (requires migration) https://github.com/flipboxfactory/saml-sp/issues/48
+
+### Added
+- Support for Saving Metadata via url (requires migration) https://github.com/flipboxfactory/saml-sp/issues/47
+
 # 2.0.26 - 2020-01-03
 ### Fixed
 - Issue with OneLogin signiture verification.

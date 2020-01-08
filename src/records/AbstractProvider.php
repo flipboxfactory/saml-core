@@ -5,6 +5,7 @@ namespace flipbox\saml\core\records;
 use craft\db\ActiveRecord;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\GroupOptions;
+use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\records\traits\Ember;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\EntityDescriptor;
@@ -54,11 +55,15 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         }
 
         if (is_array($this->mapping)) {
-            $this->serializeMapping();
+            $this->mapping = json_encode($this->mapping);
         }
 
         if ($this->groupOptions instanceof GroupOptions) {
-            $this->serializeGroupOptions();
+            $this->groupOptions = json_encode($this->groupOptions);
+        }
+
+        if ($this->metadataOptions instanceof MetadataOptions) {
+            $this->metadataOptions = json_encode($this->metadataOptions);
         }
 
         $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
@@ -164,7 +169,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      */
     public function setMapping(array $mapping)
     {
-        $this->mapping = $mapping;
+        $this->mapping = array_values($mapping);
 
         return $this;
     }
@@ -174,13 +179,29 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      */
     public function getMapping()
     {
+        $mapping = [];
         if ($this->hasMapping()) {
-            $this->unserializeMapping();
-        } elseif (! $this->mapping) {
-            $this->mapping = [];
+            $mapping = json_decode($this->mapping, true);
         }
 
-        return $this->mapping;
+        return $mapping;
+    }
+
+    public function setMetadataOptions(MetadataOptions $metadataOptions)
+    {
+        $this->metadataOptions = $metadataOptions;
+
+        return $this;
+    }
+
+    public function getMetadataOptions(): MetadataOptions
+    {
+        $metadataOptions = new MetadataOptions();
+        if ($this->hasMetadataOptions()) {
+            $metadataOptions = MetadataOptions::jsonUnserialize($this->metadataOptions);
+        }
+
+        return $metadataOptions;
     }
 
     /**
@@ -196,52 +217,14 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
     public function getGroupOptions(): GroupOptions
     {
+        $groupOptions = new GroupOptions();
         if ($this->hasGroupOptions()) {
-            $this->unserializeGroupOptions();
-        } elseif (! $this->groupOptions) {
-            $this->groupOptions = new GroupOptions();
+            $groupOptions = GroupOptions::jsonUnserialize($this->groupOptions);
         }
 
-        return $this->groupOptions;
+        return $groupOptions;
     }
 
-    /**
-     * @return false|string
-     */
-    protected function serializeMapping()
-    {
-        return $this->mapping = json_encode($this->mapping);
-    }
-
-    /**
-     * @return GroupOptions|string
-     */
-    protected function unserializeMapping()
-    {
-        if ($this->hasMapping()) {
-            $this->mapping = json_decode($this->mapping, true);
-        }
-        return $this->mapping;
-    }
-
-    /**
-     * @return false|string
-     */
-    protected function serializeGroupOptions()
-    {
-        return $this->groupOptions = json_encode($this->groupOptions);
-    }
-
-    /**
-     * @return GroupOptions|string
-     */
-    protected function unserializeGroupOptions()
-    {
-        if ($this->hasGroupOptions()) {
-            $this->groupOptions = new GroupOptions(json_decode($this->groupOptions, true));
-        }
-        return $this->groupOptions;
-    }
 
     /**
      * @return bool
@@ -257,6 +240,14 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     public function hasGroupOptions(): bool
     {
         return $this->hasJsonProperty('groupOptions');
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasMetadataOptions(): bool
+    {
+        return $this->hasJsonProperty('metadataOptions');
     }
 
     /**

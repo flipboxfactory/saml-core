@@ -26,6 +26,7 @@ use yii\db\ActiveRecordInterface;
  * @property string $mapping
  * @property string|null $nameIdOverride
  * @property string $groupOptions
+ * @property string $metadataOptions
  * @property bool $syncGroups
  * @property bool $groupsAttributeName
  * @property bool $encryptAssertions

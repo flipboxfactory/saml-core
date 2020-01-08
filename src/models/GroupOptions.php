@@ -9,6 +9,8 @@ use yii\base\Model;
 
 class GroupOptions extends Model implements \JsonSerializable
 {
+    use JsonModel;
+
     const OPTION_SYNC = 'sync';
     const OPTION_ALLOW = 'allow';
 

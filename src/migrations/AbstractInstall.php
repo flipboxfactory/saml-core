@@ -58,7 +58,7 @@ abstract class AbstractInstall extends Migration
             'id' => $this->primaryKey(),
             'label' => $this->string(64),
             'entityId' => $this->string()->notNull(),
-            'metadata' => $this->text()->notNull(),
+            'metadata' => $this->mediumText()->notNull(),
             'sha256' => $this->string()->notNull(),
             'providerType' => $this->enum('providerType', [
                 SettingsInterface::SP,
@@ -67,6 +67,7 @@ abstract class AbstractInstall extends Migration
             'encryptAssertions' => $this->boolean()->defaultValue(false)->notNull(),
             'encryptionMethod' => $this->string(64)->null(),
             'groupOptions' => $this->text(),
+            'metadataOptions' => $this->text(),
             'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
             'groupsAttributeName' => $this->string(64)->defaultValue(AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME),
             'nameIdOverride' => $this->text(),

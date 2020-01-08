@@ -158,9 +158,9 @@
                 {% do view.registerAssetBundle("flipbox\\keychain\\web\\assets\\bundles\\GenerateKeyPair") %}
                 {% js %}
                     new Craft.GenerateKeyPair(
-                    $('#generate-key'),
-                    $('#keychain'),
-                    "{{ plugin.handle }}"
+                        $('#generate-key'),
+                        $('#keychain'),
+                        "{{ plugin.handle }}"
                     );
                 {% endjs %}
             </div>
@@ -263,7 +263,7 @@
 
     </div>
     <div id="metadata" class="hidden">
-        <h2 class="saml-cp-header">Metadata</h2>
+        <h2 class="saml-cp-header">Entity ID and Metadata</h2>
         {% if myType == provider.type or myType == createType %}
             {{ forms.textField({
                 label: "Entity ID"|t(plugin.handle ),
@@ -294,19 +294,76 @@
             }) }}
         {% endif %}
 
-        {{ forms.textareaField({
-            label: "Metadata XML"|t(plugin.handle ),
-            instructions: "Paste Metadata XML from the provider."|t(plugin.handle ),
-            class: "code",
-            id: 'metadata',
-            name: 'metadata',
-            value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
-            readonly: createType == myType ? true : false,
-            disabled: createType == myType ? true : false,
-            errors: provider.getErrors('metadata'),
-            required: true,
-            rows: 10
-        }) }}
+        <div >
+        </div>
+        <h2 class="saml-cp-header">Metadata Options</h2>
+
+        {% if createType != myType %}
+            <p>Metadata can be configured in *ONE* of the following ways. One of the following is required.</p>
+        {% endif %}
+        <div class="field" id="metadata-url-field">
+            <div class="heading">
+                {% if createType != myType %}
+                <label>
+                </label>
+
+                <div class="flex">
+                    <div class="flex-grow ">
+                        {{ forms.textField({
+                            label: "1. Metadata By URL"|t('app'),
+                            instructions: 'If the URL is public the metadata will be fetched on save. This can be helpful if the metadata or certificates change frequently. Simply hit save to refresh the metadata.',
+                            id: 'metadata-url-text',
+                            name: 'metadata-url-text',
+                            autocomplete: false,
+                            value: provider.getMetadataOptions().url,
+                            errors: provider.getErrors('metadata-url-text'),
+                        }) }}
+                    </div>
+
+{#                    <div class="flex-sm-grow-1">#}
+{#                        {{ forms.textField({#}
+{#                            label: "Refresh Interval"|t('app'),#}
+{#                            id: 'metadata-url-interval-text',#}
+{#                            name: 'metadata-url-interval-text',#}
+{#                            autocomplete: false,#}
+{#                            value: provider.getMetadataOptions().expiryInterval,#}
+{#                            errors: provider.getErrors('metadata-url-interval-text'),#}
+{#                            placeholder: 'P7D'#}
+{#                        }) }}#}
+{#                    </div>#}
+{#                    {% if provider.getMetadataOptions().expiryInterval %}#}
+{#                        <div class="flex-sm-grow-1">#}
+{#                            {{ forms.textField({#}
+{#                                label: "Expiry Date"|t('app'),#}
+{#                                id: 'metadata-url-interval-date-text',#}
+{#                                name: 'metadata-url-interval-date-text',#}
+{#                                autocomplete: false,#}
+{#                                value: provider.getMetadataOptions().expiryDate|date('Y/m/d'),#}
+{#                                errors: provider.getErrors('metadata-url-interval-text'),#}
+{#                                readonly: true,#}
+{#                                disabled: true,#}
+{#                            }) }}#}
+{#                        </div>#}
+{#                    {% endif %}#}
+                </div>
+                {% endif %}
+                {{ forms.textareaField({
+                    label: createType == myType ? 'Metadata XML' : '2. Metadata XML',
+                    instructions: createType == myType ?
+                        "Share this XML with the other provider." :
+                        "Paste Metadata XML from the provider. This will be overwritten when the Metadata Url is being used."|t(plugin.handle ),
+                    class: "code",
+                    id: 'metadata-text',
+                    name: 'metadata-text',
+                    value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
+                    readonly: createType == myType ? true : false,
+                    disabled: createType == myType ? true : false,
+                    errors: provider.getErrors('metadata-text'),
+                    rows: 10
+                }) }}
+            </div>
+        </div>
+
 
         {% if provider.id %}
             <h2 class="saml-cp-header">Bindings</h2>

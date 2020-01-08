@@ -6,8 +6,11 @@ use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\models\SettingsInterface;
+use GuzzleHttp\Client;
+use Psr\Http\Message\UriInterface;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
+use SAML2\DOMDocumentFactory;
 use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
@@ -63,6 +66,22 @@ class Metadata extends Component
     protected function supportsPost()
     {
         return in_array(Constants::BINDING_HTTP_POST, $this->getSupportedBindings());
+    }
+
+    /**
+     * @param string $url
+     * @return EntityDescriptor
+     * @throws \Exception
+     */
+    public function fetchByUrl(string $url)
+    {
+        $client = new Client();
+        $response = $client->get($url);
+        return new EntityDescriptor(
+            DOMDocumentFactory::fromString(
+                $response->getBody()->getContents()
+            )->documentElement
+        );
     }
 
     /**

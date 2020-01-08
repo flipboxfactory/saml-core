@@ -33,7 +33,7 @@
     </div>
     {% set cols = {
         attributeName: {
-            type: 'singleline',
+            type: 'text',
             heading: 'Attribute Name',
         },
         craftProperty: {
@@ -53,7 +53,6 @@
             }
         }) %}
     {% endif %}
-
     {{ forms.editableTableField({
         label: "User Attribute Mapping"|t(plugin.handle),
         instructions: "Each mapping on a different row."|t(plugin.handle),
@@ -105,18 +104,19 @@
 
         {% do view.registerAssetBundle("flipbox\\saml\\core\\web\\assets\\bundles\\SamlCore") %}
         {% js %}
-            new Craft.SamlCoreMetadata(
-            $('#show-mapping-preview'),
-            $('#preview-mapping'),
-            '{{ plugin.handle }}',
-            '{{ provider.id }}',
-            $('#userId')
+            new Craft.SamlCoreMappingPreview(
+                $('#show-mapping-preview'),
+                $('#preview-mapping'),
+                '{{ plugin.handle }}',
+                '{{ provider.id }}',
+                $('#userId')
             );
         {% endjs %}
     {% endif %}
 {% endmacro %}
 
 {% macro editableTableField(config) %}
+{#    {% include '_includes/forms/editableTable' with config only %}#}
     {% include 'saml-core/_cp/metadata/_includes/editableTable' with config only %}
 {% endmacro %}
 

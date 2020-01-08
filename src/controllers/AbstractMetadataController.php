@@ -16,6 +16,7 @@ use flipbox\saml\core\controllers\cp\view\metadata\VariablesTrait;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\models\GroupOptions;
+use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
@@ -34,7 +35,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
     public function actionIndex()
     {
 
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         /** @var AbstractProvider $provider */
         $provider = $this->getPlugin()->getProvider()->findByEntityId(
@@ -56,7 +57,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     public function actionAutoCreate()
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $record = $this->processSaveAction();
@@ -100,7 +101,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
     public function actionSave()
     {
 
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         /** @var AbstractProvider $record */
@@ -137,7 +138,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
     public function actionChangeStatus()
     {
 
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
@@ -175,7 +176,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     public function actionDelete()
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
@@ -214,10 +215,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $providerId = Craft::$app->request->getParam('identifier');
         $keyId = Craft::$app->request->getParam('keychain');
         $providerType = Craft::$app->request->getParam('providerType');
-        $metadata = Craft::$app->request->getParam('metadata');
+        $metadata = Craft::$app->request->getParam('metadata-text');
+        $metadataUrl = Craft::$app->request->getParam('metadata-url-text');
+        $metadataUrlInterval = Craft::$app->request->getParam('metadata-url-interval-text');
         $mapping = Craft::$app->request->getParam('mapping', []);
         $label = Craft::$app->request->getRequiredParam('label');
         $nameIdOverride = Craft::$app->request->getParam('nameIdOverride');
+
 
         $plugin = $this->getPlugin();
 
@@ -233,21 +237,27 @@ abstract class AbstractMetadataController extends AbstractController implements 
             }
         } else {
             $record = new $recordClass();
-            /**
-             * enabled is default
-             */
+
+            //enabled is default
             $record->enabled = true;
         }
 
-        /**
-         * Populate some vars
-         */
-        $record->metadata = $metadata;
+
+        // Metadata
+        if (! $metadata && $metadataUrl) {
+            $metadataModel = $this->getPlugin()->getMetadata()->fetchByUrl($metadataUrl);
+            $record->metadata = $metadataModel->toXML()->ownerDocument->saveXML();
+        } else {
+            $record->metadata = $metadata;
+        }
+
+        // Mapping
         if (is_array($mapping)) {
             $record->setMapping(
                 $mapping
             );
         }
+
         $record->providerType = $providerType;
         $record->nameIdOverride = $nameIdOverride;
 
@@ -266,9 +276,19 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
+        $record->setMetadataOptions(
+            new MetadataOptions([
+                'url' => $metadataUrl,
+                'expiryInterval' => $metadataUrlInterval,
+            ])
+        );
+
         // Group properties
         $record->syncGroups = Craft::$app->request->getParam('syncGroups') ?: 0;
-        $record->groupsAttributeName = Craft::$app->request->getParam('groupsAttributeName') ?: AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME;
+
+        $record->groupsAttributeName =
+            Craft::$app->request->getParam('groupsAttributeName') ?:
+                AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME;
 
         /**
          * check for label and add error if it's empty
@@ -294,8 +314,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
         /**
          * Metadata should exist for the remote provider
          */
-        if ($plugin->getRemoteType() === $providerType && ! $metadata) {
-            $record->addError('metadata', Craft::t($plugin->getHandle(), "Metadata cannot be empty."));
+        if ($plugin->getRemoteType() === $providerType && ! $record->metadata) {
+            $record->addError('metadata-text', Craft::t($plugin->getHandle(), "Metadata cannot be empty."));
         }
 
         return $record;
@@ -310,7 +330,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     public function actionDownloadCertificate($keyId)
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         /** @var KeyChainRecord $keychain */
         if (! $keychain = KeyChainRecord::find()->where([

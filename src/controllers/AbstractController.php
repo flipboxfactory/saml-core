@@ -19,7 +19,7 @@ class AbstractController extends \craft\web\Controller
      */
     public function checkAdminAccess(): bool
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         return true;
     }
 }

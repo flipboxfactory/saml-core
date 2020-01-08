@@ -1,7 +1,7 @@
 (function ($) {
     /** global: Craft */
     /** global: Garnish */
-    Craft.SamlCoreMetadata = Garnish.Base.extend({
+    Craft.SamlCoreMappingPreview = Garnish.Base.extend({
         /**
          * the selector for the button that is clicked to generate a new keypair
          */
