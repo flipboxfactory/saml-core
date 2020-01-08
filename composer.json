@@ -1,7 +1,7 @@
 {
   "name": "flipboxfactory/saml-core",
   "description": "SAML SSO Core",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "type": "library",
   "keywords": [
     "cms",

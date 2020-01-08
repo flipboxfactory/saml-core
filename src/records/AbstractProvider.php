@@ -3,6 +3,7 @@
 namespace flipbox\saml\core\records;
 
 use craft\db\ActiveRecord;
+use craft\helpers\StringHelper;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
@@ -44,6 +45,22 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      * @return string|null
      */
     abstract public function getLogoutPath();
+
+
+    /**
+     * @inheritDoc
+     */
+    public function loadDefaultValues($skipIfSet = true)
+    {
+        parent::loadDefaultValues($skipIfSet);
+
+        // fix the issue with postgres pulling zero as default
+        if (!trim($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+
+        return $this;
+    }
 
     /**
      * @inheritdoc
