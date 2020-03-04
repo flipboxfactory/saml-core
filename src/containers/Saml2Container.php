@@ -3,6 +3,7 @@
 
 namespace flipbox\saml\core\containers;
 
+use craft\web\Response;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\MessageHelper;
@@ -114,6 +115,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
             $this->getTemplatePath(),
             $data
         );
+        \Craft::$app->response->format = Response::FORMAT_HTML;
         \Craft::$app->response->send();
         \Craft::$app->end();
     }
