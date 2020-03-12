@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.1.4 - 2020-03-12
+### Fixed
+- Fixed issue with Metadata URL not overwriting the metadata correctly via the control panel.
+
 # 2.1.3 - 2020-03-04
 ### Fixed
 - Fixes issue with `GeneralConfig::headlessMode` by explicitly setting response to HTML. Fixes: https://github.com/flipboxfactory/saml-sp/issues/53

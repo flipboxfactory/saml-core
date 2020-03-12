@@ -247,6 +247,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         if (! $metadata && $metadataUrl) {
             $metadataModel = $this->getPlugin()->getMetadata()->fetchByUrl($metadataUrl);
             $record->metadata = $metadataModel->toXML()->ownerDocument->saveXML();
+            $record->setMetadataModel($metadataModel);
         } else {
             $record->metadata = $metadata;
         }
