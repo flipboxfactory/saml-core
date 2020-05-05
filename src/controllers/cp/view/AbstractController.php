@@ -158,7 +158,7 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
 
                 if ($endpoint = $this->getFirstEndpoint($roleDescriptor->getSingleLogoutService())) {
                     $sloBinding = $endpoint->getBinding();
-                    $sloResponseLocation = $endpoint->getResponseLocation();
+                    $sloResponseLocation = $endpoint->getLocation();
                     $variables['singleLogoutServices'][$sloBinding] = $sloResponseLocation;
                 }
 

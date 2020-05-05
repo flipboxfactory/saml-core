@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.1.5 - 2020-05-05
+### Fixed
+- Issue CP panel presenting the SLO endpoint, fixing: https://github.com/flipboxfactory/saml-sp/issues/57
+
 # 2.1.4 - 2020-03-12
 ### Fixed
 - Fixed issue with Metadata URL not overwriting the metadata correctly via the control panel.
