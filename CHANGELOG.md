@@ -1,5 +1,9 @@
 Changelog
 =========
+# 2.1.6 - 2020-05-06
+### Fixed
+- Missed a spot with 57 https://github.com/flipboxfactory/saml-sp/issues/57
+
 # 2.1.5 - 2020-05-05
 ### Fixed
 - Issue CP panel presenting the SLO endpoint, fixing: https://github.com/flipboxfactory/saml-sp/issues/57
