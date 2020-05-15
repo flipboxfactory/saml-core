@@ -1,5 +1,10 @@
 Changelog
 =========
+# 2.1.7 - 2020-05-15
+### Removed
+- `\flipbox\saml\core\helpers\SerializeHelper::toBase64`
+- `\flipbox\saml\core\helpers\SerializeHelper::isBase64String`
+
 # 2.1.6 - 2020-05-06
 ### Fixed
 - Missed a spot with 57 https://github.com/flipboxfactory/saml-sp/issues/57
