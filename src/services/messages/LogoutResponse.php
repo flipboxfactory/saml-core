@@ -12,6 +12,7 @@ use flipbox\saml\core\records\AbstractProvider;
 use SAML2\Constants;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse as SamlLogoutResponse;
+use SAML2\XML\saml\Issuer;
 use yii\base\Event;
 
 /**
@@ -58,6 +59,9 @@ class LogoutResponse extends Component
          * Set issuer
          */
         $logout->setIssuer(
+            $issuer = new Issuer()
+        );
+        $issuer->setValue(
             $ourProvider->getEntityId()
         );
 

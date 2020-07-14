@@ -1,6 +1,10 @@
 Changelog
 =========
 # 2.1.7 - 2020-05-15
+### Changed
+- Updated `simplesamlphp/saml2` to `^4.1`.
+
+# 2.1.7 - 2020-05-15
 ### Removed
 - `\flipbox\saml\core\helpers\SerializeHelper::toBase64`
 - `\flipbox\saml\core\helpers\SerializeHelper::isBase64String`

@@ -13,6 +13,7 @@ use flipbox\saml\core\records\AbstractProviderIdentity;
 use SAML2\Constants;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest as SamlLogoutRequest;
+use SAML2\XML\saml\Issuer;
 use SAML2\XML\saml\NameID;
 use yii\base\Event;
 
@@ -37,7 +38,7 @@ class LogoutRequest extends Component
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
-        string $relayState = ''
+        string $relayState = null
     ) {
 
         $logout = new SamlLogoutRequest();
@@ -84,6 +85,9 @@ class LogoutRequest extends Component
          * Set issuer
          */
         $logout->setIssuer(
+            $issuer = new Issuer()
+        );
+        $issuer->setValue(
             $ourProvider->getEntityId()
         );
 
@@ -118,7 +122,7 @@ class LogoutRequest extends Component
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
-        string $relayState = ''
+        string $relayState = null
     ) {
         return (new HTTPRedirect())->getRedirectURL(
             $this->create(

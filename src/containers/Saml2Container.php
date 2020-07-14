@@ -15,6 +15,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 {
 
     const TEMPLATE_PATH = 'saml-core/_components/post-binding-submit.twig';
+
     /**
      * @var \Psr\Log\LoggerInterface
      */
@@ -47,7 +48,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * {@inheritdoc}
      * @return \Psr\Log\LoggerInterface
      */
-    public function getLogger()
+    public function getLogger(): \Psr\Log\LoggerInterface
     {
         return $this->logger;
     }
@@ -57,7 +58,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * {@inheritdoc}
      * @return string
      */
-    public function generateId()
+    public function generateId(): string
     {
         return MessageHelper::generateId();
     }
@@ -67,7 +68,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * {@inheritdoc}
      * @return void
      */
-    public function debugMessage($message, $type)
+    public function debugMessage($message, $type): void
     {
         if ($message instanceof \DOMDocument || $message instanceof \DOMElement) {
             $message = $message->ownerDocument->saveXML();
@@ -83,7 +84,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * @param array $data
      * @return void
      */
-    public function redirect($url, $data = [])
+    public function redirect($url, $data = []): void
     {
 
         $url = SerializeHelper::redirectUrl($url, $data);
@@ -100,7 +101,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * @param array $data
      * @return void
      */
-    public function postRedirect($url, $data = [])
+    public function postRedirect($url, $data = []): void
     {
 
         $data['destination'] = $url;
@@ -118,6 +119,38 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
         \Craft::$app->response->format = Response::FORMAT_HTML;
         \Craft::$app->response->send();
         \Craft::$app->end();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTempDir() : string
+    {
+        $tempDir = CRAFT_STORAGE_PATH . DIRECTORY_SEPARATOR . 'saml2';
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir);
+        }
+
+        return $tempDir;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function writeFile(string $filename, string $data, int $mode = null) : void
+    {
+        if ($mode === null) {
+            $mode = 660;
+        }
+        file_put_contents(
+            $filename,
+            $data
+        );
+        chmod(
+            $filename,
+            $mode
+        );
     }
 
     /**
