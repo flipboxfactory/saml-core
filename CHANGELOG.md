@@ -1,6 +1,6 @@
 Changelog
 =========
-# 2.1.7 - 2020-05-15
+# 3.0.0 - 2020-07-14
 ### Changed
 - Updated `simplesamlphp/saml2` to `^4.1`.
 
