@@ -175,6 +175,7 @@ abstract class AbstractInstall extends Migration
                 $this->getIdentityTableName(),
                 [
                     'providerId',
+                    'nameId',
                     'userId',
                 ],
                 true
@@ -182,6 +183,7 @@ abstract class AbstractInstall extends Migration
             $this->getIdentityTableName(),
             [
                 'providerId',
+                'nameId',
                 'userId',
             ],
             true
