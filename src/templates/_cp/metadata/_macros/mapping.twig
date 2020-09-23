@@ -6,6 +6,10 @@
         {{ forms.nameIdSection(provider, plugin) }}
     {% endif %}
 
+    {% if provider.getType() == constant('\\flipbox\\saml\\core\\models\\SettingsInterface::IDP') and plugin.settings.isSP() %}
+        {{ forms.nameIdSectionForSP(provider, plugin) }}
+    {% endif %}
+
     <h2 class="saml-cp-header">Mapping</h2>
     <div class="field">
         <div class="heading">
@@ -120,6 +124,32 @@
 {#    {% include 'saml-core/_cp/metadata/_includes/editableTable' with config only %}#}
 {% endmacro %}
 
+{% macro nameIdSectionForSP(provider, plugin) %}
+    {% import '_includes/forms' as forms %}
+    <h2 class="saml-cp-header">Username/NameID Override</h2>
+
+    <div class="field">
+        <div class="heading">
+            <div class="instructions">
+                <p>
+                    By default, the NameID will be used as for the Craft user's username.
+                    If the value with the NameID field is not desired, map a different attribute here.
+                    The field you specify is here is one that is being sent over in the
+                    SAML Response, as an Assertion Attribute.
+                </p>
+            </div>
+        </div>
+    </div>
+    {{ forms.text({
+        label: "NameID Override/Mapping"|t(plugin.handle),
+        id: 'nameIdOverride',
+        name: 'nameIdOverride',
+        placeholder: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+        value: provider.nameIdOverride,
+        errors: provider.getErrors('nameIdOverride')
+    }) }}
+
+{% endmacro %}
 {% macro nameIdSection(provider, plugin) %}
     {% import '_includes/forms' as forms %}
     <h2 class="saml-cp-header">NameID</h2>

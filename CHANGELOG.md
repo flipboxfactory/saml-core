@@ -1,5 +1,9 @@
 Changelog
 =========
+# 3.1.0 - 2020-09-22
+## Added
+- Added NameID Override per IDP to the SP templates.
+
 # 3.0.1 - 2020-08-06
 ## Fixed
 - Constraint on the provider identity table.
