@@ -37,7 +37,7 @@ abstract class AbstractSettingsController extends AbstractController implements 
     {
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getPlugin();
-
+        
         $settings = [
             'entityId' => Craft::$app->request->getRequiredParam('entityId'),
             'endpointPrefix' => Craft::$app->request->getRequiredParam('endpointPrefix'),

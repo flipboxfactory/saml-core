@@ -56,10 +56,19 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
         // fix the issue with postgres pulling zero as default
         if (!trim($this->uid)) {
-            $this->uid = StringHelper::UUID();
+            $this->generateUid();
         }
 
         return $this;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function generateUid() {
+        if(!$this->uid) {
+            $this->uid = StringHelper::UUID();
+        }
     }
 
     /**

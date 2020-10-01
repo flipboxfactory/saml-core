@@ -290,6 +290,10 @@ abstract class AbstractPlugin extends Plugin
                     static::getInstance()->getSettings()->getDefaultLoginPath()
                 ) => $handle . '/login',
                 sprintf(
+                    'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
+                    static::getInstance()->getSettings()->getDefaultLoginPath()
+                ) => $handle . '/login',
+                sprintf(
                     'POST,GET %s',
                     (string)static::getInstance()->getSettings()->getDefaultLoginRequestPath()
                 ) => $handle . '/login/request',
@@ -300,6 +304,10 @@ abstract class AbstractPlugin extends Plugin
                 /**
                  * LOGOUT
                  */
+                sprintf(
+                    'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
+                    static::getInstance()->getSettings()->getDefaultLogoutPath()
+                ) => $handle . '/logout',
                 sprintf(
                     'POST,GET %s',
                     static::getInstance()->getSettings()->getDefaultLogoutPath()

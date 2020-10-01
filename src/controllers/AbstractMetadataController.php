@@ -61,10 +61,15 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $this->requirePostRequest();
 
         $record = $this->processSaveAction();
+        if(is_null($record->uid)) {
+            $record->generateUid();
+        }
 
         $entityDescriptor = $this->getPlugin()->getMetadata()->create(
             $this->getPlugin()->getSettings(),
-            $record->keychain
+            $record->keychain,
+            $record->entityId,
+            $record->uid
         );
 
         $provider = $this->getPlugin()->getProvider()->create(
@@ -213,6 +218,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
     {
 
         $providerId = Craft::$app->request->getParam('identifier');
+        $entityId = Craft::$app->request->getParam('entityId');
         $keyId = Craft::$app->request->getParam('keychain');
         $providerType = Craft::$app->request->getParam('providerType');
         $metadata = Craft::$app->request->getParam('metadata-text');
@@ -242,6 +248,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             $record->enabled = true;
         }
 
+        $record->entityId = $entityId;
 
         // Metadata
         if (! $metadata && $metadataUrl) {

@@ -62,7 +62,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
      * @throws \yii\base\ExitException
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionIndex()
+    public function actionIndex($uid = null)
     {
         $message = Factory::receive();
 
@@ -74,13 +74,23 @@ abstract class AbstractLogoutController extends AbstractController implements \f
             throw new HttpException(400, "Invalid request");
         }
 
+        $settings = $this->getPlugin()->getSettings();
+
         /** @var AbstractProvider $theirProvider */
         $theirProvider = $this->getPlugin()->getProvider()->findByEntityId(
             MessageHelper::getIssuer($message->getIssuer())
         )->one();
+        $condition = [
+            'enabled' => 1
+        ];
 
+        if($uid) {
+            $condition['uid'] = $uid;
+        }else{
+            $condition['entityId'] = $settings->getEntityId();
+        }
         /** @var AbstractProvider $ourProvider */
-        $ourProvider = $this->getPlugin()->getProvider()->findOwn();
+        $ourProvider = $this->getPlugin()->getProvider()->find($condition)->one();
 
         if ($isRequest) {
             if (\Craft::$app->getUser()->isGuest) {

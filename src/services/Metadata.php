@@ -92,18 +92,24 @@ class Metadata extends Component
      */
     public function create(
         SettingsInterface $settings,
-        KeyChainRecord $withKeyPair = null
+        KeyChainRecord $withKeyPair = null,
+        $entityIdOverride = null,
+        $providerUid = null
     ): EntityDescriptor {
 
         $entityDescriptor = new EntityDescriptor();
 
-        $entityId = $settings->getEntityId();
+        $entityId = $entityIdOverride ?? $settings->getEntityId();
 
         $entityDescriptor->setEntityID($entityId);
 
         foreach ($this->getSupportedBindings() as $binding) {
             $entityDescriptor->addRoleDescriptor(
-                $descriptor = $this->createDescriptor($binding, $settings)
+                $descriptor = $this->createDescriptor(
+                    $binding,
+                    $settings,
+                    $providerUid
+                )
             );
 
             /**
@@ -134,7 +140,11 @@ class Metadata extends Component
      * @return IdpSsoDescriptor|SpSsoDescriptor
      * @throws InvalidConfigException
      */
-    protected function createDescriptor(string $binding, SettingsInterface $settings)
+    protected function createDescriptor(
+        string $binding,
+        SettingsInterface $settings,
+        $providerUid = null
+    )
     {
         if (! in_array($binding, [
             Constants::BINDING_HTTP_POST,
@@ -144,9 +154,9 @@ class Metadata extends Component
         }
 
         if ($settings->getMyType() === $settings::SP) {
-            $descriptor = $this->createSpDescriptor($binding, $settings);
+            $descriptor = $this->createSpDescriptor($binding, $settings, $providerUid);
         } else {
-            $descriptor = $this->createIdpDescriptor($binding, $settings);
+            $descriptor = $this->createIdpDescriptor($binding, $settings, $providerUid);
         }
 
         return $descriptor;
@@ -156,7 +166,7 @@ class Metadata extends Component
      * @param string $binding
      * @return IDPSSODescriptor
      */
-    protected function createIdpDescriptor(string $binding, SettingsInterface $settings)
+    protected function createIdpDescriptor(string $binding, SettingsInterface $settings, $providerUid = null)
     {
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
         $descriptor->setProtocolSupportEnumeration([
@@ -173,7 +183,7 @@ class Metadata extends Component
         $ssoEndpoint = new EndpointType();
         $ssoEndpoint->setBinding($binding);
         $ssoEndpoint->setLocation(
-            $settings->getDefaultLoginEndpoint()
+            $settings->getDefaultLoginEndpoint() . ($providerUid ? "/$providerUid" : '')
         );
         $descriptor->setSingleSignOnService([
             $ssoEndpoint,
@@ -199,7 +209,7 @@ class Metadata extends Component
      * @param string $binding
      * @return SPSSODescriptor
      */
-    protected function createSpDescriptor(string $binding, SettingsInterface $settings)
+    protected function createSpDescriptor(string $binding, SettingsInterface $settings, $providerUid = null)
     {
 
         $descriptor = new SPSSODescriptor();
@@ -221,7 +231,7 @@ class Metadata extends Component
         $acsEndpoint->setIndex(1);
         $acsEndpoint->setBinding($binding);
         $acsEndpoint->setLocation(
-            $settings->getDefaultLoginEndpoint()
+            $settings->getDefaultLoginEndpoint() . ($providerUid ? "/$providerUid" : '')
         );
 
         $descriptor->setAssertionConsumerService([
@@ -231,7 +241,8 @@ class Metadata extends Component
         //SLO
         $this->addSloEndpoint(
             $descriptor,
-            $settings
+            $settings,
+            $providerUid
         );
 
         //todo add attribute consuming service
@@ -243,14 +254,18 @@ class Metadata extends Component
         return $descriptor;
     }
 
-    protected function addSloEndpoint(SSODescriptorType $descriptorType, SettingsInterface $settings)
+    protected function addSloEndpoint(
+        SSODescriptorType $descriptorType,
+        SettingsInterface $settings,
+        $providerUid = null
+    )
     {
         $sloEndpointRedirect = new EndpointType();
         $sloEndpointRedirect->setBinding(
             Constants::BINDING_HTTP_REDIRECT
         );
         $sloEndpointRedirect->setLocation(
-            $settings->getDefaultLogoutEndpoint()
+            $settings->getDefaultLogoutEndpoint() . ($providerUid ? "/$providerUid" : '')
         );
 
         $sloEndpointPost = new EndpointType();
@@ -258,7 +273,7 @@ class Metadata extends Component
             Constants::BINDING_HTTP_POST
         );
         $sloEndpointPost->setLocation(
-            $settings->getDefaultLogoutEndpoint()
+            $settings->getDefaultLogoutEndpoint() . ($providerUid ? "/$providerUid" : '')
         );
 
         $descriptorType->setSingleLogoutService([
