@@ -23,7 +23,7 @@ class LinkRecord extends ActiveRecord
     public function getKeyChain()
     {
         return $this->hasOne(KeyChainRecord::class, [
-            'keyChainId' => 'id',
+            'keyChainId' => 'uid',
         ]);
     }
 }
