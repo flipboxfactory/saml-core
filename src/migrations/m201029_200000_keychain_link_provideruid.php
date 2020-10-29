@@ -24,7 +24,10 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
     {
         // Get all of the records
         $providerRecords = $this->providerRecordQuery()->all();
-        $linkRecords = ArrayHelper::index(LinkRecord::find()->all(), 'providerId');
+        $linkRecords = [];
+        foreach(LinkRecord::find()->all() as $record) {
+            $linkRecords[$record->providerId] = $record;
+        }
 
         // update the indexes
         $this->dropForeignKey(
@@ -61,6 +64,12 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
         // update the records with the uid
         /** @var AbstractProvider $record */
         foreach($providerRecords as $record) {
+
+            // move on if the link doesn't exist
+            if(!isset($linkRecords[$record->id])) {
+                continue;
+            }
+
             /** @var LinkRecord $link */
             $link = $linkRecords[$record->id];
             $link->providerUid = $record->uid;
