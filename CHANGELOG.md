@@ -1,5 +1,9 @@
 Changelog
 =========
+# 3.1.2 - 2020-10-29
+## Fixed
+- Issue where SP and IdP plugin couldn't be installed on the same craft db due to table conflicts.
+
 # 3.1.0 - 2020-09-22
 ## Added
 - Added NameID Override per IDP to the SP templates.
