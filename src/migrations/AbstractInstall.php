@@ -9,6 +9,7 @@
 namespace flipbox\saml\core\migrations;
 
 use craft\db\Migration;
+use craft\records\Site;
 use craft\records\User;
 use flipbox\keychain\records\KeyChainRecord;
 use yii\base\InvalidConfigException;
@@ -76,6 +77,7 @@ abstract class AbstractInstall extends Migration
             ])->notNull(),
             'encryptAssertions' => $this->boolean()->defaultValue(false)->notNull(),
             'encryptionMethod' => $this->string(64)->null(),
+            'siteId' => $this->integer()->null(),
             'groupOptions' => $this->text(),
             'metadataOptions' => $this->text(),
             'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
@@ -244,6 +246,17 @@ abstract class AbstractInstall extends Migration
             $this->getProviderTableName(),
             'id',
             'CASCADE'
+        );
+
+        $this->addForeignKey(
+            $this->db->getForeignKeyName(
+                $this->getProviderTableName(),
+                'siteId'
+            ),
+            $this->getProviderTableName(),
+            'siteId',
+            Site::tableName(),
+            'id'
         );
     }
 }
