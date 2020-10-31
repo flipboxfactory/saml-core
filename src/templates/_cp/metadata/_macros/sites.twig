@@ -1,0 +1,28 @@
+{% macro displaySiteToggles(provider, plugin) %}
+    {% import "_includes/forms" as forms %}
+    <div class="lightswitch-field field">
+        <div class="heading">
+            Sites
+            <p style="font-size:smaller">Used for targeting explicitly targeting a site on multi-site Craft Installs.</p>
+        </div>
+    </div>
+    {% for site in craft.app.sites.allSites() %}
+
+        <div class="lightswitch-field field">
+            <div class="heading">
+                <label for="enableSite-{{ site.id }}">
+                    {{ site.name }}
+                </label>
+            </div>
+            <div class="input ltr">
+                {{ forms.lightswitch({
+                    id: 'enableSite-'~site.id,
+                    name: 'enableSite['~site.id~']',
+                    errors: provider.getErrors('sites'),
+                    on: provider.sites,
+                    class: 'input ltr'
+                }) }}
+            </div>
+        </div>
+    {% endfor %}
+{% endmacro %}

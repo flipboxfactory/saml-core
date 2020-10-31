@@ -118,6 +118,19 @@ abstract class AbstractSettings extends Model implements SettingsInterface
         return \Craft::parseEnv($this->entityId);
     }
 
+    /**
+     * @return string
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    public function getEntityIdRaw()
+    {
+        if (! $this->entityId) {
+            $this->entityId = UrlHelper::baseUrl();
+        }
+
+        return $this->entityId;
+    }
+
     public function getEndpointPrefix()
     {
         return \Craft::parseEnv($this->endpointPrefix);

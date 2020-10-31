@@ -152,6 +152,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
         }
         $linkAttributes = [
             'providerId' => $provider->id,
+            'providerUid' => $provider->uid,
         ];
 
         /** @var LinkRecord $link */
@@ -165,7 +166,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
             $linkAttributes
         );
         if (! $link->save($runValidation, $attributeNames)) {
-            throw new \Exception(Json::encode($record->getErrors()));
+            throw new \Exception(Json::encode($provider->getErrors()));
         }
     }
 

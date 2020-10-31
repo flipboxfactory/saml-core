@@ -19,7 +19,8 @@
         id:'entityId',
         instructions: "The unique id for the site. " ~ warning|t('app'),
         suggestEnvVars: true,
-        value: settings.entityId,
+        suggestAliases: true,
+        value: settings.entityIdRaw,
     }) }}
 
     {{ forms.autosuggestField({

@@ -9,9 +9,10 @@
 namespace flipbox\saml\core\migrations;
 
 use craft\db\Migration;
+use craft\records\Site;
 use craft\records\User;
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\saml\core\AbstractPlugin;
+use yii\base\InvalidConfigException;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
@@ -20,6 +21,7 @@ abstract class AbstractInstall extends Migration
 {
 
     const PROVIDER_AFTER_COLUMN = 'sha256';
+    protected $linkTableExist = false;
 
     /**
      * @return string
@@ -36,6 +38,15 @@ abstract class AbstractInstall extends Migration
      */
     public function safeUp()
     {
+        try {
+            /**
+             * if it doesn't exist, this will throw an exception
+             */
+            LinkRecord::getTableSchema();
+            $this->linkTableExist=true;
+        } catch (InvalidConfigException $e) {
+            \Craft::warning('Link table doesn\'t exist. Going to create it and the indexes.');
+        }
 
         $this->installKeyChain();
         $this->createTables();
@@ -66,6 +77,7 @@ abstract class AbstractInstall extends Migration
             ])->notNull(),
             'encryptAssertions' => $this->boolean()->defaultValue(false)->notNull(),
             'encryptionMethod' => $this->string(64)->null(),
+            'siteId' => $this->integer()->null(),
             'groupOptions' => $this->text(),
             'metadataOptions' => $this->text(),
             'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
@@ -90,14 +102,17 @@ abstract class AbstractInstall extends Migration
 
         $this->createTable($this->getProviderTableName(), $this->getProviderFields());
 
-        $this->createTable(LinkRecord::tableName(), [
-            'id' => $this->primaryKey(),
-            'providerId' => $this->integer()->notNull(),
-            'keyChainId' => $this->integer()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
+        if($this->linkTableExist === false) {
+            $this->createTable(LinkRecord::tableName(), [
+                'id' => $this->primaryKey(),
+                'providerId' => $this->integer()->notNull(),
+                'providerUid' => $this->integer()->notNull(),
+                'keyChainId' => $this->integer()->notNull(),
+                'dateUpdated' => $this->dateTime()->notNull(),
+                'dateCreated' => $this->dateTime()->notNull(),
+                'uid' => $this->uid(),
+            ]);
+        }
 
         $this->createTable($this->getIdentityTableName(), [
             'id' => $this->primaryKey(),
@@ -151,18 +166,22 @@ abstract class AbstractInstall extends Migration
             ],
             true
         );
-        $this->createIndex(
-            $this->db->getIndexName(LinkRecord::tableName(), [
-                'providerId',
-                'keyChainId',
-            ], true, true),
-            LinkRecord::tableName(),
-            [
-                'providerId',
-                'keyChainId',
-            ],
-            true
-        );
+
+        if($this->linkTableExist === false) {
+            $this->createIndex(
+                $this->db->getIndexName(LinkRecord::tableName(), [
+                    'providerUid',
+                    'keyChainId',
+                ], true, true),
+                LinkRecord::tableName(),
+                [
+                    'providerUid',
+                    'keyChainId',
+                ],
+                true
+            );
+        }
+
         $this->createIndex(
             $this->db->getIndexName($this->getIdentityTableName(), 'nameId', false, true),
             $this->getIdentityTableName(),
@@ -198,29 +217,19 @@ abstract class AbstractInstall extends Migration
     protected function addForeignKeys()
     {
 
-        /**
-         * Link Provider
-         */
-        $this->addForeignKey(
-            $this->db->getForeignKeyName(LinkRecord::tableName(), 'providerId'),
-            LinkRecord::tableName(),
-            'providerId',
-            $this->getProviderTableName(),
-            'id',
-            'CASCADE'
-        );
-
-        /**
-         * Link KeyChain
-         */
-        $this->addForeignKey(
-            $this->db->getForeignKeyName(LinkRecord::tableName(), 'keyChainId'),
-            LinkRecord::tableName(),
-            'keyChainId',
-            KeyChainRecord::tableName(),
-            'id',
-            'CASCADE'
-        );
+        if($this->linkTableExist === false) {
+            /**
+             * Link KeyChain
+             */
+            $this->addForeignKey(
+                $this->db->getForeignKeyName(LinkRecord::tableName(), 'keyChainId'),
+                LinkRecord::tableName(),
+                'keyChainId',
+                KeyChainRecord::tableName(),
+                'id',
+                'CASCADE'
+            );
+        }
 
         $this->addForeignKey(
             $this->db->getForeignKeyName($this->getIdentityTableName(), 'userId'),
@@ -237,6 +246,17 @@ abstract class AbstractInstall extends Migration
             $this->getProviderTableName(),
             'id',
             'CASCADE'
+        );
+
+        $this->addForeignKey(
+            $this->db->getForeignKeyName(
+                $this->getProviderTableName(),
+                'siteId'
+            ),
+            $this->getProviderTableName(),
+            'siteId',
+            Site::tableName(),
+            'id'
         );
     }
 }

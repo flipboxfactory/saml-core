@@ -4,6 +4,7 @@ namespace flipbox\saml\core\records;
 
 use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
+use craft\records\Site;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
@@ -11,6 +12,7 @@ use flipbox\saml\core\records\traits\Ember;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class AbstractProvider
@@ -95,6 +97,8 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
 
         $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
+
+        $this->siteId = $this->site->id;
 
         return parent::beforeSave($insert);
     }
@@ -190,6 +194,38 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     }
 
     /**
+     *
+     */
+    public function setSite(Site $site)
+    {
+        $this->populateRelation('site', $site);
+        return $this;
+    }
+
+    /**
+     * Returns the provider's site.
+     *
+     * @return ActiveQueryInterface The relational query object.
+     */
+    public function getSite(): ActiveQueryInterface
+    {
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
+    }
+
+    /**
+     * @return \craft\models\Site|null
+     */
+    public function getSiteModel() {
+        $site = $this->getSite()->one();
+
+        if($site instanceof Site) {
+            return new \craft\models\Site($site);
+        }
+
+        return null;
+    }
+
+    /**
      * @param array $mapping
      * @return $this
      */
@@ -250,7 +286,6 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
         return $groupOptions;
     }
-
 
     /**
      * @return bool

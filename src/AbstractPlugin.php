@@ -64,6 +64,7 @@ abstract class AbstractPlugin extends Plugin
         parent::init();
 
         $this->initCore();
+
     }
 
     /**
