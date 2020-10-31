@@ -5,7 +5,6 @@ namespace flipbox\saml\core\records;
 use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Site;
-use craft\records\SiteGroup;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
@@ -89,6 +88,8 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
 
         $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
+
+        $this->siteId = $this->site->id;
 
         return parent::beforeSave($insert);
     }
@@ -199,7 +200,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      */
     public function getSite(): ActiveQueryInterface
     {
-        return $this->hasOne(Site::class, ['siteId' => 'id']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 
     /**

@@ -86,6 +86,50 @@
                 </div>
             </div>
         </div>
+        <div class="meta">
+            <div class="data" style="padding: .7rem 1.5rem;font-size:smaller">
+                Entity ID is the unique ID for your provider.
+            </div>
+            <div class="data" style="padding: .7rem 1.5rem" >
+                {% set sites = [] %}
+                {% for site in craft.app.sites.allSites() %}
+                    {% set sites = sites|merge([{
+                        label: site.name,
+                        value: site.id,
+                    }])%}
+                {% endfor %}
+                <div class="required">
+                    <label>
+                        Entity ID
+                    </label>
+                </div>
+                <div class="">
+                    <div class="">
+                        {% if myType == provider.type or myType == createType %}
+                            {{ forms.textField({
+                                name: "entityId",
+                                id: 'entityId',
+                                class: "code",
+                                value: provider.entityId ?: ownEntityId,
+                                errors: provider.getErrors('entityId'),
+                                readonly: false,
+                                disabled: false
+                            }) }}
+                        {% else %}
+                            {{ forms.textField({
+                                name: "entityId",
+                                id: 'entityId',
+                                class: "code",
+                                value: provider.entityId,
+                                errors: provider.getErrors('entityId'),
+                                readonly: true,
+                                disabled: true
+                            }) }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
         {% if myType == createType %}
             <div class="meta">
                 <div class="data" style="padding: .7rem 1.5rem;font-size:smaller">
@@ -109,8 +153,8 @@
                             {{ forms.selectField({
                                 id: 'providerSite',
                                 name: 'providerSite',
-                                value: provider.id ? provider.type : createType,
-                                errors: provider.getErrors('type'),
+                                value: provider.id ? provider.siteId : '',
+                                errors: provider.getErrors('site'),
                                 options: sites,
                                 required: true
                             }) }}
@@ -309,35 +353,6 @@
     </div>
     <div id="metadata" class="hidden">
         <h2 class="saml-cp-header">Entity ID and Metadata</h2>
-        {% if myType == provider.type or myType == createType %}
-            {{ forms.textField({
-                label: "Entity ID"|t(plugin.handle ),
-                instructions: "Important: It's recommended to use the value provided. " ~
-                " If this value matches a seperate environment, verify it matchs the other environment's "~
-                "`baseUrl` exactly. If it's absolutely nessesary to change this value, the config property in the "~
-                "`config/"~plugin.handle~".php`."
-                |t(plugin.handle ),
-                name: "entityId",
-                id: 'entityId',
-                class: "code",
-                value: provider.entityId ?: ownEntityId,
-                errors: provider.getErrors('entityId'),
-                readonly: false,
-                disabled: false
-            }) }}
-        {% else %}
-            {{ forms.textField({
-                label: "Entity ID"|t(plugin.handle ),
-                instructions: "This is pulled from the Metadata and is readonly."|t(plugin.handle ),
-                name: "entityId",
-                id: 'entityId',
-                class: "code",
-                value: provider.entityId,
-                errors: provider.getErrors('entityId'),
-                readonly: true,
-                disabled: true
-            }) }}
-        {% endif %}
 
         <div >
         </div>

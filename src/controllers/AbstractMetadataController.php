@@ -9,6 +9,7 @@
 namespace flipbox\saml\core\controllers;
 
 use Craft;
+use craft\records\Site;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
 use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
@@ -215,6 +216,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $providerId = Craft::$app->request->getParam('identifier');
         $keyId = Craft::$app->request->getParam('keychain');
         $providerType = Craft::$app->request->getParam('providerType');
+        $providerSite = Craft::$app->request->getParam('providerSite');
         $metadata = Craft::$app->request->getParam('metadata-text');
         $metadataUrl = Craft::$app->request->getParam('metadata-url-text');
         $metadataUrlInterval = Craft::$app->request->getParam('metadata-url-interval-text');
@@ -242,6 +244,14 @@ abstract class AbstractMetadataController extends AbstractController implements 
             $record->enabled = true;
         }
 
+        if($providerSite) {
+            if($site = Site::findOne($providerSite)) {
+                $record->setSite($site);
+            }else{
+                var_dump('FUCK');
+                exit;
+            }
+        }
 
         // Metadata
         if (! $metadata && $metadataUrl) {

@@ -8,6 +8,7 @@
 
 namespace flipbox\saml\core\records;
 
+use craft\records\Site;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\SettingsInterface;
 use SAML2\XML\md\EntityDescriptor;
@@ -23,6 +24,8 @@ use yii\db\ActiveRecordInterface;
  * @property string $metadata
  * @property string $sha256
  * @property string $providerType
+ * @property Site|null $site
+ * @property int|null $siteId
  * @property string $mapping
  * @property string|null $nameIdOverride
  * @property string $groupOptions
