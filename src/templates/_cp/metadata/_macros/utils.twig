@@ -1,0 +1,27 @@
+{% macro copyFieldContents(textId) %}
+    {% set copyButtonId = 'copy-' ~ textId %}
+    {% js %}
+        (()=>{
+            const textArea = document.querySelector('#{{ textId }}')
+            const copyBtn = document.querySelector('#{{ copyButtonId }}')
+            copyBtn.addEventListener('click', (event) => {
+                let copyTextarea = textArea;
+
+                copyTextarea.focus();
+                copyTextarea.select();
+                try {
+                    let successful = document.execCommand('copy');
+                    let msg = successful ? 'successful' : 'unsuccessful';
+                    Craft.cp.displayNotice('Copied to clipboard!');
+{#                    alert('Copied!');#}
+                } catch(err) {
+                    alert('Unable to copy');
+                }
+            });
+        })()
+    {% endjs %}
+{#    <a href="javascript:void(0);" id="{{ copyButtonId }}" class="btn saml-clipboard-icon">#}
+    <a href="javascript:void(0);" id="{{ copyButtonId }}" class="btn saml-clipboard-icon" data-icon="clipboard">
+{#        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiPgogIDxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIiBkPSJNOCA1SDZhMiAyIDAgMDAtMiAydjEyYTIgMiAwIDAwMiAyaDEwYTIgMiAwIDAwMi0ydi0xTTggNWEyIDIgMCAwMDIgMmgyYTIgMiAwIDAwMi0yTTggNWEyIDIgMCAwMTItMmgyYTIgMiAwIDAxMiAybTAgMGgyYTIgMiAwIDAxMiAydjNtMiA0SDEwbTAgMGwzLTNtLTMgM2wzIDMiIC8+Cjwvc3ZnPg==">#}
+    </a>
+{% endmacro %}

@@ -1,5 +1,6 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
+{% import "saml-core/_cp/metadata/_macros/utils" as utils %}
 
 {% set fullPageForm=1 %}
 
@@ -58,46 +59,13 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="meta">
-            <div style="padding: .7rem 1.5rem; " class="data ">
-                <div class="required">
-                    <label>
-                        Provider Type
-                    </label>
-                </div>
-                <div class="">
-                    <div class="">
-                        {{ forms.selectField({
-                            id: 'providerType',
-                            name: 'providerType',
-                            value: provider.id ? provider.type : createType,
-                            errors: provider.getErrors('type'),
-                            options: [{
-                                value: 'idp',
-                                label: 'Identity (IDP)',
-                            },{
-                                value: 'sp',
-                                label: 'Service (SP)',
-                            }],
-                            required: true
-                        }) }}
-                    </div>
-                </div>
-            </div>
+            <input type="hidden" name="providerType" value="{{ provider.id ? provider.type : createType }}">
         </div>
         <div class="meta">
             <div class="data" style="padding: .7rem 1.5rem;font-size:smaller">
                 Entity ID is the unique ID for your provider.
             </div>
             <div class="data" style="padding: .7rem 1.5rem" >
-                {% set sites = [] %}
-                {% for site in craft.app.sites.allSites() %}
-                    {% set sites = sites|merge([{
-                        label: site.name,
-                        value: site.id,
-                    }])%}
-                {% endfor %}
                 <div class="required">
                     <label>
                         Entity ID
@@ -130,7 +98,7 @@
                 </div>
             </div>
         </div>
-        {% if myType == createType %}
+        {% if myType == provider.type or myType == createType %}
             <div class="meta">
                 <div class="data" style="padding: .7rem 1.5rem;font-size:smaller">
                     Choose the Craft Site you'd like to associate this provider with.
@@ -270,32 +238,7 @@
                 }) }}
 
             </div>
-{#            <div id="assertion-encryption-settings" class="{% if not provider.encryptAssertions %}hidden{% endif %}">#}
-{#                {{ forms.selectField({#}
-{#                    label: "Encryption Method"|t(plugin.handle),#}
-{#                    id: 'encryptionMethod',#}
-{#                    name: 'encryptionMethod',#}
-{#                    errors: provider.getErrors('encryptionMethod'),#}
-{#                    value: provider.encryptionMethod,#}
-{#                    options: [{#}
-{#                        label: 'AES128_CBC',#}
-{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES128_CBC'),#}
-{#                    },{#}
-{#                        label: 'AES192_CBC',#}
-{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES192_CBC'),#}
-{#                    },{#}
-{#                        label: 'AES256_CBC',#}
-{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::AES256_CBC'),#}
-{#                    },{#}
-{#                        label: 'RSA_1_5',#}
-{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_1_5'),#}
-{#                    },{#}
-{#                        label: 'RSA_OAEP_MGF1P',#}
-{#                        value: constant('\\RobRichards\\XMLSecLibs\\XMLSecurityKey::RSA_OAEP_MGF1P'),#}
-{#                    }],#}
-{#                }) }}#}
 
-{#            </div>#}
         {% endif %}
     </div>
 
@@ -313,7 +256,7 @@
                 name: "loginPath",
                 id: 'loginPath',
                 class: "code",
-                value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.loginRequestPath : provider.loginPath,
+                value: (myType == 'sp' and provider.isIdentityProvider()) ? '/' ~ provider.loginRequestPath : provider.getLoginRequestEndpoint(),
                 readonly: true,
                 disabled: true
             }) }}
@@ -324,7 +267,7 @@
                 name: "logoutPath",
                 id: 'logoutPath',
                 class: "code",
-                value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.logoutRequestPath : provider.logoutPath,
+                value: (myType == 'sp' and provider.isIdentityProvider()) ? '/' ~ provider.logoutRequestPath : provider.getLogoutRequestEndpoint(),
                 readonly: true,
                 disabled: true
             }) }}
@@ -352,10 +295,6 @@
 
     </div>
     <div id="metadata" class="hidden">
-        <h2 class="saml-cp-header">Entity ID and Metadata</h2>
-
-        <div >
-        </div>
         <h2 class="saml-cp-header">Metadata Options</h2>
 
         {% if createType != myType %}
@@ -380,31 +319,6 @@
                         }) }}
                     </div>
 
-{#                    <div class="flex-sm-grow-1">#}
-{#                        {{ forms.textField({#}
-{#                            label: "Refresh Interval"|t('app'),#}
-{#                            id: 'metadata-url-interval-text',#}
-{#                            name: 'metadata-url-interval-text',#}
-{#                            autocomplete: false,#}
-{#                            value: provider.getMetadataOptions().expiryInterval,#}
-{#                            errors: provider.getErrors('metadata-url-interval-text'),#}
-{#                            placeholder: 'P7D'#}
-{#                        }) }}#}
-{#                    </div>#}
-{#                    {% if provider.getMetadataOptions().expiryInterval %}#}
-{#                        <div class="flex-sm-grow-1">#}
-{#                            {{ forms.textField({#}
-{#                                label: "Expiry Date"|t('app'),#}
-{#                                id: 'metadata-url-interval-date-text',#}
-{#                                name: 'metadata-url-interval-date-text',#}
-{#                                autocomplete: false,#}
-{#                                value: provider.getMetadataOptions().expiryDate|date('Y/m/d'),#}
-{#                                errors: provider.getErrors('metadata-url-interval-text'),#}
-{#                                readonly: true,#}
-{#                                disabled: true,#}
-{#                            }) }}#}
-{#                        </div>#}
-{#                    {% endif %}#}
                 </div>
                 {% endif %}
                 {{ forms.textareaField({
@@ -421,6 +335,7 @@
                     errors: provider.getErrors('metadata-text'),
                     rows: 10
                 }) }}
+                {{ utils.copyFieldContents('metadata-text') }}
             </div>
         </div>
 

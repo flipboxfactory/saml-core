@@ -11,7 +11,7 @@ use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
+use flipbox\saml\core\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\craft\psr3\Logger;
@@ -20,6 +20,7 @@ use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\AbstractCp;
 use flipbox\saml\core\services\bindings\Factory;
 use flipbox\saml\core\services\Cp;
+use flipbox\saml\core\services\EditProvider;
 use flipbox\saml\core\services\messages\LogoutRequest;
 use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
@@ -83,6 +84,10 @@ abstract class AbstractPlugin extends Plugin
             'metadata' => Metadata::class,
             'logoutRequest' => LogoutRequest::class,
             'logoutResponse' => LogoutResponse::class,
+            'editProvider' => [
+                'class' => EditProvider::class,
+                'plugin' => $this,
+            ],
         ]);
 
         /**
@@ -288,38 +293,62 @@ abstract class AbstractPlugin extends Plugin
                  */
                 sprintf(
                     'POST,GET %s',
-                    static::getInstance()->getSettings()->getDefaultLoginPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGIN_ENDPOINT
+                    )
                 ) => $handle . '/login',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    static::getInstance()->getSettings()->getDefaultLoginPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGIN_ENDPOINT
+                    )
                 ) => $handle . '/login',
                 sprintf(
                     'POST,GET %s',
-                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGIN_REQUEST_ENDPOINT
+                    )
                 ) => $handle . '/login/request',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    (string)static::getInstance()->getSettings()->getDefaultLoginRequestPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGIN_REQUEST_ENDPOINT
+                    )
                 ) => $handle . '/login/request',
                 /**
                  * LOGOUT
                  */
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    static::getInstance()->getSettings()->getDefaultLogoutPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGOUT_ENDPOINT
+                    )
                 ) => $handle . '/logout',
                 sprintf(
                     'POST,GET %s',
-                    static::getInstance()->getSettings()->getDefaultLogoutPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGOUT_ENDPOINT
+                    )
                 ) => $handle . '/logout',
                 sprintf(
                     'POST,GET %s',
-                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGOUT_REQUEST_ENDPOINT
+                    )
                 ) => $handle . '/logout/request',
                 sprintf(
                     'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    (string)static::getInstance()->getSettings()->getDefaultLogoutRequestPath()
+                    UrlHelper::buildEndpointPath(
+                        static::getInstance()->getSettings(),
+                        UrlHelper::LOGOUT_REQUEST_ENDPOINT
+                    )
                 ) => $handle . '/logout/request',
 
             ]
@@ -351,14 +380,22 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @noinspection PhpDocMissingThrowsInspection
+     * @returns EditProvider
+     */
+    public function getEditProvider()
+    {
+
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return $this->get('editProvider');
+    }
+
+    /**
      * @returns ProviderServiceInterface
      */
     public function getProvider()
     {
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('provider');
     }
 

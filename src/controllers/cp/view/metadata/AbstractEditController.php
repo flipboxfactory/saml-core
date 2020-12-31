@@ -32,12 +32,12 @@ abstract class AbstractEditController extends AbstractController implements Ensu
      */
     public function actionIndex($providerId = null, $overwriteVariables = [])
     {
-        $variables = $this->prepVariables($providerId);
+        $variables = $this->getPlugin()->getEditProvider()->prepVariables($providerId);
         $provider = $variables['provider'];
 
         $variables['title'] = Craft::t(
             $this->getPlugin()->getHandle(),
-            'Edit ' . $this->getTitle($provider->getType())
+            'Edit ' . $this->getPlugin()->getEditProvider()->getTitle($provider->getType())
         );
 
         $variables['createType'] = $variables['remoteType'];
@@ -47,12 +47,12 @@ abstract class AbstractEditController extends AbstractController implements Ensu
             /**
              * Actions
              */
-            $variables['actions'] = $this->getActions($variables['provider']);
+            $variables['actions'] = $this->getPlugin()->getEditProvider()->getActions($variables['provider']);
         }
 
         $variables = array_merge($variables, $overwriteVariables);
         return $this->renderTemplate(
-            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
     }
@@ -66,7 +66,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $plugin = $this->getPlugin();
         $providerRecord = $this->getPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
-            'title' => 'New ' . $this->getTitle(SettingsInterface::IDP),
+            'title' => 'New ' . $this->getPlugin()->getEditProvider()->getTitle(SettingsInterface::IDP),
             'createType' => SettingsInterface::IDP,
             'provider' => new $providerRecord([
                 'providerType' => SettingsInterface::IDP,
@@ -121,7 +121,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $plugin = $this->getPlugin();
         $providerRecord = $this->getPlugin()->getProviderRecordClass();
         return $this->actionIndex(null, [
-            'title' => 'New ' . $this->getTitle(SettingsInterface::SP),
+            'title' => 'New ' . $this->getPlugin()->getEditProvider()->getTitle(SettingsInterface::SP),
             'createType' => SettingsInterface::SP,
             'provider' => new $providerRecord([
                 'providerType' => SettingsInterface::SP,
@@ -173,7 +173,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
     public function actionMyProvider()
     {
         $provider = $this->getPlugin()->getProvider()->findOwn();
-        $variables = $this->prepVariables(
+        $variables = $this->getPlugin()->getEditProvider()->prepVariables(
             $provider ? $provider : null
         );
 
@@ -182,7 +182,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
 
             $variables = array_merge(
                 $variables,
-                $this->addUrls($provider)
+                $this->getPlugin()->getEditProvider()->addUrls($provider)
             );
         } else {
             $provider = $variables['provider'];
@@ -194,7 +194,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         /**
          * Actions
          */
-        $variables['actions'] = $this->getActions($provider);
+        $variables['actions'] = $this->getPlugin()->getEditProvider()->getActions($provider);
 
         /**
          * Edit Title
@@ -207,7 +207,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $variables['createType'] = $variables['myType'];
 
         return $this->renderTemplate(
-            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
     }

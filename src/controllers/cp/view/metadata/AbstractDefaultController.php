@@ -28,7 +28,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
      */
     public function actionIndex()
     {
-        $variables = $this->getBaseVariables();
+        $variables = $this->getPlugin()->getEditProvider()->getBaseVariables();
         $plugin = $this->getPlugin();
         $variables['myProvider'] = null;
         $variables['spProviders'] = [];
@@ -76,7 +76,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
 
         $variables['title'] = Craft::t($this->getPlugin()->getHandle(), $this->getPlugin()->name);
         return $this->renderTemplate(
-            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
             $variables
         );
     }

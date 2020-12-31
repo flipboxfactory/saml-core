@@ -5,9 +5,11 @@ namespace flipbox\saml\core\services;
 use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\SecurityHelper;
+use flipbox\saml\core\helpers\UrlHelper;
+use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
+use flipbox\saml\core\records\AbstractProvider;
 use GuzzleHttp\Client;
-use Psr\Http\Message\UriInterface;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
@@ -15,9 +17,9 @@ use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
 use SAML2\XML\md\EndpointType;
-use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
+use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\KeyDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
@@ -92,14 +94,12 @@ class Metadata extends Component
      */
     public function create(
         SettingsInterface $settings,
-        KeyChainRecord $withKeyPair = null,
-        $entityIdOverride = null,
-        $providerUid = null
+        AbstractProvider $provider
     ): EntityDescriptor {
 
         $entityDescriptor = new EntityDescriptor();
 
-        $entityId = $entityIdOverride ?? $settings->getEntityId();
+        $entityId = $provider->entityId ?? $settings->getEntityId();
 
         $entityDescriptor->setEntityID($entityId);
 
@@ -108,16 +108,16 @@ class Metadata extends Component
                 $descriptor = $this->createDescriptor(
                     $binding,
                     $settings,
-                    $providerUid
+                    $provider
                 )
             );
 
             /**
              * Add security settings
              */
-            if ($withKeyPair) {
-                $this->setEncrypt($descriptor, $withKeyPair);
-                $this->setSign($descriptor, $withKeyPair);
+            if ($provider->keychain) {
+                $this->setEncrypt($descriptor, $provider->keychain);
+                $this->setSign($descriptor, $provider->keychain);
             }
         }
 
@@ -143,7 +143,7 @@ class Metadata extends Component
     protected function createDescriptor(
         string $binding,
         SettingsInterface $settings,
-        $providerUid = null
+        AbstractProvider $provider
     )
     {
         if (! in_array($binding, [
@@ -154,9 +154,9 @@ class Metadata extends Component
         }
 
         if ($settings->getMyType() === $settings::SP) {
-            $descriptor = $this->createSpDescriptor($binding, $settings, $providerUid);
+            $descriptor = $this->createSpDescriptor($binding, $settings, $provider);
         } else {
-            $descriptor = $this->createIdpDescriptor($binding, $settings, $providerUid);
+            $descriptor = $this->createIdpDescriptor($binding, $settings, $provider);
         }
 
         return $descriptor;
@@ -166,7 +166,11 @@ class Metadata extends Component
      * @param string $binding
      * @return IDPSSODescriptor
      */
-    protected function createIdpDescriptor(string $binding, SettingsInterface $settings, $providerUid = null)
+    protected function createIdpDescriptor(
+        string $binding,
+        SettingsInterface $settings,
+        AbstractProvider $provider = null
+    )
     {
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
         $descriptor->setProtocolSupportEnumeration([
@@ -183,8 +187,13 @@ class Metadata extends Component
         $ssoEndpoint = new EndpointType();
         $ssoEndpoint->setBinding($binding);
         $ssoEndpoint->setLocation(
-            $settings->getDefaultLoginEndpoint() . ($providerUid ? "/$providerUid" : '')
+            UrlHelper::buildEndpointUrl(
+                $settings,
+                UrlHelper::LOGIN_ENDPOINT,
+                $provider
+            )
         );
+
         $descriptor->setSingleSignOnService([
             $ssoEndpoint,
         ]);
@@ -192,15 +201,13 @@ class Metadata extends Component
         // SLO
         $this->addSloEndpoint(
             $descriptor,
-            $settings
+            $settings,
+            $provider
         );
 
         // todo add attributes from mapping
-//        $attribute = new Attribute();
-//        $attribute->setName('Username');
-//        $descriptor->addAttribute(
-//            $attribute
-//        );
+
+
 
         return $descriptor;
     }
@@ -209,7 +216,7 @@ class Metadata extends Component
      * @param string $binding
      * @return SPSSODescriptor
      */
-    protected function createSpDescriptor(string $binding, SettingsInterface $settings, $providerUid = null)
+    protected function createSpDescriptor(string $binding, AbstractSettings $settings, AbstractProvider $provider)
     {
 
         $descriptor = new SPSSODescriptor();
@@ -231,7 +238,11 @@ class Metadata extends Component
         $acsEndpoint->setIndex(1);
         $acsEndpoint->setBinding($binding);
         $acsEndpoint->setLocation(
-            $settings->getDefaultLoginEndpoint() . ($providerUid ? "/$providerUid" : '')
+            UrlHelper::buildEndpointUrl(
+                $settings,
+                UrlHelper::LOGIN_ENDPOINT,
+                $provider
+            )
         );
 
         $descriptor->setAssertionConsumerService([
@@ -242,10 +253,13 @@ class Metadata extends Component
         $this->addSloEndpoint(
             $descriptor,
             $settings,
-            $providerUid
+            $provider
         );
 
         //todo add attribute consuming service
+//        var_dump(
+//            $provider->getMapping()
+//        );exit;
 //        $attributeConsumingService = new AttributeConsumingService();
 //        $attributeConsumingService->addRequestedAttribute($att = new RequestedAttribute());
 //        $att->setName('username');
@@ -256,16 +270,22 @@ class Metadata extends Component
 
     protected function addSloEndpoint(
         SSODescriptorType $descriptorType,
-        SettingsInterface $settings,
-        $providerUid = null
+        AbstractSettings $settings,
+        AbstractProvider $provider
     )
     {
         $sloEndpointRedirect = new EndpointType();
         $sloEndpointRedirect->setBinding(
             Constants::BINDING_HTTP_REDIRECT
         );
+
+        $sloLogoutEndpointUrl = UrlHelper::buildEndpointUrl(
+            $settings,
+            UrlHelper::LOGOUT_ENDPOINT,
+            $provider
+        );
         $sloEndpointRedirect->setLocation(
-            $settings->getDefaultLogoutEndpoint() . ($providerUid ? "/$providerUid" : '')
+            $sloLogoutEndpointUrl
         );
 
         $sloEndpointPost = new EndpointType();
@@ -273,7 +293,7 @@ class Metadata extends Component
             Constants::BINDING_HTTP_POST
         );
         $sloEndpointPost->setLocation(
-            $settings->getDefaultLogoutEndpoint() . ($providerUid ? "/$providerUid" : '')
+            $sloLogoutEndpointUrl
         );
 
         $descriptorType->setSingleLogoutService([

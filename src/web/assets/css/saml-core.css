@@ -21,3 +21,10 @@
     letter-spacing: 0.1rem;
     font-weight: 300;
 }
+
+.saml-clipboard-icon {
+
+    position: absolute;
+    top:0;
+    right:0;
+}

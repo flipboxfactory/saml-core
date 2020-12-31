@@ -33,14 +33,14 @@ abstract class AbstractGeneralController extends AbstractController implements E
      */
     public function actionSetup()
     {
-        $variables = $this->getBaseVariables();
+        $variables = $this->getPlugin()->getEditProvider()->getBaseVariables();
         $variables['crumbs'][] = [
             'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
             'label' => 'SSO Provider'
         ];
 
         return $this->renderTemplate(
-            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'setup',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'setup',
             $variables
         );
     }
@@ -51,7 +51,7 @@ abstract class AbstractGeneralController extends AbstractController implements E
      */
     public function actionSettings()
     {
-        $variables = $this->getBaseVariables();
+        $variables = $this->getPlugin()->getEditProvider()->getBaseVariables();
 
         // Breadcrumbs
         $variables['crumbs'][] = [
@@ -73,7 +73,7 @@ abstract class AbstractGeneralController extends AbstractController implements E
         $variables['fullPageForm'] = true;
 
         return $this->renderTemplate(
-            $this->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'settings',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'settings',
             $variables
         );
     }

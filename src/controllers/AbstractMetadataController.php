@@ -68,9 +68,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $entityDescriptor = $this->getPlugin()->getMetadata()->create(
             $this->getPlugin()->getSettings(),
-            $record->keychain,
-            $record->entityId,
-            $record->uid
+            $record
         );
 
         $provider = $this->getPlugin()->getProvider()->create(
@@ -85,13 +83,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->prepVariables($record)
+                    $this->getPlugin()->getEditProvider()->prepVariables($record)
                 )
             );
         }
@@ -115,13 +113,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if ($record->hasErrors() || ! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->prepVariables($record)
+                    $this->getPlugin()->getEditProvider()->prepVariables($record)
                 )
             );
         }
@@ -161,13 +159,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->prepVariables($record)
+                    $this->getPlugin()->getEditProvider()->prepVariables($record)
                 )
             );
         }
@@ -197,13 +195,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->delete($record)) {
             return $this->renderTemplate(
-                $this->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
                         'keychain' => $record->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->prepVariables($record)
+                    $this->getPlugin()->getEditProvider()->prepVariables($record)
                 )
             );
         }
@@ -252,10 +250,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $record->entityId = $entityId;
         if($providerSite) {
-            if($site = Site::findOne($providerSite)) {
+
+            if($site = Site::findOne([
+                'id' => $providerSite,
+            ])) {
                 $record->setSite($site);
             }else{
-                var_dump('FUCK');
+                var_dump('wat?');
                 exit;
             }
         }
@@ -339,12 +340,14 @@ abstract class AbstractMetadataController extends AbstractController implements 
         return $record;
     }
 
+
     /**
      * @param $keyId
-     * @return static
+     * @return \craft\web\Response|\yii\console\Response
      * @throws NotFoundHttpException
      * @throws \yii\web\ForbiddenHttpException
      * @throws \yii\web\HttpException
+     * @throws \yii\web\RangeNotSatisfiableHttpException
      */
     public function actionDownloadCertificate($keyId)
     {

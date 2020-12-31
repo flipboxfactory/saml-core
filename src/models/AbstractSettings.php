@@ -33,39 +33,6 @@ abstract class AbstractSettings extends Model implements SettingsInterface
     public $endpointPrefix = self::ENDPOINT_PREFIX;
 
     /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
-     * @var string
-     */
-    protected $loginEndpoint = 'login';
-
-    /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
-     * @var string
-     */
-    protected $logoutEndpoint = 'logout';
-
-    /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
-     * @var string
-     */
-    protected $loginRequestEndpoint = 'login/request';
-
-    /**
-     * This is the endpoint used to initiate logout. In this case, `logoutPath` cannot be used.
-     * Point your logout button to this endpoint.
-     *
-     * @var string
-     */
-    protected $logoutRequestEndpoint = 'logout/request';
-
-
-    /**
      * This setting will destroy sessions when the Name Id matches a user with existing sessions.
      * A current user session doesn't have to exist, ie, `\Craft::$app->user->isGuest === true`.
      *
@@ -136,6 +103,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
         return \Craft::parseEnv($this->endpointPrefix);
     }
 
+    //@todo get rid of my type here. Should be back on the plugin
     /**
      * @param $myType
      * @return $this
@@ -178,83 +146,4 @@ abstract class AbstractSettings extends Model implements SettingsInterface
         return $this->getMyType() === self::SP;
     }
 
-    protected function buildEndpointUrl($url)
-    {
-        return sprintf('/%s/%s', $this->getEndpointPrefix(), $url);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLoginEndpoint()
-    {
-        return UrlHelper::siteUrl(
-            $this->buildEndpointUrl(
-                $this->loginEndpoint
-            )
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLogoutEndpoint()
-    {
-        return UrlHelper::siteUrl(
-            $this->buildEndpointUrl($this->logoutEndpoint)
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLogoutRequestEndpoint()
-    {
-        return UrlHelper::siteUrl(
-            $this->buildEndpointUrl($this->logoutRequestEndpoint)
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLoginRequestEndpoint()
-    {
-        return UrlHelper::siteUrl(
-            $this->buildEndpointUrl($this->loginRequestEndpoint)
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLoginPath()
-    {
-        return $this->buildEndpointUrl($this->loginEndpoint);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLogoutPath()
-    {
-        return $this->buildEndpointUrl($this->logoutEndpoint);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLogoutRequestPath()
-    {
-        return $this->buildEndpointUrl($this->logoutRequestEndpoint);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDefaultLoginRequestPath()
-    {
-        return
-            $this->buildEndpointUrl($this->loginRequestEndpoint);
-    }
 }

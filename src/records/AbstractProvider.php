@@ -6,6 +6,7 @@ use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Site;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\records\traits\Ember;
@@ -13,6 +14,7 @@ use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
+use flipbox\saml\core\models\AbstractSettings;
 
 /**
  * Class AbstractProvider
@@ -48,6 +50,47 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      */
     abstract public function getLogoutPath();
 
+    abstract protected function getDefaultSettings():AbstractSettings;
+
+    public function getLoginRequestEndpoint(AbstractSettings $settings = null)
+    {
+        return UrlHelper::buildEndpointUrl(
+            $settings ?? $this->getDefaultSettings(),
+            UrlHelper::LOGIN_REQUEST_ENDPOINT,
+            $this,
+            true
+        );
+    }
+
+    public function getLoginEndpoint(AbstractSettings $settings = null)
+    {
+        return UrlHelper::buildEndpointUrl(
+            $settings ?? $this->getDefaultSettings(),
+            UrlHelper::LOGIN_ENDPOINT,
+            $this,
+            true
+        );
+    }
+
+    public function getLogoutRequestEndpoint(AbstractSettings $settings = null)
+    {
+        return UrlHelper::buildEndpointUrl(
+            $settings ?? $this->getDefaultSettings(),
+            UrlHelper::LOGOUT_REQUEST_ENDPOINT,
+            $this,
+            true
+        );
+    }
+
+    public function getLogoutEndpoint(AbstractSettings $settings = null)
+    {
+        return UrlHelper::buildEndpointUrl(
+            $settings ?? $this->getDefaultSettings(),
+            UrlHelper::LOGOUT_ENDPOINT,
+            $this,
+            true
+        );
+    }
 
     /**
      * @inheritDoc
@@ -98,7 +141,9 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
         $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
 
-        $this->siteId = $this->site->id;
+        if($this->site instanceof Site) {
+            $this->siteId = $this->site->id;
+        }
 
         return parent::beforeSave($insert);
     }
