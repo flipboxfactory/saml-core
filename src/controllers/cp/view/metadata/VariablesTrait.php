@@ -21,4 +21,6 @@ use flipbox\saml\core\records\ProviderInterface;
  * @method AbstractPlugin getPlugin
  */
 trait VariablesTrait
-{}
+{
+
+}

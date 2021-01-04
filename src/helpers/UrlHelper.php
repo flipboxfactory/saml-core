@@ -47,31 +47,33 @@ class UrlHelper extends CraftUrlHelper
      * @param string $endpoint
      * @return string
      */
-    public static function buildEndpointPath(AbstractSettings $settings, string $endpoint) {
-        return implode('/',[$settings->getEndpointPrefix(), $endpoint,]);
+    public static function buildEndpointPath(AbstractSettings $settings, string $endpoint)
+    {
+        return implode('/', [$settings->getEndpointPrefix(), $endpoint,]);
     }
 
     /**
      * @param string $baseUrl
      * @return string
      */
-    protected static function providerBaseUrl(string $baseUrl) {
+    protected static function providerBaseUrl(string $baseUrl)
+    {
         $url = '';
         // alias
-        if(strpos($baseUrl, '@') === 0){
+        if (strpos($baseUrl, '@') === 0) {
             $url = \Craft::getAlias($baseUrl);
         }
         // env var
-        if(strpos($baseUrl, '$') === 0){
+        if (strpos($baseUrl, '$') === 0) {
             $url = \Craft::parseEnv($baseUrl);
         }
         // url
-        if(strpos($baseUrl, 'http') === 0){
+        if (strpos($baseUrl, 'http') === 0) {
             $url = $baseUrl;
         }
 
         // Trim last /
-        return preg_replace('#/$#','',$url);
+        return preg_replace('#/$#', '', $url);
     }
 
     /**
@@ -84,7 +86,7 @@ class UrlHelper extends CraftUrlHelper
      */
     public static function buildEndpointUrl(AbstractSettings $settings, string $endpoint, AbstractProvider $provider, $fullUrl = true)
     {
-        $uri = implode('/',[$settings->getEndpointPrefix(), $endpoint, $provider->uid]);
+        $uri = implode('/', [$settings->getEndpointPrefix(), $endpoint, $provider->uid]);
         /** @var Site $site */
         $site = $provider->site;
 
@@ -99,7 +101,4 @@ class UrlHelper extends CraftUrlHelper
 
         return $endpointUrl;
     }
-
-
-
 }

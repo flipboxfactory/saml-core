@@ -110,8 +110,9 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @throws \Exception
      */
-    public function generateUid() {
-        if(!$this->uid) {
+    public function generateUid()
+    {
+        if (!$this->uid) {
             $this->uid = StringHelper::UUID();
         }
     }
@@ -141,7 +142,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
         $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
 
-        if($this->site instanceof Site) {
+        if ($this->site instanceof Site) {
             $this->siteId = $this->site->id;
         }
 
@@ -260,10 +261,11 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @return \craft\models\Site|null
      */
-    public function getSiteModel() {
+    public function getSiteModel()
+    {
         $site = $this->getSite()->one();
 
-        if($site instanceof Site) {
+        if ($site instanceof Site) {
             return new \craft\models\Site($site);
         }
 

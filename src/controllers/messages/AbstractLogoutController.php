@@ -84,9 +84,9 @@ abstract class AbstractLogoutController extends AbstractController implements \f
             'enabled' => 1
         ];
 
-        if($uid) {
+        if ($uid) {
             $condition['uid'] = $uid;
-        }else{
+        } else {
             $condition['entityId'] = $settings->getEntityId();
         }
         /** @var AbstractProvider $ourProvider */

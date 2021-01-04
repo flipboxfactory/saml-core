@@ -102,7 +102,7 @@ abstract class AbstractInstall extends Migration
 
         $this->createTable($this->getProviderTableName(), $this->getProviderFields());
 
-        if($this->linkTableExist === false) {
+        if ($this->linkTableExist === false) {
             $this->createTable(LinkRecord::tableName(), [
                 'id' => $this->primaryKey(),
                 'providerId' => $this->integer()->notNull(),
@@ -167,7 +167,7 @@ abstract class AbstractInstall extends Migration
             true
         );
 
-        if($this->linkTableExist === false) {
+        if ($this->linkTableExist === false) {
             $this->createIndex(
                 $this->db->getIndexName(LinkRecord::tableName(), [
                     'providerUid',
@@ -217,7 +217,7 @@ abstract class AbstractInstall extends Migration
     protected function addForeignKeys()
     {
 
-        if($this->linkTableExist === false) {
+        if ($this->linkTableExist === false) {
             /**
              * Link KeyChain
              */

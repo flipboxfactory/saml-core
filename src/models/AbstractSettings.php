@@ -145,5 +145,4 @@ abstract class AbstractSettings extends Model implements SettingsInterface
     {
         return $this->getMyType() === self::SP;
     }
-
 }

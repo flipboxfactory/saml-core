@@ -3,7 +3,6 @@
 
 namespace flipbox\saml\core\services;
 
-
 use craft\base\Component;
 use craft\helpers\UrlHelper;
 use flipbox\keychain\KeyChain;
@@ -27,7 +26,8 @@ class EditProvider extends Component
      * @param AbstractPlugin $plugin
      * @return $this
      */
-    public function setPlugin(AbstractPlugin $plugin) {
+    public function setPlugin(AbstractPlugin $plugin)
+    {
         $this->plugin = $plugin;
         return $this;
     }
@@ -35,7 +35,8 @@ class EditProvider extends Component
     /**
      * @return AbstractPlugin
      */
-    public function getPlugin() {
+    public function getPlugin()
+    {
         return $this->plugin;
     }
 
@@ -368,5 +369,4 @@ class EditProvider extends Component
     {
         return $type === AbstractSettings::SP ? 'Service Provider (SP)' : 'Identity Provider (IDP)';
     }
-
 }

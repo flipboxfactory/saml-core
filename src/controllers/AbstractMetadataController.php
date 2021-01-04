@@ -61,35 +61,35 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $this->requireAdmin(false);
         $this->requirePostRequest();
 
-        $record = $this->processSaveAction();
-        if(is_null($record->uid)) {
-            $record->generateUid();
+        $providerRecord = $this->processSaveAction();
+        if (is_null($providerRecord->uid)) {
+            $providerRecord->generateUid();
         }
 
         $entityDescriptor = $this->getPlugin()->getMetadata()->create(
             $this->getPlugin()->getSettings(),
-            $record
+            $providerRecord
         );
 
         $provider = $this->getPlugin()->getProvider()->create(
             $entityDescriptor,
-            $record->keychain
+            $providerRecord->keychain
         );
 
-        $record->entityId = $provider->getEntityId();
-        $record->metadata = $provider->metadata;
-        $record->setMetadataModel($provider->getMetadataModel());
+        $providerRecord->entityId = $provider->getEntityId();
+        $providerRecord->metadata = $provider->metadata;
+        $providerRecord->setMetadataModel($provider->getMetadataModel());
 
 
-        if (! $this->getPlugin()->getProvider()->save($record)) {
+        if (! $this->getPlugin()->getProvider()->save($providerRecord)) {
             return $this->renderTemplate(
                 $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
-                        'provider' => $record,
-                        'keychain' => $record->keychain ?: new KeyChainRecord(),
+                        'provider' => $providerRecord,
+                        'keychain' => $providerRecord->keychain ?: new KeyChainRecord(),
                     ],
-                    $this->getPlugin()->getEditProvider()->prepVariables($record)
+                    $this->getPlugin()->getEditProvider()->prepVariables($providerRecord)
                 )
             );
         }
@@ -249,13 +249,12 @@ abstract class AbstractMetadataController extends AbstractController implements 
         }
 
         $record->entityId = $entityId;
-        if($providerSite) {
-
-            if($site = Site::findOne([
+        if ($providerSite) {
+            if ($site = Site::findOne([
                 'id' => $providerSite,
             ])) {
                 $record->setSite($site);
-            }else{
+            } else {
                 var_dump('wat?');
                 exit;
             }

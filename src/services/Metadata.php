@@ -9,6 +9,7 @@ use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\traits\KeyChain;
 use GuzzleHttp\Client;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
@@ -144,8 +145,7 @@ class Metadata extends Component
         string $binding,
         SettingsInterface $settings,
         AbstractProvider $provider
-    )
-    {
+    ) {
         if (! in_array($binding, [
             Constants::BINDING_HTTP_POST,
             Constants::BINDING_HTTP_REDIRECT,
@@ -168,10 +168,9 @@ class Metadata extends Component
      */
     protected function createIdpDescriptor(
         string $binding,
-        SettingsInterface $settings,
+        AbstractSettings $settings,
         AbstractProvider $provider = null
-    )
-    {
+    ) {
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
         $descriptor->setProtocolSupportEnumeration([
             static::PROTOCOL,
@@ -272,8 +271,7 @@ class Metadata extends Component
         SSODescriptorType $descriptorType,
         AbstractSettings $settings,
         AbstractProvider $provider
-    )
-    {
+    ) {
         $sloEndpointRedirect = new EndpointType();
         $sloEndpointRedirect->setBinding(
             Constants::BINDING_HTTP_REDIRECT
@@ -301,6 +299,8 @@ class Metadata extends Component
             $sloEndpointPost,
         ]);
     }
+
+
 
     /**
      * @param SSODescriptorType $ssoDescriptor
@@ -340,6 +340,11 @@ class Metadata extends Component
 
         $keyDescriptor->setUse($signOrEncrypt);
         $ssoDescriptor->addKeyDescriptor($keyDescriptor);
+    }
+
+    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord) {
+        $this->setSign($ssoDescriptor,$keyChainRecord);
+        $this->setEncrypt($ssoDescriptor,$keyChainRecord);
     }
 
     /**

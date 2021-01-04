@@ -38,7 +38,7 @@ abstract class m200806_200000_provider_identity_constraint extends Migration
                     'providerId',
                 ],
                 false,
-        true
+                true
             ),
             $this->getIdentityTableName()
         );

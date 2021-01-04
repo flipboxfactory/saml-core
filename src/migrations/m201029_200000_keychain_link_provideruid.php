@@ -25,7 +25,7 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
         // Get all of the records
         $providerRecords = $this->providerRecordQuery()->all();
         $linkRecords = [];
-        foreach(LinkRecord::find()->all() as $record) {
+        foreach (LinkRecord::find()->all() as $record) {
             $linkRecords[$record->providerId] = $record;
         }
 
@@ -63,10 +63,9 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
 
         // update the records with the uid
         /** @var AbstractProvider $record */
-        foreach($providerRecords as $record) {
-
+        foreach ($providerRecords as $record) {
             // move on if the link doesn't exist
-            if(!isset($linkRecords[$record->id])) {
+            if (!isset($linkRecords[$record->id])) {
                 continue;
             }
 
@@ -103,6 +102,6 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
      */
     public function safeDown()
     {
-       return true;
+        return true;
     }
 }
