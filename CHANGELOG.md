@@ -1,5 +1,15 @@
 Changelog
 =========
+# 3.2.0 2021-01-08
+## Added
+- EntityID is is now editible
+- Site Selection on My provider page
+
+## Changed
+- Url formating
+- `flipbox\saml\core\services\Metadata::create` (moved to providers records)
+
+
 # 3.1.2 - 2020-10-29
 ## Fixed
 - Issue where SP and IdP plugin couldn't be installed on the same craft db due to table conflicts.

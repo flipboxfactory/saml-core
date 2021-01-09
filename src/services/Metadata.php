@@ -100,7 +100,7 @@ class Metadata extends Component
 
         $entityDescriptor = new EntityDescriptor();
 
-        $entityId = $provider->entityId ?? $settings->getEntityId();
+        $entityId = $provider ? $provider->entityId : $settings->getEntityId();
 
         $entityDescriptor->setEntityID($entityId);
 
