@@ -1,6 +1,6 @@
 Changelog
 =========
-# 3.2.0 2021-01-08
+# 3.2.0 2021-01-09
 ## Added
 - EntityID is is now editible
 - Site Selection on My provider page
