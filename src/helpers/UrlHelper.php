@@ -97,7 +97,7 @@ class UrlHelper extends CraftUrlHelper
                 $site ? (string)$site->baseUrl : UrlHelper::baseUrl()
             ),
             $uri
-        ]) : $uri;
+        ]) : "/" . $uri;
 
         return $endpointUrl;
     }
