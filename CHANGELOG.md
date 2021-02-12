@@ -1,5 +1,9 @@
 Changelog
 =========
+# 3.2.2 2021-02-11
+## Fixed
+- Migration error when upgrading to Craft CMS 3.6. ref: https://github.com/flipboxfactory/saml-idp/issues/22 and https://github.com/flipboxfactory/saml-sp/issues/98
+
 # 3.2.1 2021-01-28
 ## Fixed
 - Issue with missing beginning forward slash on the provider url when it's not a full url

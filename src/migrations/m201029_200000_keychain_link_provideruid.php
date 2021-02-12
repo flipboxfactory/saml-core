@@ -29,29 +29,15 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
             $linkRecords[$record->providerId] = $record;
         }
 
-        // update the indexes
+        $tableName = \Craft::$app->getDb()->getSchema()->getRawTableName(LinkRecord::tableName());
+        $providerFk = $tableName . '_providerId_fk';
         $this->dropForeignKey(
-            $this->db->getForeignKeyName(
-                LinkRecord::tableName(),
-                [
-                    'providerId',
-                ],
-                false,
-                true
-            ),
+            $providerFk,
             LinkRecord::tableName()
         );
-
+        $providerKeychainFk = $tableName . '_providerId_keyChainId_unq_fk';
         $this->dropIndex(
-            $this->db->getIndexName(
-                LinkRecord::tableName(),
-                [
-                    'providerId',
-                    'keyChainId',
-                ],
-                true,
-                true
-            ),
+            $providerKeychainFk,
             LinkRecord::tableName()
         );
 
