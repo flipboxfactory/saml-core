@@ -1,5 +1,9 @@
 Changelog
 =========
+# 3.2.3 2021-02-12
+## Fixed
+- Migration issue with duplicate metadataOptions
+
 # 3.2.2 2021-02-11
 ## Fixed
 - Migration error when upgrading to Craft CMS 3.6. ref: https://github.com/flipboxfactory/saml-idp/issues/22 and https://github.com/flipboxfactory/saml-sp/issues/98

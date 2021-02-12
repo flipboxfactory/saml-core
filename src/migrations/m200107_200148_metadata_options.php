@@ -26,11 +26,17 @@ abstract class m200107_200148_metadata_options extends Migration
             $this->mediumText()
         );
 
-        $this->addColumn(
+        if(!$this->db->columnExists(
             static::getProviderTableName(),
             'metadataOptions',
-            $this->text()
-        );
+            true
+        )) {
+            $this->addColumn(
+                static::getProviderTableName(),
+                'metadataOptions',
+                $this->text()
+            );
+        }
         return true;
     }
 
