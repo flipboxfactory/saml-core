@@ -38,11 +38,7 @@
                                 <div class="label">
                                     <span class="title">
                                         <a
-                                                {% if myProvider and myProvider.id == provider.id %}
-                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
-                                                {% else %}
                                                     href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
-                                                {% endif %}
                                         >{{ provider.label ?? 'Provider' }}
                                         </a>
                                         {% if myProvider and myProvider.id == provider.id %}
@@ -87,21 +83,13 @@
                         <td data-title="label">
                             <div class="element small hasstatus "
                                  data-status="active"
-                                    {% if myProvider and myProvider.id == provider.id %}
-                                        data-url="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
-                                    {% else %}
                                         data-url="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
-                                    {% endif %}
                                  data-level="" data-editable="">
                                 <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
                                 <div class="label">
                                     <span class="title">
                                         <a
-                                                {% if myProvider and myProvider.id == provider.id %}
-                                                    href="{{ cpUrl(plugin.handle ~ '/metadata/my-provider') }}"
-                                                {% else %}
                                                     href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
-                                                {% endif %}
                                         >{{ provider.label ?? 'Provider' }}
                                         </a>
                                         {% if myProvider and myProvider.id == provider.id %}

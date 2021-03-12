@@ -256,7 +256,7 @@
                 name: "loginPath",
                 id: 'loginPath',
                 class: "code",
-                value: (myType == 'sp' and provider.isIdentityProvider()) ? '/' ~ provider.loginRequestPath : provider.getLoginRequestEndpoint(),
+                value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.loginRequestPath : provider.getLoginRequestEndpoint(),
                 readonly: true,
                 disabled: true
             }) }}
@@ -267,7 +267,7 @@
                 name: "logoutPath",
                 id: 'logoutPath',
                 class: "code",
-                value: (myType == 'sp' and provider.isIdentityProvider()) ? '/' ~ provider.logoutRequestPath : provider.getLogoutRequestEndpoint(),
+                value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.logoutRequestPath : provider.getLogoutRequestEndpoint(),
                 readonly: true,
                 disabled: true
             }) }}
