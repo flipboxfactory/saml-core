@@ -1,5 +1,9 @@
 Changelog
 =========
+# 3.2.4 2021-03-12
+## Fixed
+- Updating control panel lists to be explicit.
+
 # 3.2.3 2021-02-12
 ## Fixed
 - Migration issue with duplicate metadataOptions
