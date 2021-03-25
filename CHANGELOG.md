@@ -1,5 +1,10 @@
 Changelog
 =========
+# 3.2.5 2021-03-25
+## Fixed
+- In the edit template, fixed the issue with create type not being set correctly and therefore, not showing the key config on the security tab.
+- Column type for the providerUid changed to type `uid`.
+
 # 3.2.4 2021-03-12
 ## Fixed
 - Updating control panel lists to be explicit.

@@ -106,7 +106,7 @@ abstract class AbstractInstall extends Migration
             $this->createTable(LinkRecord::tableName(), [
                 'id' => $this->primaryKey(),
                 'providerId' => $this->integer()->notNull(),
-                'providerUid' => $this->integer()->notNull(),
+                'providerUid' => $this->uid()->notNull(),
                 'keyChainId' => $this->integer()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
                 'dateCreated' => $this->dateTime()->notNull(),

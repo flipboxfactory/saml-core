@@ -44,7 +44,7 @@ abstract class m201029_200000_keychain_link_provideruid extends Migration
         $this->addColumn(
             LinkRecord::tableName(),
             'providerUid',
-            $this->string(40)
+            $this->uid()
         );
 
         // update the records with the uid

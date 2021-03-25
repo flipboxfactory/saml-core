@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
+use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\models\SettingsInterface;
@@ -33,6 +34,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
     public function actionIndex($providerId = null, $overwriteVariables = [])
     {
         $variables = $this->getPlugin()->getEditProvider()->prepVariables($providerId);
+        /** @var AbstractProvider $provider */
         $provider = $variables['provider'];
 
         $variables['title'] = Craft::t(
@@ -40,7 +42,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
             'Edit ' . $this->getPlugin()->getEditProvider()->getTitle($provider->getType())
         );
 
-        $variables['createType'] = $variables['remoteType'];
+        $variables['createType'] = $provider->getType();
 
         if (isset($variables['provider']) && $variables['provider'] instanceof ProviderInterface) {
 

@@ -77,7 +77,7 @@ class EditProvider extends Component
             [
                 'autoCreate' => false,
                 'myEntityId' => $this->getPlugin()->getSettings()->getEntityId(),
-                'myType' => $this->getPlugin()->getSettings(),
+                'myType' => $this->getPlugin()->getMyType(),
             ]
         );
     }
