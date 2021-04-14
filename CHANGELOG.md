@@ -1,5 +1,10 @@
 Changelog
 =========
+
+# 3.2.6 2021-04-13
+## Added
+- Ability to be explicit with internal provider when passing a request url.
+
 # 3.2.5 2021-03-25
 ## Fixed
 - In the edit template, fixed the issue with create type not being set correctly and therefore, not showing the key config on the security tab.

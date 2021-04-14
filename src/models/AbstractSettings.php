@@ -23,6 +23,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
     protected $myType;
 
     /**
+     * This is the system's entity id. Environmental Variables are allowed, ie, '$ENTITY_ID' (as a string)
      * @var string
      */
     protected $entityId;
