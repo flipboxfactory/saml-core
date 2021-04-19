@@ -68,7 +68,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * {@inheritdoc}
      * @return void
      */
-    public function debugMessage($message, $type): void
+    public function debugMessage($message, string $type): void
     {
         if ($message instanceof \DOMDocument || $message instanceof \DOMElement) {
             $message = $message->ownerDocument->saveXML();
@@ -84,7 +84,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * @param array $data
      * @return void
      */
-    public function redirect($url, $data = []): void
+    public function redirect(string $url, array $data = []): void
     {
 
         $url = SerializeHelper::redirectUrl($url, $data);
@@ -101,7 +101,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      * @param array $data
      * @return void
      */
-    public function postRedirect($url, $data = []): void
+    public function postRedirect(string $url, array $data = []): void
     {
 
         $data['destination'] = $url;
