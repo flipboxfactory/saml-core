@@ -2,6 +2,9 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
+    {% if not craft.app.config.general.allowAdminChanges %}
+        {% exit 403 %}
+    {% endif %}
     <input type="hidden" name="action" value="{{ baseActionPath }}/save">
     {{ redirectInput(baseCpPath) }}
 

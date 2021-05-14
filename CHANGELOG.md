@@ -1,6 +1,11 @@
 Changelog
 =========
 
+# 3.2.8 2021-05-14
+## Fixed
+- Issue with clipboard (using navigator.clipboard with a fallback of the previous method) #113
+- Disallow viewing to settings when allowAdminChanges is false #114
+
 # 3.2.7 2021-04-19
 ## Fixed
 - Aligned SamlContainer class with parent class from simplesamlphp/saml2 lib. Ref: https://github.com/flipboxfactory/saml-sp/issues/110

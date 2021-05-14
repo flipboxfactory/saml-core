@@ -132,7 +132,7 @@ abstract class AbstractPlugin extends Plugin
      */
     private function getSubNav()
     {
-        return [
+        $nav = [
             'saml.setup' => [
                 'url' => $this->getHandle() . '/',
                 'label' => \Craft::t(
@@ -161,14 +161,18 @@ abstract class AbstractPlugin extends Plugin
                     'Keychain'
                 ),
             ],
-            'saml.settings' => [
+        ];
+
+        if(\Craft::$app->config->general->allowAdminChanges) {
+            $nav['saml.settings'] = [
                 'url' => $this->getHandle() . '/settings',
                 'label' => \Craft::t(
                     $this->getHandle(),
                     'Settings'
                 ),
-            ],
-        ];
+            ];
+        }
+        return $nav;
     }
 
     /**
