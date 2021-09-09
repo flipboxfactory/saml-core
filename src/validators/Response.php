@@ -24,6 +24,15 @@ class Response
     private $serviceProvider;
 
     /**
+     * @var bool
+     */
+    private $requireResponseToBeSigned = true;
+    /**
+     * @var bool
+     */
+    private $requireAssertionsToBeSigned = true;
+
+    /**
      * @var array
      */
     private $validators = [];
@@ -35,11 +44,15 @@ class Response
      */
     public function __construct(
         AbstractProvider $identityProvider,
-        AbstractProvider $serviceProvider
+        AbstractProvider $serviceProvider,
+        $requireResponseToBeSigned = true,
+        $requireAssertionsToBeSigned = true
     ) {
 
         $this->identityProvider = $identityProvider;
         $this->serviceProvider = $serviceProvider;
+        $this->requireResponseToBeSigned = $requireResponseToBeSigned;
+        $this->requireAssertionsToBeSigned = $requireAssertionsToBeSigned;
 
         $this->addValidators();
     }
@@ -56,7 +69,9 @@ class Response
 
         ];
         if ($keyStore = $this->identityProvider->signingXMLSecurityKeyStore()) {
-            $this->validators[] = new SignedElement($keyStore);
+            $this->validators[] = new SignedElement($keyStore, $this->requireResponseToBeSigned, "Response");
+        }elseif ($this->requireResponseToBeSigned) {
+            throw new \Exception("Response must be signed");
         }
     }
 

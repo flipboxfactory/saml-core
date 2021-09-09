@@ -24,6 +24,8 @@ class Assertion
      * @var AbstractProvider
      */
     private $serviceProvider;
+
+    private $requireSignature = true;
     /**
      * @var \SAML2\Response
      */
@@ -40,11 +42,13 @@ class Assertion
     public function __construct(
         \SAML2\Response $response,
         AbstractProvider $identityProvider,
-        AbstractProvider $serviceProvider
+        AbstractProvider $serviceProvider,
+        bool $requireSignature = true
     ) {
         $this->identityProvider = $identityProvider;
         $this->serviceProvider = $serviceProvider;
         $this->response = $response;
+        $this->requireSignature = $requireSignature;
 
         $this->addValidators();
     }
@@ -72,7 +76,9 @@ class Assertion
 
         ];
         if ($keyStore = $this->identityProvider->signingXMLSecurityKeyStore()) {
-            $this->validators[] = new SignedElement($keyStore);
+            $this->validators[] = new SignedElement($keyStore, $this->requireSignature, "Assertion");
+        }elseif ($this->requireSignature) {
+            throw new \Exception("Assertion must be signed");
         }
     }
 
