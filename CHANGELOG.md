@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 3.3.0 2021-09-09
+## Fixed
+- Added controls to force signature verification.
+
 # 3.2.8 2021-05-14
 ## Fixed
 - Issue with clipboard (using navigator.clipboard with a fallback of the previous method) #113
