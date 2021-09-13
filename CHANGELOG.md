@@ -1,6 +1,12 @@
 Changelog
 =========
 
+# 3.4.0 2021-09-13
+## Removed
+- Removed `src/validators/Assertion.php`. Moved to the saml-sp package.
+- Removed `src/validators/Response.php`. Moved to the saml-sp package.
+- Removed `src/validators/SignedElement.php`. Moved to the saml-sp package.
+
 # 3.3.0 2021-09-09
 ## Fixed
 - Added controls to force signature verification.
