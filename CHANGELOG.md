@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 3.4.1 2021-10-27
+## Fixed
+- When "This site has it's own base URL" isn't checked bu the site is selected. ref: https://github.com/flipboxfactory/saml-sp/issues/139
+
 # 3.4.0 2021-09-13
 ## Removed
 - Removed `src/validators/Assertion.php`. Moved to the saml-sp package.

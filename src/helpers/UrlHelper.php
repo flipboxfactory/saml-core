@@ -84,21 +84,27 @@ class UrlHelper extends CraftUrlHelper
      * @return string
      * @throws \yii\base\Exception
      */
-    public static function buildEndpointUrl(AbstractSettings $settings, string $endpoint, AbstractProvider $provider, $fullUrl = true)
-    {
+    public static function buildEndpointUrl(
+        AbstractSettings $settings,
+        string $endpoint,
+        AbstractProvider $provider,
+        bool $fullUrl = true
+    ): string {
         $uri = implode('/', [$settings->getEndpointPrefix(), $endpoint, $provider->uid]);
+        $baseUrl = UrlHelper::baseUrl();
         /** @var Site $site */
-        $site = $provider->site;
+        if(
+            ($site = $provider->site) &&
+                $site->hasUrls
+        ) {
+            $baseUrl = (string)$site->baseUrl;
+        }
 
-
-
-        $endpointUrl = $fullUrl ?  implode('/', [
+        return $fullUrl ?  implode('/', [
             static::providerBaseUrl(
-                $site ? (string)$site->baseUrl : UrlHelper::baseUrl()
+                $baseUrl
             ),
             $uri
         ]) : "/" . $uri;
-
-        return $endpointUrl;
     }
 }
