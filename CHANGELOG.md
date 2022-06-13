@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.0 2022-06-13
+## Fixed
+- updates for Craft CMS 4.0.0
+
 # 3.4.1 2021-10-27
 ## Fixed
 - When "This site has it's own base URL" isn't checked bu the site is selected. ref: https://github.com/flipboxfactory/saml-sp/issues/139
