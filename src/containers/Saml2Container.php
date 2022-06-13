@@ -9,7 +9,6 @@ use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\helpers\SerializeHelper;
 use SAML2\Compat\AbstractContainer;
-use flipbox\craft\psr3\Logger;
 
 class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 {
@@ -32,9 +31,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function __construct(AbstractPlugin $plugin)
     {
-        $this->logger = new Logger([
-            'category' => 'saml-core',
-        ]);
+        $this->logger = new Logger();
         $this->plugin = $plugin;
     }
 

@@ -21,7 +21,7 @@ class SamlCore extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init():void
     {
         $this->css = [
             'css/saml-core.css',

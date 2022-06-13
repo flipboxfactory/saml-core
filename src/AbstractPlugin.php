@@ -26,6 +26,7 @@ use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
+use JetBrains\PhpStorm\ArrayShape;
 use SAML2\Compat\AbstractContainer;
 use yii\base\Event;
 
@@ -41,12 +42,12 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @var bool
      */
-    public $hasCpSettings = true;
+    public bool $hasCpSettings = true;
 
     /**
      * @var bool
      */
-    public $hasCpSection = true;
+    public bool $hasCpSection = true;
 
     abstract public function loadSaml2Container(): AbstractContainer;
 
@@ -60,7 +61,7 @@ abstract class AbstractPlugin extends Plugin
      */
     abstract public function getProviderIdentityRecordClass();
 
-    public function init()
+    public function init():void
     {
         parent::init();
 
@@ -117,7 +118,7 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @inheritdoc
      */
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
 
         \Craft::$app->getResponse()->redirect(
@@ -178,7 +179,7 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @inheritdoc
      */
-    public function getCpNavItem()
+    public function getCpNavItem(): ?array
     {
         return array_merge(parent::getCpNavItem(), [
             'subnav' => $this->getSubNav(),
@@ -371,7 +372,7 @@ abstract class AbstractPlugin extends Plugin
     /**
      * @return AbstractSettings
      */
-    public function getSettings()
+    public function getSettings(): ?\craft\base\Model
     {
         return parent::getSettings();
     }
@@ -469,18 +470,6 @@ abstract class AbstractPlugin extends Plugin
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('bindingFactory');
     }
-
-    /**
-     * @return Logger
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getPsr3Logger()
-    {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('psr3logger');
-    }
-
 
     /**
      * Log Functions

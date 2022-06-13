@@ -228,7 +228,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $label = Craft::$app->request->getRequiredParam('label');
         $nameIdOverride = Craft::$app->request->getParam('nameIdOverride');
 
-
         $plugin = $this->getPlugin();
 
         $recordClass = $this->getPlugin()->getProviderRecordClass();

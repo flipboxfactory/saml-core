@@ -31,7 +31,7 @@ abstract class AbstractController extends BaseController implements EnsureSAMLPl
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         \Craft::$app->view->registerAssetBundle(

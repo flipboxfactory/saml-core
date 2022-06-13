@@ -29,7 +29,7 @@ abstract class AbstractExternalIdentity extends Field implements \flipbox\saml\c
         return false;
     }
 
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (! ($element instanceof User)) {
             return null;

@@ -120,7 +120,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      * @inheritdoc
      */
-    public function beforeSave($insert)
+    public function beforeSave($insert): bool
     {
         if (! $this->entityId) {
             $this->entityId = $this->getEntityId();

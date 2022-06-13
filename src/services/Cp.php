@@ -47,7 +47,7 @@ class Cp extends Component
             ];
         }
 
-        foreach ($user->getFieldLayout()->getFields() as $field) {
+        foreach ($user->getFieldLayout()->getCustomFields() as $field) {
             if (MappingHelper::isSupportedField($field)) {
                 $options[] = [
                     'label' => $field->name,
@@ -90,7 +90,7 @@ class Cp extends Component
         ];
 
         $contentOptions = [];
-        foreach ($user->getFieldLayout()->getFields() as $field) {
+        foreach ($user->getFieldLayout()->getCustomFields() as $field) {
             if (! MappingHelper::isSupportedField($field)) {
                 continue;
             }

@@ -176,6 +176,8 @@ class Metadata extends Component
             static::PROTOCOL,
         ]);
 
+        $descriptor->setWantAuthnRequestsSigned(true);
+
         if (property_exists($settings, 'wantsAuthnRequestsSigned')) {
             $descriptor->setWantAuthnRequestsSigned(
                 $settings->wantsAuthnRequestsSigned
@@ -223,14 +225,8 @@ class Metadata extends Component
             static::PROTOCOL,
         ]);
 
-        if (property_exists($settings, 'wantsSignedAssertions') &&
-            is_bool($settings->wantsSignedAssertions)
-        ) {
-            $descriptor->setWantAssertionsSigned(
-                $settings->wantsSignedAssertions
-            );
-        }
-
+        $descriptor->setAuthnRequestsSigned(true);
+        $descriptor->setWantAssertionsSigned(true);
 
         // ACS
         $acsEndpoint = new IndexedEndpointType();
