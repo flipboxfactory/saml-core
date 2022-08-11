@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.1 2022-08-11
+## Fixed
+- issues with 4.0 typing matching craft parent classes
+
 # 4.0.0 2022-06-13
 ## Fixed
 - updates for Craft CMS 4.0.0
