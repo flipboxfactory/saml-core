@@ -24,7 +24,7 @@ use yii\web\HttpException;
 abstract class AbstractLogoutController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
 
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'actionIndex',
         'actionRequest',
     ];
