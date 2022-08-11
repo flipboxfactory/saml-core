@@ -40,7 +40,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
      * @param \yii\base\Action $action
      * @return bool
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (in_array(
             $action->actionMethod,
