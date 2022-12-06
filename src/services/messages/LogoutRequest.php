@@ -10,6 +10,7 @@ use craft\base\Component;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
+use flipbox\saml\core\events\UserLogout;
 use SAML2\Constants;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest as SamlLogoutRequest;
@@ -107,12 +108,12 @@ class LogoutRequest extends Component
         /**
          * Kick off event here so people can manipulate this object if needed
          */
-        $event = new Event();
+        $event = new UserLogout();
 
         /**
          * response
          */
-        $event->data = $logout;
+        $event->request = $logout;
         $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
 
         return $logout;
