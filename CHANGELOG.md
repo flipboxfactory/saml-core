@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.2 2022-12-06
+## Fixed
+- issue with logout event not sending data along. Thank you @braican!
+
 # 4.0.1 2022-08-11
 ## Fixed
 - issues with 4.0 typing matching craft parent classes
