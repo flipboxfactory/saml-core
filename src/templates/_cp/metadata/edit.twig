@@ -72,7 +72,7 @@
                     </label>
                 </div>
                 <div class="">
-                    <div class="">
+                    <div class="" style="margin-right: 1rem">
                         {% if myType == provider.type or myType == createType %}
                             {{ forms.textField({
                                 name: "entityId",
@@ -116,8 +116,7 @@
                             Site
                         </label>
                     </div>
-                    <div class="">
-                        <div class="">
+                    <div class="" style="margin-right: 1rem">
                             {{ forms.selectField({
                                 id: 'providerSite',
                                 name: 'providerSite',
@@ -126,7 +125,6 @@
                                 options: sites,
                                 required: true
                             }) }}
-                        </div>
                     </div>
                 </div>
             </div>

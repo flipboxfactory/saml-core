@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.3 2022-12-15
+## Fixed
+- UI fixes found in https://github.com/flipboxfactory/saml-sp/issues/182
+
 # 4.0.2 2022-12-06
 ## Fixed
 - issue with logout event not sending data along. Thank you @braican!
