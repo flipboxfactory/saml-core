@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.4 2023-11-28
+## Fixed
+- fix: issue with logger compatibility
+
 # 4.0.3 2022-12-15
 ## Fixed
 - UI fixes found in https://github.com/flipboxfactory/saml-sp/issues/182

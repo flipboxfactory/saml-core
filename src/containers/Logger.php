@@ -25,7 +25,7 @@ class Logger extends Component implements LoggerInterface
      *
      * @var string
      */
-    public $category = 'saml-core';
+    public string $category = 'saml-core';
 
     /**
      * The logger
