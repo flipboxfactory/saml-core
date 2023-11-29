@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.4.1 2023-11-28
+## Fixed
+- reverting 4.0.4
+
 # 4.0.4 2023-11-28
 ## Fixed
 - fix: issue with logger compatibility
