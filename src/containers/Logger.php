@@ -60,7 +60,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function init()
     {
         $this->logger = Craft::$app->log->getLogger();
     }
@@ -70,7 +70,7 @@ class Logger extends Component implements LoggerInterface
      *
      * @inheritdoc
      */
-    public function log($level, string|\Stringable $message, array $context = []): void
+    public function log($level, $message, array $context = [])
     {
         // Resolve category from 'context'
         $category = ArrayHelper::remove($context, 'category', $this->category);
@@ -88,7 +88,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function emergency(string|\Stringable $message, array $context = []): void
+    public function emergency($message, array $context = [])
     {
         $this->log('emergency', $message, $context);
     }
@@ -96,7 +96,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function alert(string|\Stringable $message, array $context = []): void
+    public function alert($message, array $context = [])
     {
         $this->log('alert', $message, $context);
     }
@@ -104,7 +104,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function critical(string|\Stringable $message, array $context = []): void
+    public function critical($message, array $context = [])
     {
         $this->log('critical', $message, $context);
     }
@@ -112,7 +112,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function error(string|\Stringable $message, array $context = []): void
+    public function error($message, array $context = [])
     {
         $this->log('error', $message, $context);
     }
@@ -120,7 +120,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function warning(string|\Stringable $message, array $context = []): void
+    public function warning($message, array $context = [])
     {
         $this->log('warning', $message, $context);
     }
@@ -128,7 +128,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function notice(string|\Stringable $message, array $context = []): void
+    public function notice($message, array $context = [])
     {
         $this->log('notice', $message, $context);
     }
@@ -136,7 +136,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function info(string|\Stringable $message, array $context = []): void
+    public function info($message, array $context = [])
     {
         $this->log('info', $message, $context);
     }
@@ -144,7 +144,7 @@ class Logger extends Component implements LoggerInterface
     /**
      * @inheritdoc
      */
-    public function debug(string|\Stringable $message, array $context = []): void
+    public function debug($message, array $context = [])
     {
         $this->log('debug', $message, $context);
     }
@@ -152,11 +152,11 @@ class Logger extends Component implements LoggerInterface
     /**
      * Interpolates context values into the message placeholders.
      *
-     * @param string|\Stringable $message
+     * @param string $message
      * @param array $context
      * @return string
      */
-    private function interpolate(string|\Stringable $message, array $context = []): string
+    private function interpolate(string $message, array $context = [])
     {
         // build a replacement array with braces around the context keys
         $replace = array();
