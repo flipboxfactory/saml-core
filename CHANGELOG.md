@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.0.6 2023-12-19
+## Fixed
+- issues with array shifting the keys properly: https://github.com/flipboxfactory/saml-idp/issues/58
+
 # 4.0.5 2023-11-29
 ## Fixed
 - pinning psr/log at ^1.1.4 to avoid unwanted upgrades like https://github.com/flipboxfactory/saml-sp/issues/197
