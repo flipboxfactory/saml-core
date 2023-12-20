@@ -226,7 +226,7 @@ trait EntityDescriptor
         /** @var KeyDescriptor[] $keyDescriptorFiltered */
         $keyDescriptorFiltered = $this->keyDescriptorsByType($keyDescriptors, $signingOrEncrypt);
 
-        return $keyDescriptorFiltered[0] ?? null;
+        return count($keyDescriptorFiltered) > 0 ? array_shift($keyDescriptorFiltered) : null;
     }
 
     /**
