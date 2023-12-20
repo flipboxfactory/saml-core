@@ -1,5 +1,8 @@
 Changelog
 =========
+# 4.0.7 2023-12-19
+## Fixed
+- reverting changes for shift key descriptor. Seeing issues with other php versions.
 
 # 4.0.5 2023-11-29
 ## Fixed
