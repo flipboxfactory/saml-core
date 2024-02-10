@@ -62,9 +62,7 @@ abstract class AbstractExternalIdentity extends Field implements \flipbox\saml\c
             [
                 'identities' => $value,
                 'element' => $element,
-                'baseProviderUrl' => UrlHelper::cpUrl(
-                    $handle . '/metadata'
-                ),
+                'pluginHandle' => $handle,
             ]
         );
     }
