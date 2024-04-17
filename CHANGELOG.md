@@ -1,6 +1,10 @@
 Changelog
 =========
-# 4.1.0 202402-10
+# 5.0.0 2024-04-17
+## Fixed
+- Craft 5.0 compatibility
+
+# 4.1.0 2024-02-10
 ## Fixed
 - Fixing issue with multi-site linking for the external id field
 
