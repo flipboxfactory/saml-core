@@ -2,9 +2,6 @@
 # A dependency library for SAML SP and IDP
 [![Latest Version](https://img.shields.io/github/release/flipboxfactory/saml-core.svg?style=flat-square)](https://github.com/flipboxfactory/saml-core/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/flipboxfactory/saml-core/master.svg?style=flat-square)](https://travis-ci.com/flipboxfactory/saml-core)
-[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/flipboxfactory/saml-core.svg?style=flat-square)](https://scrutinizer-ci.com/g/flipboxfactory/saml-core/code-structure)
-[![Quality Score](https://img.shields.io/scrutinizer/g/flipboxfactory/saml-core.svg?style=flat-square)](https://scrutinizer-ci.com/g/flipboxfactory/saml-core)
 
 ## Installation
 
