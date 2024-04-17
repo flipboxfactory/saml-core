@@ -1,5 +1,9 @@
 Changelog
 =========
+# 5.0.1 2024-04-17
+## Fixed
+- Issues with cp crumbs
+
 # 5.0.0 2024-04-17
 ## Fixed
 - Craft 5.0 compatibility
