@@ -1,5 +1,9 @@
 Changelog
 =========
+# 4.2.1 2023-05-14
+## Fixed
+- namespace issue
+
 # 4.2.0 2023-05-14
 ## Fixed
 - issues with psr/log 1 and 3 conflicts
