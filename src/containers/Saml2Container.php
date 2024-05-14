@@ -8,7 +8,7 @@ use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\helpers\SerializeHelper;
-use flipbox\saml\core\psr\log\Logger;
+use flipbox\saml\psr\log\Logger;
 use SAML2\Compat\AbstractContainer;
 
 class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
