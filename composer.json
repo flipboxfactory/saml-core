@@ -1,7 +1,7 @@
 {
   "name": "flipboxfactory/saml-core",
   "description": "SAML SSO Core",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "type": "library",
   "keywords": [
     "cms",
@@ -14,13 +14,12 @@
   ],
   "require": {
     "craftcms/cms": "^4.0",
-    "psr/log": "^1.1.4",
+    "flipboxfactory/saml-core-psr-log": "^1.0 || ^3.0",
     "simplesamlphp/saml2": "^4.1",
     "flipboxfactory/keychain":"^4.0.0"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "^3.4",
-    "codeception/codeception": "^3.0"
+    "squizlabs/php_codesniffer": "^3.4"
   },
   "autoload": {
     "psr-4": {
@@ -38,5 +37,11 @@
     "source": "https://github.com/flipboxfactory/saml-core",
     "docs": "https://github.com/flipboxfactory/saml-core",
     "rss": "https://github.com/flipboxfactory/saml-core/commits/master.atom"
+  },
+  "config": {
+    "allow-plugins": {
+      "craftcms/plugin-installer": true,
+      "yiisoft/yii2-composer": true
+    }
   }
 }

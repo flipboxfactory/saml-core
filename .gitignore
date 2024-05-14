@@ -7,3 +7,4 @@ composer.lock
 .idea
 .env
 node_modules
+.phpactor.json
