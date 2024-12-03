@@ -1,5 +1,9 @@
 Changelog
 =========
+# 5.0.2 2024-12-03 [CRITICAL]
+## Fixed
+- SECURITY PATCH - UPDATE REQUIRED! For more information see: https://github.com/simplesamlphp/saml2/security/advisories/GHSA-pxm4-r5ph-q2m2#event-375127
+
 # 5.0.1 2024-04-17
 ## Fixed
 - Issues with cp crumbs
@@ -207,7 +211,7 @@ Changelog
 
 # 2.0.5
 ## Fixed
-- Fixed issue with cp links on the list page 
+- Fixed issue with cp links on the list page
 
 # 2.0.3.7
 ## Changed
