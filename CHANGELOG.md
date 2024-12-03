@@ -1,5 +1,9 @@
 Changelog
 =========
+# 4.2.2 2024-12-03
+## Fixed
+- SECURITY PATCH! Update REQUIRED!! More info can be found here: https://github.com/simplesamlphp/saml2/security/advisories/GHSA-pxm4-r5ph-q2m2#event-375127
+
 # 4.2.1 2023-05-14
 ## Fixed
 - namespace issue
@@ -207,7 +211,7 @@ Changelog
 
 # 2.0.5
 ## Fixed
-- Fixed issue with cp links on the list page 
+- Fixed issue with cp links on the list page
 
 # 2.0.3.7
 ## Changed
