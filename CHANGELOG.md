@@ -1,6 +1,10 @@
 Changelog
 =========
-# 5.0.3 2024-12-03
+# 5.0.4 2025-01-07
+## Fixed
+- revert: filter role decriptors only selecting saml
+
+# 5.0.3 2025-01-27
 ## Fixed
 - filter role decriptors only selecting saml
 

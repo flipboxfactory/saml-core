@@ -198,7 +198,8 @@ class EntityDescriptorHelper
 
         $return = null;
         foreach ($roleDescriptors as $descriptor) {
-            if (static::isRoleDescriptorSaml($descriptor) && $return = static::getFirstIndexedEndpointType(
+            /*if (static::isRoleDescriptorSaml($descriptor) && $return = static::getFirstIndexedEndpointType(*/
+            if ($return = static::getFirstIndexedEndpointType(
                 call_user_func([$descriptor, $serviceMethod]),
                 $binding
             )
