@@ -1,5 +1,9 @@
 Changelog
 =========
+# 4.2.3 2024-02-12
+## Added
+- Adding support for explicit logout for SPs
+
 # 4.2.2 2024-12-03
 ## Fixed
 - SECURITY PATCH! Update REQUIRED!! More info can be found here: https://github.com/simplesamlphp/saml2/security/advisories/GHSA-pxm4-r5ph-q2m2#event-375127
