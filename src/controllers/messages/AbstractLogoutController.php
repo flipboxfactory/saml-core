@@ -62,7 +62,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
      * @throws \yii\base\ExitException
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionIndex($uid = null)
+    public function actionIndex($externalUid = null)
     {
         $message = Factory::receive();
 
@@ -84,8 +84,8 @@ abstract class AbstractLogoutController extends AbstractController implements \f
             'enabled' => 1
         ];
 
-        if ($uid) {
-            $condition['uid'] = $uid;
+        if ($externalUid) {
+            $condition['uid'] = $externalUid;
         } else {
             $condition['entityId'] = $settings->getEntityId();
         }
@@ -159,7 +159,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
      * @throws \yii\base\ExitException
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionRequest($uid = null)
+    public function actionRequest($externalUid = null, $internalUid = null)
     {
         // Backwards compatibility with 1.0
         // The request shouldn't get here with a SAMLResponse
@@ -168,10 +168,15 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         }
 
         /** @var AbstractProvider $theirProvider */
-        $theirProvider = $this->getRemoteProvider($uid);
+        $theirProvider = $this->getRemoteProvider($externalUid);
 
-        /** @var AbstractProvider $ourProvider */
-        $ourProvider = $this->getPlugin()->getProvider()->findOwn();
+        if ($internalUid) {
+            /** @var AbstractProvider $ourProvider */
+            $ourProvider = $this->getPlugin()->getProvider()->find(['uid'=>$internalUid])->one();
+        } else {
+            /** @var AbstractProvider $ourProvider */
+            $ourProvider = $this->getPlugin()->getProvider()->findOwn();
+        }
 
         $user = \Craft::$app->user->getIdentity();
 
