@@ -1,5 +1,9 @@
 Changelog
 =========
+# 4.2.4 2024-02-13
+## Fixed
+- issue with route
+
 # 4.2.3 2024-02-12
 ## Added
 - Adding support for explicit logout for SPs

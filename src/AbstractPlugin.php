@@ -1,8 +1,8 @@
 <?php
 /**
- * @copyright  Copyright (c) Flipbox Digital Limited
- * @license    https://flipboxfactory.com/software/saml-core/license
- * @link       https://www.flipboxfactory.com/software/saml-core/
+ * @copyright Copyright (c) Flipbox Digital Limited
+ * @license   https://flipboxfactory.com/software/saml-core/license
+ * @link      https://www.flipboxfactory.com/software/saml-core/
  */
 
 namespace flipbox\saml\core;
@@ -31,6 +31,7 @@ use yii\base\Event;
 
 /**
  * Class AbstractPlugin
+ *
  * @package flipbox\saml\core
  */
 abstract class AbstractPlugin extends Plugin
@@ -75,7 +76,8 @@ abstract class AbstractPlugin extends Plugin
         \Craft::setAlias('@flipbox/saml/core/web/assets', __DIR__ . '/web/assets');
         $this->registerTemplates();
 
-        $this->setComponents([
+        $this->setComponents(
+            [
             'cp' => Cp::class,
             'metadata' => Metadata::class,
             'logoutRequest' => LogoutRequest::class,
@@ -84,7 +86,8 @@ abstract class AbstractPlugin extends Plugin
                 'class' => EditProvider::class,
                 'plugin' => $this,
             ],
-        ]);
+            ]
+        );
 
         /**
          * Set saml plugin to the craft variable
@@ -93,7 +96,9 @@ abstract class AbstractPlugin extends Plugin
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
             function (Event $event) {
-                /** @var CraftVariable $variable */
+                /**
+            * @var CraftVariable $variable 
+            */
                 $variable = $event->sender;
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
                 $variable->set('samlCp', $this->getCp());
@@ -177,9 +182,11 @@ abstract class AbstractPlugin extends Plugin
      */
     public function getCpNavItem(): ?array
     {
-        return array_merge(parent::getCpNavItem(), [
+        return array_merge(
+            parent::getCpNavItem(), [
             'subnav' => $this->getSubNav(),
-        ]);
+            ]
+        );
     }
 
     /**
@@ -355,7 +362,7 @@ abstract class AbstractPlugin extends Plugin
                 ) => $handle . '/logout/request',
                 sprintf(
                     'POST,GET %s'.
-                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>', 
+                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>'.
                     '/<internalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     UrlHelper::buildEndpointPath(
                         static::getInstance()->getSettings(),
@@ -381,13 +388,17 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @returns AbstractCp
+     * @returns      AbstractCp
      */
     public function getCp()
     {
 
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
+        /**
+ * @noinspection PhpIncompatibleReturnTypeInspection 
+*/
         return $this->get('cp');
     }
 
@@ -397,7 +408,9 @@ abstract class AbstractPlugin extends Plugin
     public function getEditProvider()
     {
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
         return $this->get('editProvider');
     }
 
@@ -407,7 +420,9 @@ abstract class AbstractPlugin extends Plugin
     public function getProvider()
     {
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
         return $this->get('provider');
     }
 
@@ -421,36 +436,48 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return Metadata
+     * @return       Metadata
      */
     public function getMetadata()
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
+        /**
+ * @noinspection PhpIncompatibleReturnTypeInspection 
+*/
         return $this->get('metadata');
     }
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return LogoutRequest
-     * @throws \yii\base\InvalidConfigException
+     * @return       LogoutRequest
+     * @throws       \yii\base\InvalidConfigException
      */
     public function getLogoutRequest()
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
+        /**
+ * @noinspection PhpIncompatibleReturnTypeInspection 
+*/
         return $this->get('logoutRequest');
     }
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @return LogoutResponse
-     * @throws \yii\base\InvalidConfigException
+     * @return       LogoutResponse
+     * @throws       \yii\base\InvalidConfigException
      */
     public function getLogoutResponse()
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
+        /**
+ * @noinspection PhpIncompatibleReturnTypeInspection 
+*/
         return $this->get('logoutResponse');
     }
 
@@ -464,8 +491,12 @@ abstract class AbstractPlugin extends Plugin
      */
     public function getBindingFactory()
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /**
+ * @noinspection PhpUnhandledExceptionInspection 
+*/
+        /**
+ * @noinspection PhpIncompatibleReturnTypeInspection 
+*/
         return $this->get('bindingFactory');
     }
 
