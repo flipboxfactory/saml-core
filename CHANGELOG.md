@@ -1,7 +1,7 @@
 Changelog
 =========
 
-# 5.0.4 2025-02-13
+# 5.0.5 2025-02-13
 ## Added
 - Adding support for explicit logout for SPs
 
