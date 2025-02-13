@@ -1,5 +1,9 @@
 Changelog
 =========
+# 4.2.5 2024-02-13
+## Fixed
+- backwards compatibility with logout
+
 # 4.2.4 2024-02-13
 ## Fixed
 - issue with route
