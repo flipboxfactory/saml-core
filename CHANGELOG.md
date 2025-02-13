@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 5.0.6 2025-02-13
+## Fixed
+- backwards compatibility with logout
+
 # 5.0.5 2025-02-13
 ## Added
 - Adding support for explicit logout for SPs
