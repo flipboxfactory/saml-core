@@ -1,5 +1,10 @@
 Changelog
 =========
+
+# 5.0.4 2025-02-13
+## Added
+- Adding support for explicit logout for SPs
+
 # 5.0.4 2025-01-07
 ## Fixed
 - revert: filter role decriptors only selecting saml
