@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 5.0.7 2025-04-25
+## Fixed
+- moving post execution to script tag
+
 # 5.0.6 2025-02-13
 ## Fixed
 - backwards compatibility with logout
