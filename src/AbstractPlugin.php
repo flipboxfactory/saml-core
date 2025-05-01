@@ -96,7 +96,7 @@ abstract class AbstractPlugin extends Plugin
             CraftVariable::EVENT_INIT,
             function (Event $event) {
                 /**
-            * @var CraftVariable $variable 
+            * @var CraftVariable $variable
             */
                 $variable = $event->sender;
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
@@ -270,6 +270,7 @@ abstract class AbstractPlugin extends Plugin
                 $handle . '/keychain' => $handle . '/cp/view/keychain/index',
                 $handle . '/keychain/new' => $handle . '/cp/view/keychain/edit',
                 $handle . '/keychain/new-openssl' => $handle . '/cp/view/keychain/edit/openssl',
+                $handle . '/keychain/download-certificate' => $handle . '/cp/view/keychain/edit/download-certificate',
                 $handle . '/keychain/<keypairId:\d+>' => $handle . '/cp/view/keychain/edit',
 
                 /**
@@ -401,10 +402,10 @@ abstract class AbstractPlugin extends Plugin
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('cp');
     }
@@ -416,7 +417,7 @@ abstract class AbstractPlugin extends Plugin
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         return $this->get('editProvider');
     }
@@ -428,7 +429,7 @@ abstract class AbstractPlugin extends Plugin
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         return $this->get('provider');
     }
@@ -448,10 +449,10 @@ abstract class AbstractPlugin extends Plugin
     public function getMetadata()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('metadata');
     }
@@ -464,10 +465,10 @@ abstract class AbstractPlugin extends Plugin
     public function getLogoutRequest()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('logoutRequest');
     }
@@ -480,10 +481,10 @@ abstract class AbstractPlugin extends Plugin
     public function getLogoutResponse()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('logoutResponse');
     }
@@ -499,10 +500,10 @@ abstract class AbstractPlugin extends Plugin
     public function getBindingFactory()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('bindingFactory');
     }
