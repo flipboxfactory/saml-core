@@ -88,12 +88,11 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @inheritdoc
      */
-    public function create(EntityDescriptor $entityDescriptor, KeyChainRecord $keyChainRecord = null): ProviderInterface
+    public function create(EntityDescriptor $entityDescriptor, ?KeyChainRecord $keyChainRecord = null): ProviderInterface
     {
 
         $recordClass = $this->getPlugin()->getProviderRecordClass();
 
-        /** @var ProviderInterface $provider */
         $provider = (new $recordClass())
             ->loadDefaultValues();
 
@@ -117,7 +116,7 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @inheritdoc
      */
-    public function save(AbstractProvider $record, $runValidation = true, $attributeNames = null)
+    public function save(ProviderInterface $record, $runValidation = true, $attributeNames = null)
     {
         if ($record->isNewRecord) {
             $record->loadDefaultValues();
@@ -133,6 +132,8 @@ abstract class AbstractProviderService extends Component implements ProviderServ
                 $record,
                 $record->keychain
             );
+        } else {
+            LinkRecord::deleteAll(['providerId' => $record->id]);
         }
 
         return $record;

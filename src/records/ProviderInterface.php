@@ -10,6 +10,8 @@ namespace flipbox\saml\core\records;
 
 use craft\records\Site;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\models\GroupOptions;
+use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\models\SettingsInterface;
 use SAML2\XML\md\EntityDescriptor;
 use yii\db\ActiveQuery;
@@ -28,7 +30,7 @@ use yii\db\ActiveRecordInterface;
  * @property int|null $siteId
  * @property string $mapping
  * @property string|null $nameIdOverride
- * @property string $groupOptions
+ * @property GroupOptions $groupOptions
  * @property string $metadataOptions
  * @property bool $syncGroups
  * @property bool $groupsAttributeName
@@ -39,6 +41,15 @@ use yii\db\ActiveRecordInterface;
  * @property \DateTime $dateCreated
  * @property \DateTime $dateUpdated
  * @property \DateTime $uid
+ * @method array getMapping()
+ * @method bool hasErrors
+ * @method void addError(string $attribute, string $error = '')
+ * @method void generateUid()
+ * @method $this loadDefaultValues(bool $skipIfSet = true)
+ * @method $this setSite(?Site $site)
+ * @method $this setMapping(array $mapping)
+ * @method $this setGroupOptions(GroupOptions $groupOptions)
+ * @method $this setMetadataOptions(MetadataOptions $metadataOptions)
  */
 interface ProviderInterface extends ActiveRecordInterface
 {

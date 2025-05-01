@@ -52,7 +52,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
     abstract protected function getDefaultSettings():AbstractSettings;
 
-    public function getLoginRequestEndpoint(AbstractSettings $settings = null)
+    public function getLoginRequestEndpoint(?AbstractSettings $settings = null)
     {
         return UrlHelper::buildEndpointUrl(
             $settings ?? $this->getDefaultSettings(),
@@ -62,7 +62,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         );
     }
 
-    public function getLoginEndpoint(AbstractSettings $settings = null)
+    public function getLoginEndpoint(?AbstractSettings $settings = null)
     {
         return UrlHelper::buildEndpointUrl(
             $settings ?? $this->getDefaultSettings(),
@@ -72,7 +72,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         );
     }
 
-    public function getLogoutRequestEndpoint(AbstractSettings $settings = null)
+    public function getLogoutRequestEndpoint(?AbstractSettings $settings = null)
     {
         return UrlHelper::buildEndpointUrl(
             $settings ?? $this->getDefaultSettings(),
@@ -82,7 +82,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
         );
     }
 
-    public function getLogoutEndpoint(AbstractSettings $settings = null)
+    public function getLogoutEndpoint(?AbstractSettings $settings = null)
     {
         return UrlHelper::buildEndpointUrl(
             $settings ?? $this->getDefaultSettings(),
@@ -142,6 +142,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
 
         $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
 
+        $this->siteId = null;
         if ($this->site instanceof Site) {
             $this->siteId = $this->site->id;
         }
@@ -233,7 +234,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
      * @param KeyChainRecord $keyChain
      * @return AbstractProvider
      */
-    public function setKeychain(KeyChainRecord $keyChain)
+    public function setKeychain(?KeyChainRecord $keyChain)
     {
         $this->populateRelation('keychain', $keyChain);
         return $this;
@@ -242,7 +243,7 @@ abstract class AbstractProvider extends ActiveRecord implements ProviderInterfac
     /**
      *
      */
-    public function setSite(Site $site)
+    public function setSite(?Site $site)
     {
         $this->populateRelation('site', $site);
         return $this;

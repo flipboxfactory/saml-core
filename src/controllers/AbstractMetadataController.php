@@ -210,7 +210,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     protected function processSaveAction()
     {
-
         $providerId = Craft::$app->request->getParam('identifier');
         $entityId = Craft::$app->request->getParam('entityId');
         $keyId = Craft::$app->request->getParam('keychain');
@@ -243,17 +242,16 @@ abstract class AbstractMetadataController extends AbstractController implements 
         }
 
         $record->entityId = $entityId;
+
+        $site = null;
         if ($providerSite) {
-            if ($site = Site::findOne([
+            if (!($site = Site::findOne([
                 'id' => $providerSite,
-            ])) {
-                $record->setSite($site);
-            } else {
-                // @todo add
-                var_dump('wat?');
-                exit;
+            ]))) {
+                throw new \Exception("Site with ID: {$providerSite} not found.");
             }
         }
+        $record->setSite($site);
 
         // Metadata
         if (! $metadata && $metadataUrl) {
@@ -313,16 +311,14 @@ abstract class AbstractMetadataController extends AbstractController implements 
         }
 
 
+        $keychain = null;
         if ($keyId) {
             /** @var KeyChainRecord $keychain */
-            if ($keychain = KeyChainRecord::find()->where([
+            $keychain = KeyChainRecord::find()->where([
                 'id' => $keyId,
-            ])->one()) {
-                $record->setKeychain(
-                    $keychain
-                );
-            }
+            ])->one();
         }
+        $record->setKeychain($keychain);
 
         /**
          * Metadata should exist for the remote provider

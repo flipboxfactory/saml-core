@@ -9,7 +9,6 @@ use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\traits\KeyChain;
 use GuzzleHttp\Client;
 use SAML2\Certificate\Key;
 use SAML2\Constants;

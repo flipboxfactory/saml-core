@@ -16,7 +16,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
-use flipbox\saml\core\services\AbstractCp;
+use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\bindings\Factory;
 use flipbox\saml\core\services\Cp;
 use flipbox\saml\core\services\EditProvider;
@@ -25,7 +25,6 @@ use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
-use JetBrains\PhpStorm\ArrayShape;
 use SAML2\Compat\AbstractContainer;
 use yii\base\Event;
 
@@ -52,7 +51,7 @@ abstract class AbstractPlugin extends Plugin
     abstract public function loadSaml2Container(): AbstractContainer;
 
     /**
-     * @return string
+     * @return class-string<ProviderInterface>
      */
     abstract public function getProviderRecordClass();
 
@@ -396,7 +395,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @returns      AbstractCp
+     * @return       Cp
      */
     public function getCp()
     {
@@ -411,7 +410,7 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @returns EditProvider
+     * @return EditProvider
      */
     public function getEditProvider()
     {
@@ -423,7 +422,7 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @returns ProviderServiceInterface
+     * @return ProviderServiceInterface
      */
     public function getProvider()
     {
@@ -435,7 +434,7 @@ abstract class AbstractPlugin extends Plugin
     }
 
     /**
-     * @returns ProviderIdentityServiceInterface
+     * @return ProviderIdentityServiceInterface
      */
     public function getProviderIdentity()
     {

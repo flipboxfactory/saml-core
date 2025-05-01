@@ -24,7 +24,7 @@ interface ProviderServiceInterface
      */
     public function create(
         EntityDescriptor $entityDescriptor,
-        KeyChainRecord $keyChainRecord = null
+        ?KeyChainRecord $keyChainRecord = null
     ): ProviderInterface;
 
     /**
@@ -34,7 +34,7 @@ interface ProviderServiceInterface
      * @return AbstractProvider
      * @throws \Exception
      */
-    public function save(AbstractProvider $record, $runValidation = true, $attributeNames = null);
+    public function save(ProviderInterface $record, $runValidation = true, $attributeNames = null);
 
     /**
      * @param ProviderInterface $provider
