@@ -45,7 +45,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
                 'label' => $this->getPlugin()->name,
             ],
             [
-                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()) . '/metadata',
+                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle() . '/metadata'),
                 'label' => 'Provider List',
             ],
         ];
