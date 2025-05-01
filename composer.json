@@ -3,6 +3,7 @@
     "description": "SAML SSO Core",
     "version": "4.2.5",
     "type": "library",
+    "license": "proprietary",
     "keywords": [
         "cms",
         "craftcms",
