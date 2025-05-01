@@ -94,7 +94,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
     }
 
     /**
@@ -108,7 +108,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $this->requireAdmin(false);
         $this->requirePostRequest();
 
-        /** @var AbstractProvider $record */
         $record = $this->processSaveAction();
 
         if ($record->hasErrors() || ! $this->getPlugin()->getProvider()->save($record)) {
@@ -124,9 +123,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
-
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
     }
 
     /**
@@ -147,10 +144,9 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
-        /** @var string $recordClass */
         $recordClass = $this->getPlugin()->getProviderRecordClass();
 
-        /** @var AbstractProvider $record */
+        /** @var ProviderInterface $record */
         $record = $recordClass::find()->where([
             'id' => $providerId,
         ])->one();
@@ -170,7 +166,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
     }
 
     /**
@@ -185,7 +181,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
-        /** @var string $recordClass */
         $recordClass = $this->getPlugin()->getProviderRecordClass();
 
         /** @var ProviderInterface $record */
@@ -206,7 +201,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider deleted'));
     }
 
     /**
@@ -231,8 +226,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $plugin = $this->getPlugin();
 
         $recordClass = $this->getPlugin()->getProviderRecordClass();
-        /** @var AbstractProvider $record */
         if ($providerId) {
+            /** @var ProviderInterface $record */
             $record = $recordClass::find()->where([
                 'id' => $providerId,
             ])->one();
