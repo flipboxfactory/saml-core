@@ -10,6 +10,7 @@ use flipbox\saml\core\records\LinkRecord;
 
 /**
  */
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 abstract class m201029_200000_keychain_link_provideruid extends Migration
 {
 

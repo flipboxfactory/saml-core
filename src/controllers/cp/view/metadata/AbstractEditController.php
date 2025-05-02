@@ -54,7 +54,8 @@ abstract class AbstractEditController extends AbstractController implements Ensu
 
         $variables = array_merge($variables, $overwriteVariables);
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
     }
@@ -209,7 +210,8 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $variables['createType'] = $variables['myType'];
 
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
     }

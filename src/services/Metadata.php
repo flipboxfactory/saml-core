@@ -337,9 +337,10 @@ class Metadata extends Component
         $ssoDescriptor->addKeyDescriptor($keyDescriptor);
     }
 
-    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord) {
-        $this->setSign($ssoDescriptor,$keyChainRecord);
-        $this->setEncrypt($ssoDescriptor,$keyChainRecord);
+    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    {
+        $this->setSign($ssoDescriptor, $keyChainRecord);
+        $this->setEncrypt($ssoDescriptor, $keyChainRecord);
     }
 
     /**

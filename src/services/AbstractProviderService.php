@@ -88,8 +88,10 @@ abstract class AbstractProviderService extends Component implements ProviderServ
     /**
      * @inheritdoc
      */
-    public function create(EntityDescriptor $entityDescriptor, ?KeyChainRecord $keyChainRecord = null): ProviderInterface
-    {
+    public function create(
+        EntityDescriptor $entityDescriptor,
+        ?KeyChainRecord $keyChainRecord = null
+    ): ProviderInterface {
 
         $recordClass = $this->getPlugin()->getProviderRecordClass();
 

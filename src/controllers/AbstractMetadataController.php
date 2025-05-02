@@ -83,7 +83,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->save($providerRecord)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $providerRecord,
@@ -112,7 +113,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if ($record->hasErrors() || ! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
@@ -155,7 +157,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
@@ -190,7 +193,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->delete($record)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,

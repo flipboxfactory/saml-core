@@ -164,7 +164,7 @@ abstract class AbstractPlugin extends Plugin
             ],
         ];
 
-        if(\Craft::$app->config->general->allowAdminChanges) {
+        if (\Craft::$app->config->general->allowAdminChanges) {
             $nav['saml.settings'] = [
                 'url' => $this->getHandle() . '/settings',
                 'label' => \Craft::t(
@@ -182,8 +182,9 @@ abstract class AbstractPlugin extends Plugin
     public function getCpNavItem(): ?array
     {
         return array_merge(
-            parent::getCpNavItem(), [
-            'subnav' => $this->getSubNav(),
+            parent::getCpNavItem(),
+            [
+                'subnav' => $this->getSubNav(),
             ]
         );
     }
