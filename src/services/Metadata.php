@@ -9,7 +9,6 @@ use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\traits\KeyChain;
 use GuzzleHttp\Client;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
@@ -338,9 +337,10 @@ class Metadata extends Component
         $ssoDescriptor->addKeyDescriptor($keyDescriptor);
     }
 
-    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord) {
-        $this->setSign($ssoDescriptor,$keyChainRecord);
-        $this->setEncrypt($ssoDescriptor,$keyChainRecord);
+    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    {
+        $this->setSign($ssoDescriptor, $keyChainRecord);
+        $this->setEncrypt($ssoDescriptor, $keyChainRecord);
     }
 
     /**

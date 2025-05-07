@@ -16,7 +16,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
-use flipbox\saml\core\services\AbstractCp;
+use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\bindings\Factory;
 use flipbox\saml\core\services\Cp;
 use flipbox\saml\core\services\EditProvider;
@@ -25,7 +25,6 @@ use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
-use JetBrains\PhpStorm\ArrayShape;
 use SAML2\Compat\AbstractContainer;
 use yii\base\Event;
 
@@ -52,7 +51,7 @@ abstract class AbstractPlugin extends Plugin
     abstract public function loadSaml2Container(): AbstractContainer;
 
     /**
-     * @return string
+     * @return class-string<ProviderInterface>
      */
     abstract public function getProviderRecordClass();
 
@@ -97,7 +96,7 @@ abstract class AbstractPlugin extends Plugin
             CraftVariable::EVENT_INIT,
             function (Event $event) {
                 /**
-            * @var CraftVariable $variable 
+            * @var CraftVariable $variable
             */
                 $variable = $event->sender;
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
@@ -165,7 +164,7 @@ abstract class AbstractPlugin extends Plugin
             ],
         ];
 
-        if(\Craft::$app->config->general->allowAdminChanges) {
+        if (\Craft::$app->config->general->allowAdminChanges) {
             $nav['saml.settings'] = [
                 'url' => $this->getHandle() . '/settings',
                 'label' => \Craft::t(
@@ -183,8 +182,9 @@ abstract class AbstractPlugin extends Plugin
     public function getCpNavItem(): ?array
     {
         return array_merge(
-            parent::getCpNavItem(), [
-            'subnav' => $this->getSubNav(),
+            parent::getCpNavItem(),
+            [
+                'subnav' => $this->getSubNav(),
             ]
         );
     }
@@ -271,6 +271,7 @@ abstract class AbstractPlugin extends Plugin
                 $handle . '/keychain' => $handle . '/cp/view/keychain/index',
                 $handle . '/keychain/new' => $handle . '/cp/view/keychain/edit',
                 $handle . '/keychain/new-openssl' => $handle . '/cp/view/keychain/edit/openssl',
+                $handle . '/keychain/download-certificate' => $handle . '/cp/view/keychain/edit/download-certificate',
                 $handle . '/keychain/<keypairId:\d+>' => $handle . '/cp/view/keychain/edit',
 
                 /**
@@ -396,46 +397,46 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @returns      AbstractCp
+     * @return       Cp
      */
     public function getCp()
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('cp');
     }
 
     /**
-     * @returns EditProvider
+     * @return EditProvider
      */
     public function getEditProvider()
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         return $this->get('editProvider');
     }
 
     /**
-     * @returns ProviderServiceInterface
+     * @return ProviderServiceInterface
      */
     public function getProvider()
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         return $this->get('provider');
     }
 
     /**
-     * @returns ProviderIdentityServiceInterface
+     * @return ProviderIdentityServiceInterface
      */
     public function getProviderIdentity()
     {
@@ -449,10 +450,10 @@ abstract class AbstractPlugin extends Plugin
     public function getMetadata()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('metadata');
     }
@@ -465,10 +466,10 @@ abstract class AbstractPlugin extends Plugin
     public function getLogoutRequest()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('logoutRequest');
     }
@@ -481,10 +482,10 @@ abstract class AbstractPlugin extends Plugin
     public function getLogoutResponse()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('logoutResponse');
     }
@@ -500,10 +501,10 @@ abstract class AbstractPlugin extends Plugin
     public function getBindingFactory()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('bindingFactory');
     }

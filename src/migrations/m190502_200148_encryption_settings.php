@@ -8,6 +8,7 @@ use flipbox\saml\core\records\AbstractProvider;
 /**
  * m190502_200148_encryption_settings migration.
  */
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 abstract class m190502_200148_encryption_settings extends Migration
 {
 

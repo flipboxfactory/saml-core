@@ -93,10 +93,7 @@ class UrlHelper extends CraftUrlHelper
         $uri = implode('/', [$settings->getEndpointPrefix(), $endpoint, $provider->uid]);
         $baseUrl = UrlHelper::baseUrl();
         /** @var Site $site */
-        if(
-            ($site = $provider->site) &&
-                $site->hasUrls
-        ) {
+        if (($site = $provider->site) && $site->hasUrls) {
             $baseUrl = (string)$site->baseUrl;
         }
 

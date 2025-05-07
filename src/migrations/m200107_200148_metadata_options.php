@@ -9,6 +9,7 @@ use yii\db\Query;
 /**
  * mm190516_200148_attribute_typo migration.
  */
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 abstract class m200107_200148_metadata_options extends Migration
 {
 
@@ -26,7 +27,7 @@ abstract class m200107_200148_metadata_options extends Migration
             $this->mediumText()
         );
 
-        if(!$this->db->columnExists(
+        if (!$this->db->columnExists(
             static::getProviderTableName(),
             'metadataOptions',
             true

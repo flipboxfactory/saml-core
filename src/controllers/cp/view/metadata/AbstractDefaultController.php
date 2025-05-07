@@ -45,7 +45,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
                 'label' => $this->getPlugin()->name,
             ],
             [
-                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()) . '/metadata',
+                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle() . '/metadata'),
                 'label' => 'Provider List',
             ],
         ];
@@ -76,7 +76,8 @@ abstract class AbstractDefaultController extends AbstractController implements E
 
         $variables['title'] = Craft::t($this->getPlugin()->getHandle(), $this->getPlugin()->name);
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
             $variables
         );
     }
@@ -117,7 +118,8 @@ abstract class AbstractDefaultController extends AbstractController implements E
                 ) : Craft::t(
                     $this->getPlugin()->getHandle(),
                     'These are the remote providers where the user ' .
-                    'authenticates, ie, OKTA, Microsoft AD, or Google, etc. To configure and IDP, simply obtain the metadata.'
+                    'authenticates, ie, OKTA, Microsoft AD, or Google, etc. ' .
+                    'To configure and IDP, simply obtain the metadata.'
                 );
                 break;
         }

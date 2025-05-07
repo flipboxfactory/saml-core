@@ -8,6 +8,8 @@ use yii\db\Query;
 
 /**
  */
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+// phpcs:disable Generic.Files.LineLength.TooLong
 abstract class m200806_200000_provider_identity_constraint extends Migration
 {
 
@@ -46,14 +48,14 @@ abstract class m200806_200000_provider_identity_constraint extends Migration
 //  CONSTRAINT `saml_idp_provider_identity_userId_fk` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE
         $this->dropForeignKey(
             $tableName . '_userId_fk',
-//            $this->db->getIndexName(
-//                $this->getIdentityTableName(),
-//                [
-//                    'userId',
-//                ],
-//                false,
-//                true
-//            ),
+            // $this->db->getIndexName(
+            //     $this->getIdentityTableName(),
+            //     [
+            //         'userId',
+            //     ],
+            //     false,
+            //     true
+            // ),
             $this->getIdentityTableName()
         );
 
@@ -61,14 +63,14 @@ abstract class m200806_200000_provider_identity_constraint extends Migration
 //  CONSTRAINT `saml_idp_provider_identity_providerId_fk` FOREIGN KEY (`providerId`) REFERENCES `saml_idp_providers` (`id`) ON DELETE CASCADE,
         $this->dropForeignKey(
             $tableName . '_providerId_fk',
-//            $this->db->getIndexName(
-//                $this->getIdentityTableName(),
-//                [
-//                    'providerId',
-//                ],
-//                false,
-//                true
-//            ),
+            // $this->db->getIndexName(
+            //     $this->getIdentityTableName(),
+            //     [
+            //         'providerId',
+            //     ],
+            //     false,
+            //     true
+            // ),
             $this->getIdentityTableName()
         );
 
@@ -76,14 +78,14 @@ abstract class m200806_200000_provider_identity_constraint extends Migration
         // unq ind
         $this->dropIndex(
             $tableName . '_providerId_userId_unq_idx',
-//            $this->db->getIndexName(
-//                $this->getIdentityTableName(),
-//                [
-//                    'providerId',
-//                    'userId',
-//                ],
-//                true
-//            ),
+            // $this->db->getIndexName(
+            //     $this->getIdentityTableName(),
+            //     [
+            //         'providerId',
+            //         'userId',
+            //     ],
+            //     true
+            // ),
             $this->getIdentityTableName()
         );
 

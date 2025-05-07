@@ -139,7 +139,7 @@ class GroupOptions extends Model implements \JsonSerializable
     /**
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'sync' => $this->sync,
