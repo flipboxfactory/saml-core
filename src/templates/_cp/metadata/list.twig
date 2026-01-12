@@ -11,7 +11,7 @@
                 {{ spListInstructions }}
             </p>
         </div>
-        <div class="tableview">
+        <div>
             <table class="data fullwidth">
                 <thead>
                 <tr>
@@ -34,8 +34,8 @@
                                         data-url="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                     {% endif %}
                                  data-level="" data-editable="">
-                                <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
                                 <div class="label">
+                                    <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
                                     <span class="title">
                                         <a
                                                     href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
@@ -66,7 +66,7 @@
                 {{ idpListInstructions }}
             </p>
         </div>
-        <div class="tableview">
+        <div>
             <table class="data fullwidth">
                 <thead>
                 <tr>
@@ -85,8 +85,8 @@
                                  data-status="active"
                                         data-url="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"
                                  data-level="" data-editable="">
-                                <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
                                 <div class="label">
+                                    <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
                                     <span class="title">
                                         <a
                                                     href="{{ cpUrl(plugin.handle ~ '/metadata/' ~ provider.id) }}"

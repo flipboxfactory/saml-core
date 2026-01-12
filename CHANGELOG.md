@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 5.0.8 2026-01-12
+## Fixed
+- ui issues in list view in 5.0
+
 # 5.0.7 2025-04-25
 ## Fixed
 - moving post execution to script tag
