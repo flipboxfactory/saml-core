@@ -10,6 +10,11 @@
         document.getElementsByTagName('input')[0].click();
     };
     </script>
+    <style nonce="2726c7f26c">
+    input[type=submit]{
+        display: none;
+    }
+    </style>
 </head>
 <body>
 
@@ -19,7 +24,7 @@
 </noscript>
 
 <form method="post" action="{{ destination }}">
-    <input type="submit" style="display:none;"/>
+    <input type="submit" />
 
     {% if SAMLRequest is defined %}
         <input type="hidden" name="SAMLRequest" value="{{ SAMLRequest }}"/>
