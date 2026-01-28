@@ -25,6 +25,7 @@ Please see [CONTRIBUTING](https://github.com/flipboxfactory/saml-core/blob/maste
 ## Credits
 
 - [Flipbox Digital](https://github.com/flipbox)
+- [garycrane](https://github.com/garycrane/)
 
 ## License
 

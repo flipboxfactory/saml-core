@@ -2,41 +2,73 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
     <meta http-equiv="Content-Security-Policy" content="default-src 'nonce-2726c7f26c' https:" />
-    <title>POST data</title>
     <script nonce="2726c7f26c">
     window.onload = function() {
         document.getElementsByTagName('input')[0].click();
     };
     </script>
+    <title>POST data</title>
     <style nonce="2726c7f26c">
-    input[type=submit]{
-        display: none;
-    }
+        input[type=submit]{
+            display: none;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        svg {
+            width: 64px;
+            height: 64px;
+            animation: spin 1.3s linear infinite;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
-
-<noscript>
-    <p><strong>Note:</strong> Since your browser does not support JavaScript, you must
-        press the button below once to proceed.</p>
-</noscript>
-
-<form method="post" action="{{ destination }}">
-    <input type="submit" />
-
-    {% if SAMLRequest is defined %}
-        <input type="hidden" name="SAMLRequest" value="{{ SAMLRequest }}"/>
-    {% else %}
-        <input type="hidden" name="SAMLResponse" value="{{ SAMLResponse }}"/>
-    {% endif %}
-    <input type="hidden" name="RelayState" value="{{ RelayState }}"/>
-
     <noscript>
-        <input type="submit" value="Submit"/>
+        <p><strong>Note:</strong> Since your browser does not support JavaScript, you must
+            press the button below once to proceed.</p>
     </noscript>
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path opacity=".2" d="M64 320C64 461.4 178.6 576 320 576C427.8 576 520 509.4 557.8 415.1C551.2 431.5 532.6 439.5 516.2 432.9C499.8 426.3 491.8 407.7 498.4 391.2C470.1 462 400.9 512 320 512C214 512 128 426 128 320C128 214 214 128 320 128C329.3 128 338.5 128.7 347.5 129.9C330 127.4 317.9 111.2 320.4 93.7C322.9 76.5 338.6 64.4 355.8 66.4C344.1 64.8 332.2 63.9 320 63.9C178.6 63.9 64 178.5 64 319.9z"/><path opacity=".6" d="M320.3 93.7C322.8 76.2 339 64.1 356.5 66.6C480.6 84.4 576 191 576 320C576 353.5 569.5 385.6 557.8 415.1C551.2 431.5 532.6 439.5 516.2 432.9C499.8 426.3 491.8 407.7 498.4 391.3C507.2 369.3 512.1 345.3 512.1 320C512.1 223.3 440.6 143.3 347.6 129.9C330.1 127.4 318 111.2 320.5 93.7z"/></svg>
 
-</form>
+    <form method="post" action="{{ destination }}">
+        <input type="submit" />
+    
+        {% if SAMLRequest is defined %}
+            <input type="hidden" name="SAMLRequest" value="{{ SAMLRequest }}"/>
+        {% else %}
+            <input type="hidden" name="SAMLResponse" value="{{ SAMLResponse }}"/>
+        {% endif %}
+        <input type="hidden" name="RelayState" value="{{ RelayState }}"/>
+    
+        <noscript>
+            <input type="submit" value="Submit"/>
+        </noscript>
+    
+    </form>
 </body>
 </html>

@@ -1,5 +1,9 @@
 Changelog
 =========
+# 5.0.10 2026-01-28
+## Added
+- added spinner to post login template
+
 # 5.0.9 2026-01-20
 ## Fixed
 - content security policy issues with css (hide button)
