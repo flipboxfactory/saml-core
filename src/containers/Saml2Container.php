@@ -123,7 +123,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function getTempDir() : string
     {
-        $tempDir = CRAFT_STORAGE_PATH . DIRECTORY_SEPARATOR . 'saml2';
+        $tempDir = \Craft::$app->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'saml2';
         if (!file_exists($tempDir)) {
             mkdir($tempDir);
         }

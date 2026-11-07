@@ -4,6 +4,12 @@ Changelog
 ## Security
 - requiring simplesamlphp/saml2 `~4.19.4 || ^4.20.4` to fix GHSA-6vhm-xfmv-94pj (HTTP-Redirect DEFLATE DoS), GHSA-5cjr-mxj5-wmrx (XPath Transform DoS), GHSA-6929-8p9f-26jx (HTTP-Artifact auth bypass), and pulls robrichards/xmlseclibs 3.1.5 (AES-GCM tag validation)
 - implementing `Saml2Container::getInflateSizeLimit()` (8 MB) required by the patched saml2 releases
+- `SecurityHelper::decryptAssertion()` now passes `$blacklist` through to saml2, so blacklisted algorithms are actually rejected
+## Fixed
+- `psr3logger` component pointed at a missing class (`flipbox\craft\psr3\Logger`); now uses `containers\Logger`
+- `Saml2Container::getTempDir()` uses Craft's path service instead of the `CRAFT_STORAGE_PATH` constant
+## Removed
+- `services\AbstractCp`, which had a syntax error and depended on a non-existent class
 
 # 5.0.10 2026-01-28
 ## Added

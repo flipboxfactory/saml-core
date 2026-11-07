@@ -14,10 +14,9 @@ use craft\helpers\StringHelper;
 use flipbox\saml\core\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
-use flipbox\craft\psr3\Logger;
+use flipbox\saml\core\containers\Logger;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
-use flipbox\saml\core\services\AbstractCp;
 use flipbox\saml\core\services\bindings\Factory;
 use flipbox\saml\core\services\Cp;
 use flipbox\saml\core\services\EditProvider;
@@ -400,7 +399,7 @@ abstract class AbstractPlugin extends Plugin
 
     /**
      * @noinspection PhpDocMissingThrowsInspection
-     * @returns      AbstractCp
+     * @returns      Cp
      */
     public function getCp()
     {

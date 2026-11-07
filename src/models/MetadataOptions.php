@@ -79,7 +79,7 @@ class MetadataOptions extends Model implements \JsonSerializable
     /**
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $expiryDate = null;
         if ($this->expiryDate instanceof \DateTime) {

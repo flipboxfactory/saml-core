@@ -20,6 +20,6 @@ trait JsonModel
      */
     public static function jsonUnserialize(string $json)
     {
-        return new static(json_decode($json, true));
+        return new static(json_decode($json, true)); // @phpstan-ignore new.static
     }
 }

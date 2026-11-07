@@ -100,6 +100,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
         /**
          * Base return off of getMyType and the provider type passed
          */
+        $return = '';
         switch ($this->getPlugin()->getMyType()) {
             case SettingsInterface::IDP:
                 $return = SettingsInterface::SP === $providerType ? Craft::t(

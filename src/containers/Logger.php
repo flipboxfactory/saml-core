@@ -10,7 +10,7 @@ namespace flipbox\saml\core\containers;
 
 use Craft;
 use Psr\Log\LoggerInterface;
-use yii\base\component;
+use yii\base\Component;
 use yii\helpers\ArrayHelper;
 use yii\log\Logger as YiiLogger;
 

@@ -18,7 +18,7 @@ trait Ember
      */
     public static function tableAlias()
     {
-        return static::TABLE_ALIAS;
+        return static::TABLE_ALIAS; // @phpstan-ignore classConstant.notFound (defined by concrete records)
     }
 
     /**

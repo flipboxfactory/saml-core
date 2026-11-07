@@ -179,6 +179,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         }
 
         $user = \Craft::$app->user->getIdentity();
+        $identity = null;
 
         if (! $user || (
                 $user &&
