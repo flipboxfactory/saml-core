@@ -32,10 +32,18 @@ jobs:
           extensions: dom, intl, mbstring, openssl, zip, zlib
           tools: composer:v2
           coverage: none
+      # Craft 4.18.x pins dependencies (twig ~3.19.0, enshrined/svg-sanitize ~0.22.0, ...) that have
+      # published advisories, so Composer 2.9+ refuses to install any Craft 4 release by default.
+      # CI only: allow the install (same as Composer 2.8), then report the advisories below.
+      - name: Allow installing Craft 4 dependencies with advisories (CI only)
+        run: composer config policy.advisories.block false
       - name: Install dependencies
         uses: ramsey/composer-install@v3
         with:
           dependency-versions: highest
+      - name: Report dependency advisories
+        continue-on-error: true
+        run: composer audit
       - name: Coding standards
         run: vendor/bin/phpcs --standard=psr2 src/containers/Saml2Container.php src/helpers/SecurityHelper.php
       - name: Tests
