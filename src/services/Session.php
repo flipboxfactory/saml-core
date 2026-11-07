@@ -10,9 +10,9 @@ use craft\base\Component;
 
 class Session extends Component
 {
-    const CORE_NAMESPACE = 'saml.core';
-    const REQUEST_ID_KEY = 'request.id';
-    const HASH_ALGO = 'sha256';
+    public const CORE_NAMESPACE = 'saml.core';
+    public const REQUEST_ID_KEY = 'request.id';
+    public const HASH_ALGO = 'sha256';
 
     /**
      * @param $id

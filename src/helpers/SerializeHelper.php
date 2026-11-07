@@ -10,7 +10,6 @@ use craft\web\Response;
 
 class SerializeHelper
 {
-
     /**
      * set proper headers to present xml correctly
      */
@@ -27,7 +26,6 @@ class SerializeHelper
      */
     public static function redirectUrl(string $location, array $parameters)
     {
-
         return $location .
             (strpos($location, '?') === false ? '?' : '&') .
             http_build_query($parameters);

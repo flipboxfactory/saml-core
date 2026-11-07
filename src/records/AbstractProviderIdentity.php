@@ -8,8 +8,8 @@
 
 namespace flipbox\saml\core\records;
 
-use craft\validators\DateTimeValidator;
 use craft\db\ActiveRecord;
+use craft\validators\DateTimeValidator;
 use flipbox\saml\core\records\traits\Ember;
 use yii\base\Model;
 use yii\db\ActiveQuery;
@@ -34,10 +34,10 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
      */
     public function getUser()
     {
-        if (! $this->userId) {
+        if (!$this->userId) {
             return null;
         }
-        if (! $this->user) {
+        if (!$this->user) {
             $this->user = \Craft::$app->getUsers()->getUserById(
                 $this->userId
             );
@@ -72,8 +72,8 @@ abstract class AbstractProviderIdentity extends ActiveRecord implements Provider
                     'safe',
                     'on' => [
                         Model::SCENARIO_DEFAULT,
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
     }

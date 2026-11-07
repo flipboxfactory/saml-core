@@ -24,5 +24,4 @@ use yii\db\ActiveRecordInterface;
  */
 interface ProviderIdentityInterface extends ActiveRecordInterface
 {
-
 }

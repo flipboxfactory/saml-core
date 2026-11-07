@@ -19,8 +19,7 @@ use flipbox\saml\core\models\SettingsInterface;
  */
 abstract class AbstractDefaultController extends AbstractController implements EnsureSAMLPlugin
 {
-
-    const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
+    public const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
 
     /**
      * @return \yii\web\Response
@@ -90,7 +89,7 @@ abstract class AbstractDefaultController extends AbstractController implements E
     {
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getPlugin();
-        if (! in_array($providerType, [
+        if (!in_array($providerType, [
             SettingsInterface::SP,
             SettingsInterface::IDP,
         ])) {

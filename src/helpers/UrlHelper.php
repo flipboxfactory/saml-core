@@ -16,7 +16,7 @@ class UrlHelper extends CraftUrlHelper
      *
      * @var string
      */
-    const LOGIN_ENDPOINT = 'login';
+    public const LOGIN_ENDPOINT = 'login';
 
     /**
      * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
@@ -24,7 +24,7 @@ class UrlHelper extends CraftUrlHelper
      *
      * @var string
      */
-    const LOGOUT_ENDPOINT = 'logout';
+    public const LOGOUT_ENDPOINT = 'logout';
 
     /**
      * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
@@ -32,7 +32,7 @@ class UrlHelper extends CraftUrlHelper
      *
      * @var string
      */
-    const LOGIN_REQUEST_ENDPOINT = 'login/request';
+    public const LOGIN_REQUEST_ENDPOINT = 'login/request';
 
     /**
      * This is the endpoint used to initiate logout. In this case, `logoutPath` cannot be used.
@@ -40,7 +40,7 @@ class UrlHelper extends CraftUrlHelper
      *
      * @var string
      */
-    const LOGOUT_REQUEST_ENDPOINT = 'logout/request';
+    public const LOGOUT_REQUEST_ENDPOINT = 'logout/request';
 
     /**
      * @param AbstractSettings $settings
@@ -49,7 +49,7 @@ class UrlHelper extends CraftUrlHelper
      */
     public static function buildEndpointPath(AbstractSettings $settings, string $endpoint)
     {
-        return implode('/', [$settings->getEndpointPrefix(), $endpoint,]);
+        return implode('/', [$settings->getEndpointPrefix(), $endpoint, ]);
     }
 
     /**
@@ -88,23 +88,23 @@ class UrlHelper extends CraftUrlHelper
         AbstractSettings $settings,
         string $endpoint,
         AbstractProvider $provider,
-        bool $fullUrl = true
+        bool $fullUrl = true,
     ): string {
         $uri = implode('/', [$settings->getEndpointPrefix(), $endpoint, $provider->uid]);
         $baseUrl = UrlHelper::baseUrl();
         /** @var Site $site */
-        if(
+        if (
             ($site = $provider->site) &&
                 $site->hasUrls
         ) {
             $baseUrl = (string)$site->baseUrl;
         }
 
-        return $fullUrl ?  implode('/', [
+        return $fullUrl ? implode('/', [
             static::providerBaseUrl(
                 $baseUrl
             ),
-            $uri
+            $uri,
         ]) : "/" . $uri;
     }
 }

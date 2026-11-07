@@ -12,15 +12,14 @@ use craft\db\Migration;
 use craft\records\Site;
 use craft\records\User;
 use flipbox\keychain\records\KeyChainRecord;
-use yii\base\InvalidConfigException;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
+use yii\base\InvalidConfigException;
 
 abstract class AbstractInstall extends Migration
 {
-
-    const PROVIDER_AFTER_COLUMN = 'sha256';
+    public const PROVIDER_AFTER_COLUMN = 'sha256';
     protected $linkTableExist = false;
 
     /**
@@ -43,7 +42,7 @@ abstract class AbstractInstall extends Migration
              * if it doesn't exist, this will throw an exception
              */
             LinkRecord::getTableSchema();
-            $this->linkTableExist=true;
+            $this->linkTableExist = true;
         } catch (InvalidConfigException $e) {
             \Craft::warning('Link table doesn\'t exist. Going to create it and the indexes.');
         }
@@ -58,7 +57,7 @@ abstract class AbstractInstall extends Migration
 
     protected function installKeyChain()
     {
-        if (! \Craft::$app->plugins->getPlugin('keychain')) {
+        if (!\Craft::$app->plugins->getPlugin('keychain')) {
             \Craft::$app->plugins->installPlugin('keychain');
         }
     }
@@ -98,8 +97,6 @@ abstract class AbstractInstall extends Migration
      */
     protected function createTables()
     {
-
-
         $this->createTable($this->getProviderTableName(), $this->getProviderFields());
 
         if ($this->linkTableExist === false) {
@@ -149,7 +146,6 @@ abstract class AbstractInstall extends Migration
      */
     protected function createIndexes()
     {
-
         $this->createIndex(
             $this->db->getIndexName($this->getProviderTableName(), 'entityId', false, true),
             $this->getProviderTableName(),
@@ -216,7 +212,6 @@ abstract class AbstractInstall extends Migration
      */
     protected function addForeignKeys()
     {
-
         if ($this->linkTableExist === false) {
             /**
              * Link KeyChain

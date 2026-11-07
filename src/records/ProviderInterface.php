@@ -42,9 +42,8 @@ use yii\db\ActiveRecordInterface;
  */
 interface ProviderInterface extends ActiveRecordInterface
 {
-
-    const TYPE_IDP = SettingsInterface::IDP;
-    const TYPE_SP = SettingsInterface::SP;
+    public const TYPE_IDP = SettingsInterface::IDP;
+    public const TYPE_SP = SettingsInterface::SP;
 
     /**
      * @return EntityDescriptor

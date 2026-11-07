@@ -24,7 +24,7 @@ class AttributeMap extends Model
     public function renderValue(User $user)
     {
         $value = null;
-        if (! $this->templateOverride && ! $this->craftProperty) {
+        if (!$this->templateOverride && !$this->craftProperty) {
             return '';
         }
 

@@ -10,5 +10,4 @@ namespace flipbox\saml\core\exceptions;
 
 class InvalidIssuer extends \Exception
 {
-
 }

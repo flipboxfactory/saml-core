@@ -9,7 +9,6 @@ use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\traits\KeyChain;
 use GuzzleHttp\Client;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
@@ -33,12 +32,11 @@ use yii\base\InvalidConfigException;
  */
 class Metadata extends Component
 {
+    public const SET_SIGNING = Key::USAGE_SIGNING;
+    public const SET_ENCRYPTION = Key::USAGE_ENCRYPTION;
+    public const PROTOCOL = Constants::NS_SAMLP;
 
-    const SET_SIGNING = Key::USAGE_SIGNING;
-    const SET_ENCRYPTION = Key::USAGE_ENCRYPTION;
-    const PROTOCOL = Constants::NS_SAMLP;
-
-    const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
+    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     /**
      * @var array
@@ -95,9 +93,8 @@ class Metadata extends Component
      */
     public function create(
         SettingsInterface $settings,
-        AbstractProvider $provider
+        AbstractProvider $provider,
     ): EntityDescriptor {
-
         $entityDescriptor = new EntityDescriptor();
 
         $entityId = $provider ? $provider->entityId : $settings->getEntityId();
@@ -144,9 +141,9 @@ class Metadata extends Component
     protected function createDescriptor(
         string $binding,
         SettingsInterface $settings,
-        AbstractProvider $provider
+        AbstractProvider $provider,
     ) {
-        if (! in_array($binding, [
+        if (!in_array($binding, [
             Constants::BINDING_HTTP_POST,
             Constants::BINDING_HTTP_REDIRECT,
         ])) {
@@ -169,7 +166,7 @@ class Metadata extends Component
     protected function createIdpDescriptor(
         string $binding,
         AbstractSettings $settings,
-        AbstractProvider $provider = null
+        AbstractProvider $provider = null,
     ) {
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
         $descriptor->setProtocolSupportEnumeration([
@@ -219,7 +216,6 @@ class Metadata extends Component
      */
     protected function createSpDescriptor(string $binding, AbstractSettings $settings, AbstractProvider $provider)
     {
-
         $descriptor = new SPSSODescriptor();
         $descriptor->setProtocolSupportEnumeration([
             static::PROTOCOL,
@@ -266,7 +262,7 @@ class Metadata extends Component
     protected function addSloEndpoint(
         SSODescriptorType $descriptorType,
         AbstractSettings $settings,
-        AbstractProvider $provider
+        AbstractProvider $provider,
     ) {
         $sloEndpointRedirect = new EndpointType();
         $sloEndpointRedirect->setBinding(
@@ -305,12 +301,12 @@ class Metadata extends Component
     protected function setCertificate(
         SSODescriptorType $ssoDescriptor,
         KeyChainRecord $keyChainRecord,
-        string $signOrEncrypt
+        string $signOrEncrypt,
     ) {
         /**
          * Validate use string
          */
-        if (! in_array($signOrEncrypt, [
+        if (!in_array($signOrEncrypt, [
             self::SET_SIGNING,
             self::SET_ENCRYPTION,
         ])) {
@@ -338,7 +334,8 @@ class Metadata extends Component
         $ssoDescriptor->addKeyDescriptor($keyDescriptor);
     }
 
-    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord) {
+    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    {
         $this->setSign($ssoDescriptor,$keyChainRecord);
         $this->setEncrypt($ssoDescriptor,$keyChainRecord);
     }

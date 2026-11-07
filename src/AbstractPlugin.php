@@ -11,10 +11,10 @@ use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\StringHelper;
-use flipbox\saml\core\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use flipbox\saml\core\containers\Logger;
+use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\services\bindings\Factory;
@@ -25,7 +25,6 @@ use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
 use flipbox\saml\core\services\ProviderIdentityServiceInterface;
 use flipbox\saml\core\services\ProviderServiceInterface;
-use JetBrains\PhpStorm\ArrayShape;
 use SAML2\Compat\AbstractContainer;
 use yii\base\Event;
 
@@ -36,8 +35,7 @@ use yii\base\Event;
  */
 abstract class AbstractPlugin extends Plugin
 {
-
-    const SAML_CORE_HANDLE = 'saml-core';
+    public const SAML_CORE_HANDLE = 'saml-core';
 
     /**
      * @var bool
@@ -61,7 +59,7 @@ abstract class AbstractPlugin extends Plugin
      */
     abstract public function getProviderIdentityRecordClass();
 
-    public function init():void
+    public function init(): void
     {
         parent::init();
 
@@ -98,9 +96,9 @@ abstract class AbstractPlugin extends Plugin
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
-            function (Event $event) {
+            function(Event $event) {
                 /**
-            * @var CraftVariable $variable 
+            * @var CraftVariable $variable
             */
                 $variable = $event->sender;
                 $variable->set($this->getPluginVariableHandle(), self::getInstance());
@@ -111,7 +109,7 @@ abstract class AbstractPlugin extends Plugin
         Event::on(
             View::class,
             View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
-            function (RegisterTemplateRootsEvent $e) {
+            function(RegisterTemplateRootsEvent $e) {
                 if (is_dir($baseDir = (dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates'))) {
                     $e->roots[static::SAML_CORE_HANDLE] = $baseDir;
                 }
@@ -124,7 +122,6 @@ abstract class AbstractPlugin extends Plugin
      */
     public function getSettingsResponse(): mixed
     {
-
         \Craft::$app->getResponse()->redirect(
             UrlHelper::cpUrl(static::getInstance()->getHandle() . '/settings')
         );
@@ -168,7 +165,7 @@ abstract class AbstractPlugin extends Plugin
             ],
         ];
 
-        if(\Craft::$app->config->general->allowAdminChanges) {
+        if (\Craft::$app->config->general->allowAdminChanges) {
             $nav['saml.settings'] = [
                 'url' => $this->getHandle() . '/settings',
                 'label' => \Craft::t(
@@ -208,7 +205,7 @@ abstract class AbstractPlugin extends Plugin
         Event::on(
             View::class,
             View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
-            function (RegisterTemplateRootsEvent $e) {
+            function(RegisterTemplateRootsEvent $e) {
                 if (is_dir($baseDir = $this->getTemplateRoot())) {
                     $e->roots[$this->getTemplateRootKey()] = $baseDir;
                 }
@@ -323,7 +320,7 @@ abstract class AbstractPlugin extends Plugin
                     )
                 ) => $handle . '/login/request',
                 sprintf(
-                    'POST,GET %s'.
+                    'POST,GET %s' .
                     '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     UrlHelper::buildEndpointPath(
                         static::getInstance()->getSettings(),
@@ -331,7 +328,7 @@ abstract class AbstractPlugin extends Plugin
                     )
                 ) => $handle . '/login/request',
                 sprintf(
-                    'POST,GET %s'.
+                    'POST,GET %s' .
                     '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>' .
                     '/<internalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     UrlHelper::buildEndpointPath(
@@ -364,7 +361,7 @@ abstract class AbstractPlugin extends Plugin
                     )
                 ) => $handle . '/logout/request',
                 sprintf(
-                    'POST,GET %s'.
+                    'POST,GET %s' .
                     '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     UrlHelper::buildEndpointPath(
                         static::getInstance()->getSettings(),
@@ -372,8 +369,8 @@ abstract class AbstractPlugin extends Plugin
                     )
                 ) => $handle . '/logout/request',
                 sprintf(
-                    'POST,GET %s'.
-                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>'.
+                    'POST,GET %s' .
+                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>' .
                     '/<internalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
                     UrlHelper::buildEndpointPath(
                         static::getInstance()->getSettings(),
@@ -405,10 +402,10 @@ abstract class AbstractPlugin extends Plugin
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('cp');
     }
@@ -420,7 +417,7 @@ abstract class AbstractPlugin extends Plugin
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         return $this->get('editProvider');
     }
@@ -432,7 +429,7 @@ abstract class AbstractPlugin extends Plugin
     {
 
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         return $this->get('provider');
     }
@@ -452,10 +449,10 @@ abstract class AbstractPlugin extends Plugin
     public function getMetadata()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('metadata');
     }
@@ -468,10 +465,10 @@ abstract class AbstractPlugin extends Plugin
     public function getLogoutRequest()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('logoutRequest');
     }
@@ -484,10 +481,10 @@ abstract class AbstractPlugin extends Plugin
     public function getLogoutResponse()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('logoutResponse');
     }
@@ -503,10 +500,10 @@ abstract class AbstractPlugin extends Plugin
     public function getBindingFactory()
     {
         /**
- * @noinspection PhpUnhandledExceptionInspection 
+ * @noinspection PhpUnhandledExceptionInspection
 */
         /**
- * @noinspection PhpIncompatibleReturnTypeInspection 
+ * @noinspection PhpIncompatibleReturnTypeInspection
 */
         return $this->get('bindingFactory');
     }

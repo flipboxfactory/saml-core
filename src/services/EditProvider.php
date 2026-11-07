@@ -71,7 +71,6 @@ class EditProvider extends Component
      */
     public function getBaseVariables()
     {
-
         return array_merge(
             $this->getVariables(),
             [
@@ -281,13 +280,12 @@ class EditProvider extends Component
      */
     public function addUrls(ProviderInterface $provider)
     {
-
         $variables = [];
         $variables['assertionConsumerServices'] = null;
         $variables['singleLogoutServices'] = null;
         $variables['singleSignOnServices'] = null;
 
-        if (! $provider->getMetadataModel()) {
+        if (!$provider->getMetadataModel()) {
             return $variables;
         }
 
@@ -304,7 +302,7 @@ class EditProvider extends Component
          */
         if ($provider->getType() === AbstractSettings::SP) {
             foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
-                if (! ($roleDescriptor instanceof SPSSODescriptor)) {
+                if (!($roleDescriptor instanceof SPSSODescriptor)) {
                     continue;
                 }
 
@@ -327,7 +325,7 @@ class EditProvider extends Component
          */
         if ($provider->getType() === AbstractSettings::IDP) {
             foreach ($entityDescriptor->getRoleDescriptor() as $roleDescriptor) {
-                if (! ($roleDescriptor instanceof IDPSSODescriptor)) {
+                if (!($roleDescriptor instanceof IDPSSODescriptor)) {
                     continue;
                 }
 

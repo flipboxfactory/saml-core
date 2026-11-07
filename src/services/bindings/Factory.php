@@ -6,8 +6,8 @@ use craft\base\Component;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\ProviderInterface;
-use SAML2\Constants;
 use SAML2\AuthnRequest;
+use SAML2\Constants;
 use SAML2\HTTPPost;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest;
@@ -30,11 +30,11 @@ class Factory extends Component
         $request = \Craft::$app->request;
         switch ($request->getMethod()) {
             case 'POST':
-                $binding = new HTTPPost;
+                $binding = new HTTPPost();
                 break;
             case 'GET':
             default:
-                $binding = new HTTPRedirect;
+                $binding = new HTTPRedirect();
         }
 
         return $binding->receive();
@@ -77,7 +77,7 @@ class Factory extends Component
                 $binding = static::getSLOEndpoint($provider);
                 break;
         }
-        return $binding->getBinding() === Constants::BINDING_HTTP_POST ? new HTTPPost : new HTTPRedirect;
+        return $binding->getBinding() === Constants::BINDING_HTTP_POST ? new HTTPPost() : new HTTPRedirect();
     }
 
     /**

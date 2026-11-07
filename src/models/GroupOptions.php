@@ -11,11 +11,11 @@ class GroupOptions extends Model implements \JsonSerializable
 {
     use JsonModel;
 
-    const OPTION_SYNC = 'sync';
-    const OPTION_ALLOW = 'allow';
+    public const OPTION_SYNC = 'sync';
+    public const OPTION_ALLOW = 'allow';
 
-    const NO_GROUP = 'nogroup';
-    const ALLOW_ANY = 'allowany';
+    public const NO_GROUP = 'nogroup';
+    public const ALLOW_ANY = 'allowany';
 
     /**
      * @var int[]
@@ -103,7 +103,6 @@ class GroupOptions extends Model implements \JsonSerializable
      */
     public function setOptions(array $options)
     {
-
         if (isset($options[self::OPTION_SYNC])) {
             $this->setSync($options[self::OPTION_SYNC]);
         }
@@ -122,7 +121,7 @@ class GroupOptions extends Model implements \JsonSerializable
      */
     private function setOption($option, array $groups)
     {
-        if (! in_array($option, [static::OPTION_SYNC, static::OPTION_ALLOW])) {
+        if (!in_array($option, [static::OPTION_SYNC, static::OPTION_ALLOW])) {
             throw new InvalidArgumentException('Option not valid.');
         }
 

@@ -15,7 +15,6 @@ use yii\base\Event;
  */
 class UserLogout extends Event
 {
-
     /**
      * @var LogoutRequest
      */

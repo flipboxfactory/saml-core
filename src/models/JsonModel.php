@@ -5,7 +5,6 @@ namespace flipbox\saml\core\models;
 
 trait JsonModel
 {
-
     /**
      * @return array|mixed
      */

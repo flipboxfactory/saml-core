@@ -7,8 +7,7 @@ use yii\web\HttpException;
 
 class AccessDenied extends HttpException
 {
-
-    public $statusCode=403;
+    public $statusCode = 403;
 
     /**
      * Constructor.

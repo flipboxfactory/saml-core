@@ -9,13 +9,10 @@ namespace flipbox\saml\core\fields;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\User;
-use craft\helpers\UrlHelper;
-use flipbox\saml\core\records\ProviderIdentityInterface;
 use yii\db\Query;
 
 abstract class AbstractExternalIdentity extends Field implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-
     public static function displayName(): string
     {
         return 'SAML External Identity';
@@ -31,7 +28,7 @@ abstract class AbstractExternalIdentity extends Field implements \flipbox\saml\c
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if (! ($element instanceof User)) {
+        if (!($element instanceof User)) {
             return null;
         }
         /** @var User $element */
@@ -52,7 +49,7 @@ abstract class AbstractExternalIdentity extends Field implements \flipbox\saml\c
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        if (! ($value instanceof Query)) {
+        if (!($value instanceof Query)) {
             return '';
         }
         $handle = $this->getPlugin()->getHandle();

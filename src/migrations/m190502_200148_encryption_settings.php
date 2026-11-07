@@ -10,7 +10,6 @@ use flipbox\saml\core\records\AbstractProvider;
  */
 abstract class m190502_200148_encryption_settings extends Migration
 {
-
     abstract protected static function getProviderTableName();
 
     /**
@@ -18,7 +17,6 @@ abstract class m190502_200148_encryption_settings extends Migration
      */
     public function safeUp()
     {
-
         $this->addColumn(
             static::getProviderTableName(),
             'groupOptions',

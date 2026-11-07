@@ -6,7 +6,6 @@
 
 namespace flipbox\saml\core\helpers;
 
-use craft\helpers\StringHelper;
 use SAML2\Message as SamlMessage;
 use SAML2\Request as SamlRequest;
 use SAML2\StatusResponse as SamlResponse;
@@ -18,13 +17,13 @@ use SAML2\XML\saml\Issuer;
  */
 class MessageHelper
 {
-    const REQUEST_PARAMETER = 'SAMLRequest';
-    const RESPONSE_PARAMETER = 'SAMLResponse';
-    const ID_LENGTH = 43;
+    public const REQUEST_PARAMETER = 'SAMLRequest';
+    public const RESPONSE_PARAMETER = 'SAMLResponse';
+    public const ID_LENGTH = 43;
 
     public static function generateId()
     {
-        return '_'.bin2hex(openssl_random_pseudo_bytes((int) ((self::ID_LENGTH - 1) / 2)));
+        return '_' . bin2hex(openssl_random_pseudo_bytes((int) ((self::ID_LENGTH - 1) / 2)));
     }
 
     /**

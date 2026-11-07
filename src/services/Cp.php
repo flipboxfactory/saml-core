@@ -9,7 +9,6 @@ use flipbox\saml\core\helpers\MappingHelper;
 
 class Cp extends Component
 {
-
     public function getMappingFieldOptions($isIdp = true)
     {
         $user = new User();
@@ -91,7 +90,7 @@ class Cp extends Component
 
         $contentOptions = [];
         foreach ($user->getFieldLayout()->getCustomFields() as $field) {
-            if (! MappingHelper::isSupportedField($field)) {
+            if (!MappingHelper::isSupportedField($field)) {
                 continue;
             }
 
@@ -109,7 +108,7 @@ class Cp extends Component
             ],
         ];
 
-        if (! empty($contentOptions)) {
+        if (!empty($contentOptions)) {
             $return[] = [
                 'label' => 'Content Fields',
                 'data' => $contentOptions,

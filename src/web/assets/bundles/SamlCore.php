@@ -11,7 +11,6 @@ use craft\web\assets\cp\CpAsset;
 
 class SamlCore extends AssetBundle
 {
-
     public $sourcePath = '@flipbox/saml/core/web/assets';
 
     public $depends = [
@@ -21,7 +20,7 @@ class SamlCore extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init():void
+    public function init(): void
     {
         $this->css = [
             'css/saml-core.css',

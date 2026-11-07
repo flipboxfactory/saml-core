@@ -12,7 +12,6 @@ use yii\base\Model;
  */
 trait Ember
 {
-
     /**
      * {@inheritdoc}
      */
@@ -37,13 +36,13 @@ trait Ember
         return [
             [
                 [
-                    'enabled'
+                    'enabled',
                 ],
                 'safe',
                 'on' => [
-                    Model::SCENARIO_DEFAULT
-                ]
-            ]
+                    Model::SCENARIO_DEFAULT,
+                ],
+            ],
         ];
     }
 

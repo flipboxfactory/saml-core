@@ -9,13 +9,11 @@
 namespace flipbox\saml\core\models;
 
 use craft\base\Model;
-use craft\config\GeneralConfig;
 use craft\helpers\UrlHelper;
 
 abstract class AbstractSettings extends Model implements SettingsInterface
 {
-
-    const ENDPOINT_PREFIX = 'sso';
+    public const ENDPOINT_PREFIX = 'sso';
 
     /**
      * @var string
@@ -79,7 +77,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      */
     public function getEntityId()
     {
-        if (! $this->entityId) {
+        if (!$this->entityId) {
             $this->entityId = UrlHelper::baseUrl();
         }
 
@@ -92,7 +90,7 @@ abstract class AbstractSettings extends Model implements SettingsInterface
      */
     public function getEntityIdRaw()
     {
-        if (! $this->entityId) {
+        if (!$this->entityId) {
             $this->entityId = UrlHelper::baseUrl();
         }
 
