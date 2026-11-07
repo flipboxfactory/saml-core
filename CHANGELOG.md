@@ -13,6 +13,7 @@ Changelog
 - `services\AbstractCp`, which had a syntax error and depended on a non-existent class
 ## Added
 - Codeception test suite, craftcms/ecs and craftcms/phpstan checks, and a GitHub Actions workflow
+- Merging a version bump to master now tags and publishes the GitHub release automatically
 
 # 5.0.10 2026-01-28
 ## Added
