@@ -8,3 +8,4 @@ composer.lock
 .env
 node_modules
 .phpactor.json
+.phpunit.result.cache
