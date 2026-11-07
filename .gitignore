@@ -7,3 +7,9 @@ composer.lock
 .idea
 .env
 node_modules
+
+# Tests
+tests/.env
+tests/_support/_generated
+tests/_craft/config/project/
+.phpunit.cache

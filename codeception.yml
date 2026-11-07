@@ -1,0 +1,31 @@
+actor_suffix: Tester
+paths:
+    tests: tests
+    output: tests/_output
+    data: tests/_data
+    support: tests/_support
+bootstrap: _bootstrap.php
+params:
+    - tests/.env
+    - env
+settings:
+    colors: true
+    memory_limit: 1024M
+coverage:
+    enabled: true
+    include:
+        - src/*
+    exclude:
+        - src/templates/*
+        - src/migrations/*
+modules:
+    config:
+        \craft\test\Craft:
+            configFile: 'tests/_craft/config/test.php'
+            entryUrl: 'http://localhost/index.php'
+            projectConfig: {}
+            migrations: []
+            plugins: []
+            cleanup: true
+            transaction: true
+            dbSetup: { clean: true, setupCraft: true }

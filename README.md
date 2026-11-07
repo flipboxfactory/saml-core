@@ -13,9 +13,19 @@ composer require flipboxfactory/saml-core
 
 ## Testing
 
-``` bash
-$ ./vendor/bin/phpunit
+Checks follow Craft's [coding guidelines](https://craftcms.com/docs/5.x/extend/coding-guidelines.html): [craftcms/ecs](https://github.com/craftcms/ecs) and [craftcms/phpstan](https://github.com/craftcms/phpstan). Tests use Codeception with Craft's test module, which needs a MySQL database:
+
+```bash
+docker run -d --rm --name saml-core-test-mysql -e MYSQL_ROOT_PASSWORD=password \
+  -e MYSQL_DATABASE=saml_core_test -p 127.0.0.1:3306:3306 mysql:8.0
+cp tests/.env.example tests/.env   # adjust CRAFT_DB_* if needed
+
+composer check      # check-cs + phpstan + test
+composer test       # tests only
+composer fix-cs     # auto-fix coding standards
 ```
+
+CI runs the same checks on every push and pull request (`.github/workflows/ci.yml`).
 
 ## Contributing
 
