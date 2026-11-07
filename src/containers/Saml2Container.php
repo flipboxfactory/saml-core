@@ -151,6 +151,15 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
     }
 
     /**
+     * Max bytes gzinflate() may produce when decoding an HTTP-Redirect message (GHSA-6vhm-xfmv-94pj).
+     * Matches the saml2 library default.
+     */
+    public function getInflateSizeLimit(): int
+    {
+        return 8 * 1024 * 1024;
+    }
+
+    /**
      * SAML Plugin Utils
      */
 
