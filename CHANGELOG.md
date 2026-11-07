@@ -1,6 +1,6 @@
 Changelog
 =========
-# Unreleased
+# 5.0.12 2026-11-07
 ## Changed
 - Control panel pages use Craft's own markup and classes (section dividers, sidebar fields and metadata, copy-text inputs, secondary buttons), so they match the rest of the control panel
 - The IdP mapping preview highlights XML with Craft's bundled highlighter (`PrismJsAsset`) instead of loading highlight.js from cdnjs
