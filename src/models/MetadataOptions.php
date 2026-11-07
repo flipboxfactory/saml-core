@@ -29,7 +29,7 @@ class MetadataOptions extends Model implements \JsonSerializable
      */
     public function setExpiryInterval($expiry)
     {
-        if (! $expiry) {
+        if (!$expiry) {
             $this->expiryDate = null;
             return $this;
         }
@@ -67,7 +67,7 @@ class MetadataOptions extends Model implements \JsonSerializable
      */
     public function setExpiryDate($expiry)
     {
-        if (! $expiry) {
+        if (!$expiry) {
             return $this;
         }
 
@@ -79,7 +79,7 @@ class MetadataOptions extends Model implements \JsonSerializable
     /**
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $expiryDate = null;
         if ($this->expiryDate instanceof \DateTime) {

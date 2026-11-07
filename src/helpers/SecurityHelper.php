@@ -9,8 +9,7 @@ use SAML2\Utilities\Certificate;
 
 class SecurityHelper
 {
-
-    const XMLDSIG_DIGEST_MD5 = 'http://www.w3.org/2001/04/xmldsig-more#md5';
+    public const XMLDSIG_DIGEST_MD5 = 'http://www.w3.org/2001/04/xmldsig-more#md5';
 
     private static $typeMap = [
         'RSA-SHA1' => XMLSecurityKey::RSA_SHA1,
@@ -107,7 +106,7 @@ class SecurityHelper
             }
         }
 
-        if (! $signatureAlgorithm) {
+        if (!$signatureAlgorithm) {
             throw new \Exception('Unrecognized signature algorithm');
         }
 
@@ -123,10 +122,9 @@ class SecurityHelper
      */
     public static function decryptAssertion(EncryptedAssertion $encryptedAssertion, $pemString, array $blacklist = [])
     {
-
         $lastException = null;
         foreach (static::$validEncryptionMethods as $method) {
-            \Craft::debug('Trying method: '. $method);
+            \Craft::debug('Trying method: ' . $method);
             if (in_array($method, $blacklist)) {
                 \Craft::debug('Decryption with key #' . $method . ' blacklisted.', AbstractPlugin::SAML_CORE_HANDLE);
                 continue;
@@ -143,7 +141,8 @@ class SecurityHelper
 
             try {
                 $assertion = $encryptedAssertion->getAssertion(
-                    $xmlSecurityKey
+                    $xmlSecurityKey,
+                    $blacklist
                 );
                 \Craft::debug('Decryption with key #' . $method . ' succeeded.', AbstractPlugin::SAML_CORE_HANDLE);
                 return $assertion;

@@ -8,24 +8,24 @@ use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\md\IDPSSODescriptor;
 use SAML2\XML\md\IndexedEndpointType;
+use SAML2\XML\md\RoleDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
-use SAML2\XML\md\RoleDescriptor;
 
 class EntityDescriptorHelper
 {
-    const ENDPOINT_SERVICE_ARTIFACT_RESOLUTION = 'ArtifactResolution';
-    const ENDPOINT_SERVICE_SINGLE_LOGOUT = 'SingleLogout';
-    const ENDPOINT_SERVICE_MANAGE_NAME_ID = 'ManageNameID';
+    public const ENDPOINT_SERVICE_ARTIFACT_RESOLUTION = 'ArtifactResolution';
+    public const ENDPOINT_SERVICE_SINGLE_LOGOUT = 'SingleLogout';
+    public const ENDPOINT_SERVICE_MANAGE_NAME_ID = 'ManageNameID';
 
-    const ENDPOINT_SERVICE_ASSERTION_CONSUMER = 'AssertionConsumer';
-    const ENDPOINT_SERVICE_ATTRIBUTE_CONSUMING = 'AttributeConsuming';
+    public const ENDPOINT_SERVICE_ASSERTION_CONSUMER = 'AssertionConsumer';
+    public const ENDPOINT_SERVICE_ATTRIBUTE_CONSUMING = 'AttributeConsuming';
 
-    const ENDPOINT_SERVICE_SINGLE_SIGN_ON = 'SingleSignOn';
-    const ENDPOINT_SERVICE_ASSERTION_ID_REQUEST = 'AssertionIDRequest';
-    const ENDPOINT_SERVICE_NAME_ID_MAPPING = 'NameIDMapping';
+    public const ENDPOINT_SERVICE_SINGLE_SIGN_ON = 'SingleSignOn';
+    public const ENDPOINT_SERVICE_ASSERTION_ID_REQUEST = 'AssertionIDRequest';
+    public const ENDPOINT_SERVICE_NAME_ID_MAPPING = 'NameIDMapping';
 
-    const ENDPOINT_SERVICE_OPTIONS = [
+    public const ENDPOINT_SERVICE_OPTIONS = [
         // Common
         self::ENDPOINT_SERVICE_ARTIFACT_RESOLUTION,
         self::ENDPOINT_SERVICE_SINGLE_LOGOUT,
@@ -176,8 +176,7 @@ class EntityDescriptorHelper
      */
     protected static function getFirstService(string $service, array $roleDescriptors, string $binding = null): ?EndpointType
     {
-
-        if (! in_array($service, static::ENDPOINT_SERVICE_OPTIONS)) {
+        if (!in_array($service, static::ENDPOINT_SERVICE_OPTIONS)) {
             throw new \InvalidArgumentException('Unknown service passed: ' . $service);
         }
 
@@ -249,10 +248,10 @@ class EntityDescriptorHelper
         $return = null;
 
         /**
- * @var EndpointType $endpointType 
+ * @var EndpointType $endpointType
 */
         foreach ($endpointTypes as $endpointType) {
-            if (! $endpointType instanceof EndpointType) {
+            if (!$endpointType instanceof EndpointType) {
                 throw new \InvalidArgumentException();
             }
 

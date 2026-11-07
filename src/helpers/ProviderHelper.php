@@ -13,7 +13,7 @@ class ProviderHelper
     public static function providerMappingToKeyValue(ProviderInterface $provider)
     {
         $mapping = $provider->getMapping();
-        if (! is_array($mapping)) {
+        if (!is_array($mapping)) {
             return [];
         }
 

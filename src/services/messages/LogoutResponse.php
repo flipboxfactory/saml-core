@@ -9,7 +9,6 @@ namespace flipbox\saml\core\services\messages;
 use craft\base\Component;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use SAML2\Constants;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse as SamlLogoutResponse;
 use SAML2\XML\saml\Issuer;
@@ -21,7 +20,7 @@ use yii\base\Event;
  */
 class LogoutResponse extends Component
 {
-    const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
+    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     /**
      * @inheritdoc
@@ -29,7 +28,7 @@ class LogoutResponse extends Component
     public function create(
         LogoutRequest $request,
         AbstractProvider $theirProvider,
-        AbstractProvider $ourProvider
+        AbstractProvider $ourProvider,
     ) {
         $logout = new SamlLogoutResponse();
 

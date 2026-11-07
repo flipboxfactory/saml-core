@@ -69,7 +69,7 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
                 'providerId' => $provider->id,
                 'enabled' => true,
                 'userId' => $user->getId(),
-                'lastLoginDate' => new \DateTime,
+                'lastLoginDate' => new \DateTime(),
             ]);
     }
 
@@ -97,10 +97,9 @@ abstract class AbstractProviderIdentityService extends Component implements Prov
     public function save(
         ProviderIdentityInterface $record,
         $runValidation = true,
-        $attributeNames = null
+        $attributeNames = null,
     ): ProviderIdentityInterface {
-
-        if (! $record->save($runValidation, $attributeNames)) {
+        if (!$record->save($runValidation, $attributeNames)) {
             throw new \Exception(Json::encode($record->getErrors()));
         }
 

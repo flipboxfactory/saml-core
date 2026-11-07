@@ -8,7 +8,6 @@ namespace flipbox\saml\core\controllers;
 
 class AbstractController extends \craft\web\Controller
 {
-
     /************************************************
      * Access Control
      ************************************************/

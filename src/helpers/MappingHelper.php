@@ -15,7 +15,6 @@ class MappingHelper
      */
     public static function isSupportedField(Field $field)
     {
-
-        return ! $field instanceof AbstractExternalIdentity;
+        return !$field instanceof AbstractExternalIdentity;
     }
 }

@@ -12,8 +12,7 @@ use SAML2\Compat\AbstractContainer;
 
 class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 {
-
-    const TEMPLATE_PATH = 'saml-core/_components/post-binding-submit.twig';
+    public const TEMPLATE_PATH = 'saml-core/_components/post-binding-submit.twig';
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -83,7 +82,6 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function redirect(string $url, array $data = []): void
     {
-
         $url = SerializeHelper::redirectUrl($url, $data);
 
         \Craft::$app->response->redirect($url);
@@ -100,7 +98,6 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
      */
     public function postRedirect(string $url, array $data = []): void
     {
-
         $data['destination'] = $url;
 
         if (!isset($data['RelayState'])) {
@@ -121,9 +118,9 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
     /**
      * @inheritDoc
      */
-    public function getTempDir() : string
+    public function getTempDir(): string
     {
-        $tempDir = CRAFT_STORAGE_PATH . DIRECTORY_SEPARATOR . 'saml2';
+        $tempDir = \Craft::$app->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'saml2';
         if (!file_exists($tempDir)) {
             mkdir($tempDir);
         }
@@ -135,7 +132,7 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
     /**
      * @inheritDoc
      */
-    public function writeFile(string $filename, string $data, int $mode = null) : void
+    public function writeFile(string $filename, string $data, int $mode = null): void
     {
         if ($mode === null) {
             $mode = 660;
@@ -148,6 +145,15 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
             $filename,
             $mode
         );
+    }
+
+    /**
+     * Max bytes gzinflate() may produce when decoding an HTTP-Redirect message (GHSA-6vhm-xfmv-94pj).
+     * Matches the saml2 library default.
+     */
+    public function getInflateSizeLimit(): int
+    {
+        return 8 * 1024 * 1024;
     }
 
     /**

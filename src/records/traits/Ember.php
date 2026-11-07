@@ -12,13 +12,12 @@ use yii\base\Model;
  */
 trait Ember
 {
-
     /**
      * {@inheritdoc}
      */
     public static function tableAlias()
     {
-        return static::TABLE_ALIAS;
+        return static::TABLE_ALIAS; // @phpstan-ignore classConstant.notFound (defined by concrete records)
     }
 
     /**
@@ -37,13 +36,13 @@ trait Ember
         return [
             [
                 [
-                    'enabled'
+                    'enabled',
                 ],
                 'safe',
                 'on' => [
-                    Model::SCENARIO_DEFAULT
-                ]
-            ]
+                    Model::SCENARIO_DEFAULT,
+                ],
+            ],
         ];
     }
 

@@ -23,7 +23,6 @@ use yii\web\HttpException;
  */
 abstract class AbstractLogoutController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-
     protected array|bool|int $allowAnonymous = [
         'actionIndex',
         'actionRequest',
@@ -69,7 +68,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
         $isRequest = $message instanceof LogoutRequest;
         $isResponse = $message instanceof LogoutResponse;
 
-        if ((! $isRequest && ! $isResponse) ||
+        if ((!$isRequest && !$isResponse) ||
             $isResponse && $this->getPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
             throw new HttpException(400, "Invalid request");
         }
@@ -81,7 +80,7 @@ abstract class AbstractLogoutController extends AbstractController implements \f
             MessageHelper::getIssuer($message->getIssuer())
         )->one();
         $condition = [
-            'enabled' => 1
+            'enabled' => 1,
         ];
 
         if ($externalUid) {
@@ -131,9 +130,9 @@ abstract class AbstractLogoutController extends AbstractController implements \f
     protected function destroySpecifiedSession(
         LogoutRequest $message,
         AbstractProvider $theirProvider,
-        AbstractSettings $settings
+        AbstractSettings $settings,
     ) {
-        if (! $settings->sloDestroySpecifiedSessions) {
+        if (!$settings->sloDestroySpecifiedSessions) {
             return;
         }
 
@@ -172,17 +171,18 @@ abstract class AbstractLogoutController extends AbstractController implements \f
 
         if ($internalUid) {
             /** @var AbstractProvider $ourProvider */
-            $ourProvider = $this->getPlugin()->getProvider()->find(['uid'=>$internalUid])->one();
+            $ourProvider = $this->getPlugin()->getProvider()->find(['uid' => $internalUid])->one();
         } else {
             /** @var AbstractProvider $ourProvider */
             $ourProvider = $this->getPlugin()->getProvider()->findOwn();
         }
 
         $user = \Craft::$app->user->getIdentity();
+        $identity = null;
 
-        if (! $user || (
+        if (!$user || (
                 $user &&
-                ! $identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)
+                !$identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)
             )
         ) {
             $saml = $this->getPlugin();

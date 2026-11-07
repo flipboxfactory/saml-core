@@ -25,7 +25,6 @@ use yii\web\NotFoundHttpException;
 
 abstract class AbstractMetadataController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-
     use VariablesTrait;
 
     /**
@@ -35,7 +34,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     public function actionIndex()
     {
-
         $this->requireAdmin(false);
 
         /** @var AbstractProvider $provider */
@@ -43,7 +41,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             $this->getPlugin()->getSettings()->getEntityId()
         )->one();
 
-        if (! $provider) {
+        if (!$provider) {
             throw new InvalidMetadata('Metadata for this server is missing. Please configure this plugin.');
         }
 
@@ -81,7 +79,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $providerRecord->setMetadataModel($provider->getMetadataModel());
 
 
-        if (! $this->getPlugin()->getProvider()->save($providerRecord)) {
+        if (!$this->getPlugin()->getProvider()->save($providerRecord)) {
             return $this->renderTemplate(
                 $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -104,14 +102,13 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     public function actionSave()
     {
-
         $this->requireAdmin(false);
         $this->requirePostRequest();
 
         /** @var AbstractProvider $record */
         $record = $this->processSaveAction();
 
-        if ($record->hasErrors() || ! $this->getPlugin()->getProvider()->save($record)) {
+        if ($record->hasErrors() || !$this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -141,7 +138,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     public function actionChangeStatus()
     {
-
         $this->requireAdmin(false);
         $this->requirePostRequest();
 
@@ -155,9 +151,9 @@ abstract class AbstractMetadataController extends AbstractController implements 
             'id' => $providerId,
         ])->one();
 
-        $record->enabled = ! $record->enabled;
+        $record->enabled = !$record->enabled;
 
-        if (! $this->getPlugin()->getProvider()->save($record)) {
+        if (!$this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
                 $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -193,7 +189,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             'id' => $providerId,
         ])->one();
 
-        if (! $this->getPlugin()->getProvider()->delete($record)) {
+        if (!$this->getPlugin()->getProvider()->delete($record)) {
             return $this->renderTemplate(
                 $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
@@ -215,7 +211,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     protected function processSaveAction()
     {
-
         $providerId = Craft::$app->request->getParam('identifier');
         $entityId = Craft::$app->request->getParam('entityId');
         $keyId = Craft::$app->request->getParam('keychain');
@@ -237,7 +232,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
                 'id' => $providerId,
             ])->one();
 
-            if (! $record) {
+            if (!$record) {
                 throw new \Exception("Provider with ID: {$providerId} not found.");
             }
         } else {
@@ -261,7 +256,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         }
 
         // Metadata
-        if (! $metadata && $metadataUrl) {
+        if (!$metadata && $metadataUrl) {
             $metadataModel = $this->getPlugin()->getMetadata()->fetchByUrl($metadataUrl);
             $record->metadata = $metadataModel->toXML()->ownerDocument->saveXML();
             $record->setMetadataModel($metadataModel);
@@ -332,7 +327,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         /**
          * Metadata should exist for the remote provider
          */
-        if ($plugin->getRemoteType() === $providerType && ! $record->metadata) {
+        if ($plugin->getRemoteType() === $providerType && !$record->metadata) {
             $record->addError('metadata-text', Craft::t($plugin->getHandle(), "Metadata cannot be empty."));
         }
 
@@ -353,7 +348,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $this->requireAdmin(false);
 
         /** @var KeyChainRecord $keychain */
-        if (! $keychain = KeyChainRecord::find()->where([
+        if (!$keychain = KeyChainRecord::find()->where([
             'id' => $keyId,
         ])->one()) {
             throw new NotFoundHttpException('Key not found');

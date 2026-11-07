@@ -2,7 +2,6 @@
 
 namespace flipbox\saml\core\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -10,7 +9,6 @@ use craft\db\Migration;
  */
 abstract class m180812_200148_add_label_and_mapping extends Migration
 {
-
     abstract protected static function getProviderTableName();
 
     /**

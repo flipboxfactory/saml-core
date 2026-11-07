@@ -10,11 +10,10 @@ use craft\records\Site;
  */
 abstract class m201030_200000_provider_multisite extends Migration
 {
-
     /**
      * @return ActiveQuery
      */
-    abstract protected function providerRecordTable():string;
+    abstract protected function providerRecordTable(): string;
 
     /**
      * @inheritdoc
@@ -46,7 +45,6 @@ abstract class m201030_200000_provider_multisite extends Migration
      */
     public function safeDown()
     {
-
         return true;
     }
 }

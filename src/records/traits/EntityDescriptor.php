@@ -25,7 +25,6 @@ use SAML2\XML\md\SPSSODescriptor;
  */
 trait EntityDescriptor
 {
-
     /**
      * IDP descriptors from the metadata
      * @see AbstractProvider::getMetadataModel()
@@ -46,7 +45,7 @@ trait EntityDescriptor
      */
     public function idpSsoDescriptors()
     {
-        if (! $this->idpSsoDescriptors) {
+        if (!$this->idpSsoDescriptors) {
             $this->idpSsoDescriptors = EntityDescriptorHelper::getIdpDescriptors($this->getMetadataModel());
         }
 
@@ -59,7 +58,7 @@ trait EntityDescriptor
      */
     public function spSsoDescriptors()
     {
-        if (! $this->spSsoDescriptors) {
+        if (!$this->spSsoDescriptors) {
             $this->spSsoDescriptors = EntityDescriptorHelper::getSpDescriptors($this->getMetadataModel());
         }
 
@@ -114,7 +113,7 @@ trait EntityDescriptor
      */
     public function signingXMLSecurityKey()
     {
-        if (! $certificate = $this->firstCertificateForSigning()) {
+        if (!$certificate = $this->firstCertificateForSigning()) {
             return null;
         }
 
@@ -127,9 +126,8 @@ trait EntityDescriptor
      */
     public function signingXMLSecurityKeyStore()
     {
-
         $store = [];
-        if (! ($keyDescriptors = $this->keyDescriptors())) {
+        if (!($keyDescriptors = $this->keyDescriptors())) {
             return $store;
         }
 
@@ -155,7 +153,7 @@ trait EntityDescriptor
      */
     public function encryptionKey()
     {
-        if (! $certificate = $this->firstCertificateForEncryption()) {
+        if (!$certificate = $this->firstCertificateForEncryption()) {
             return null;
         }
 
@@ -250,8 +248,7 @@ trait EntityDescriptor
      */
     protected function firstCertificate($use)
     {
-
-        if (! ($keyDescriptors = $this->keyDescriptors())) {
+        if (!($keyDescriptors = $this->keyDescriptors())) {
             return null;
         }
 
@@ -263,7 +260,7 @@ trait EntityDescriptor
         }
 
         $certificates = $this->x509Certificates($keyDescriptor);
-        return ! empty($certificates) ? $certificates[0] : null;
+        return !empty($certificates) ? $certificates[0] : null;
     }
 
     /**
@@ -271,7 +268,6 @@ trait EntityDescriptor
      */
     private function keyDescriptors()
     {
-
         if (empty($this->spSsoDescriptors()) && empty($this->idpSsoDescriptors())) {
             return null;
         }
@@ -298,7 +294,7 @@ trait EntityDescriptor
         /** @var KeyDescriptor[] $keyDescriptorsFiltered */
         $keyDescriptorsFiltered = array_filter(
             $keyDescriptors,
-            function (KeyDescriptor $keyDescriptor) use ($signingOrEncrypt) {
+            function(KeyDescriptor $keyDescriptor) use ($signingOrEncrypt) {
                 return $keyDescriptor->getUse() === $signingOrEncrypt;
             }
         );
@@ -312,10 +308,9 @@ trait EntityDescriptor
      */
     private function x509Certificates(KeyDescriptor $keyDescriptor)
     {
-
         $x509Datas = array_filter(
             $keyDescriptor->getKeyInfo()->getInfo(),
-            function ($keyInfo) {
+            function($keyInfo) {
                 return $keyInfo instanceof X509Data;
             }
         );
@@ -327,7 +322,7 @@ trait EntityDescriptor
         foreach ($x509Datas as $x509Data) {
             $x509Certificates = array_filter(
                 $x509Data->getData(),
-                function ($datum) {
+                function($datum) {
                     return $datum instanceof X509Certificate;
                 }
             );

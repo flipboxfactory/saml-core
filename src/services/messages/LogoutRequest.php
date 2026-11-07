@@ -7,10 +7,10 @@
 namespace flipbox\saml\core\services\messages;
 
 use craft\base\Component;
+use flipbox\saml\core\events\UserLogout;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
-use flipbox\saml\core\events\UserLogout;
 use SAML2\Constants;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest as SamlLogoutRequest;
@@ -24,9 +24,7 @@ use yii\base\Event;
  */
 class LogoutRequest extends Component
 {
-
-
-    const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
+    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
 
     /**
      * @param AbstractProvider $theirProvider
@@ -39,9 +37,8 @@ class LogoutRequest extends Component
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
-        string $relayState = null
+        string $relayState = null,
     ) {
-
         $logout = new SamlLogoutRequest();
 
         /**
@@ -101,7 +98,7 @@ class LogoutRequest extends Component
             );
 
             $logout->setCertificates([
-                $ourProvider->keychain->certificate
+                $ourProvider->keychain->certificate,
             ]);
         }
 
@@ -123,7 +120,7 @@ class LogoutRequest extends Component
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
-        string $relayState = null
+        string $relayState = null,
     ) {
         return (new HTTPRedirect())->getRedirectURL(
             $this->create(

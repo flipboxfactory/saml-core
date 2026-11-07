@@ -8,9 +8,9 @@
 
 namespace flipbox\saml\core\services;
 
-use flipbox\saml\core\records\ProviderInterface;
-use flipbox\saml\core\records\ProviderIdentityInterface;
 use craft\elements\User;
+use flipbox\saml\core\records\ProviderIdentityInterface;
+use flipbox\saml\core\records\ProviderInterface;
 use yii\db\Query;
 
 interface ProviderIdentityServiceInterface
@@ -43,6 +43,6 @@ interface ProviderIdentityServiceInterface
     public function save(
         ProviderIdentityInterface $record,
         $runValidation = true,
-        $attributeNames = null
+        $attributeNames = null,
     ): ProviderIdentityInterface;
 }

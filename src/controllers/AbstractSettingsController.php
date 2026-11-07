@@ -9,7 +9,6 @@
 namespace flipbox\saml\core\controllers;
 
 use Craft;
-use craft\helpers\ArrayHelper;
 use flipbox\saml\core\AbstractPlugin;
 
 /**
@@ -18,7 +17,6 @@ use flipbox\saml\core\AbstractPlugin;
  */
 abstract class AbstractSettingsController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
 {
-
     /**
      * @return array
      */

@@ -16,7 +16,6 @@ use yii\db\Query;
 
 interface ProviderServiceInterface
 {
-
     /**
      * @param EntityDescriptor $entityDescriptor
      * @param KeyChainRecord|null $keyChainRecord
@@ -24,7 +23,7 @@ interface ProviderServiceInterface
      */
     public function create(
         EntityDescriptor $entityDescriptor,
-        KeyChainRecord $keyChainRecord = null
+        KeyChainRecord $keyChainRecord = null,
     ): ProviderInterface;
 
     /**
@@ -53,7 +52,7 @@ interface ProviderServiceInterface
         AbstractProvider $provider,
         KeyChainRecord $keyChain,
         $runValidation = true,
-        $attributeNames = null
+        $attributeNames = null,
     );
 
     /**

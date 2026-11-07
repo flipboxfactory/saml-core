@@ -17,8 +17,7 @@ use flipbox\saml\core\EnsureSAMLPlugin;
  */
 abstract class AbstractGeneralController extends AbstractController implements EnsureSAMLPlugin
 {
-
-    const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
+    public const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
 
     /**
      * @return \yii\web\Response
@@ -35,8 +34,8 @@ abstract class AbstractGeneralController extends AbstractController implements E
     {
         $variables = $this->getPlugin()->getEditProvider()->getBaseVariables();
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
-            'label' => 'SSO Provider'
+            'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
+            'label' => 'SSO Provider',
         ];
 
         return $this->renderTemplate(
@@ -55,12 +54,12 @@ abstract class AbstractGeneralController extends AbstractController implements E
 
         // Breadcrumbs
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
-            'label' => 'SSO Provider'
+            'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
+            'label' => 'SSO Provider',
         ];
         $variables['crumbs'][] = [
-            'url'   => UrlHelper::cpUrl($this->getPlugin()->getHandle() . '/settings'),
-            'label' => 'Settings'
+            'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle() . '/settings'),
+            'label' => 'Settings',
         ];
 
         /**
