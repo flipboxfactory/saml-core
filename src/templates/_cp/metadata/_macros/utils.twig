@@ -1,32 +1,21 @@
 {% macro copyFieldContents(textId) %}
     {% set copyButtonId = 'copy-' ~ textId %}
+    <button type="button" id="{{ copyButtonId }}" class="btn" data-icon="clipboard">{{ 'Copy to clipboard'|t('app') }}</button>
     {% js %}
-        (()=>{
-            const textArea = document.querySelector('#{{ textId }}')
-            const copyBtn = document.querySelector('#{{ copyButtonId }}')
-            copyBtn.addEventListener('click', (event) => {
-                let copyTextarea = textArea;
-
-                copyTextarea.focus();
-                copyTextarea.select();
-
-                try{
-                    if(navigator.clipboard !== undefined) {
-                        navigator.clipboard.writeText(copyTextarea.value)
-                        .then(() => {
-                            Craft.cp.displayNotice('Copied to clipboard!')
-                        })
-                        .catch((error) => { alert(`Copy failed! ${error}`) })
-                    }else{
-                        let successful = document.execCommand('copy');
-                        Craft.cp.displayNotice('Copied to clipboard!');
-                    }
-                }catch(e) {
-                    alert(`copy failed ${error}`)
+        (() => {
+            const field = document.getElementById('{{ textId|namespaceInputId|e('js') }}');
+            document.getElementById('{{ copyButtonId|namespaceInputId|e('js') }}').addEventListener('click', () => {
+                const notice = () => Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(field.value)
+                        .then(notice)
+                        .catch(() => Craft.cp.displayError("{{ 'Couldn’t copy to clipboard.'|t('app')|e('js') }}"));
+                } else {
+                    field.select();
+                    document.execCommand('copy');
+                    notice();
                 }
             });
-        })()
+        })();
     {% endjs %}
-    <a href="javascript:void(0);" id="{{ copyButtonId }}" class="btn saml-clipboard-icon" data-icon="clipboard">
-    </a>
 {% endmacro %}

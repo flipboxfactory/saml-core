@@ -8,19 +8,15 @@
     <input type="hidden" name="action" value="{{ baseActionPath }}/save">
     {{ redirectInput(baseCpPath) }}
 
-    {%- set warning -%}
-        ** WARNING: ** If this value is changed, you must recreate "My Provider" and exchange the metadata or values with the other provider (IdP or SP).
-    {%- endset -%}
-
-    <div class="readable">
-        <h2>Settings</h2>
-    </div>
+    {% set warning = "If you change this, you must recreate “My Provider” and exchange the metadata with the other provider (IdP or SP)."|t(plugin.handle) %}
 
     {{ forms.autosuggestField({
         label: "Default Entity ID"|t(plugin.handle ),
         name:'entityId',
         id:'entityId',
-        instructions: "The unique id for the site. " ~ warning|t('app'),
+        first: true,
+        instructions: "The unique ID for the site."|t(plugin.handle),
+        warning: warning,
         suggestEnvVars: true,
         suggestAliases: true,
         value: settings.entityIdRaw,
@@ -30,7 +26,8 @@
         label: "SSO Endpoint Prefix"|t(plugin.handle ),
         name:'endpointPrefix',
         id:'endpointPrefix',
-        instructions: "The endpoint prefix. " ~ warning|t('app'),
+        instructions: "The URL prefix for the SSO endpoints."|t(plugin.handle),
+        warning: warning,
         suggestEnvVars: true,
         value: settings.endpointPrefix,
     }) }}

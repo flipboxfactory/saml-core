@@ -1,29 +1,23 @@
 {% macro syncOptions(provider, plugin) %}
     {% import "_includes/forms" as forms %}
-    <div class="field">
-        <div class="heading">
-            <label>{{ "Sync User Groups"|t(plugin.handle) }}</label>
-            <div class="instructions">
-                Send the list of user groups the individual is assigned to?
-            </div>
-        </div>
-        {{ forms.lightswitch({
-            label: "syncGroups"|t(plugin.handle),
-            id: 'syncGroups',
-            name: 'syncGroups',
-            errors: provider.getErrors('syncCroups'),
-            on: provider.syncGroups,
-            toggle: '.sync-group-settings',
-        }) }}
+    {{ forms.lightswitchField({
+        label: "Sync User Groups"|t(plugin.handle),
+        instructions: "Send the user groups the user belongs to."|t(plugin.handle),
+        id: 'syncGroups',
+        name: 'syncGroups',
+        on: provider.syncGroups,
+        errors: provider.getErrors('syncGroups'),
+        toggle: '.sync-group-settings',
+    }) }}
 
-    </div>
     <div class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
         {{ forms.textField({
             label: "User Groups Attribute Name"|t(plugin.handle),
-            instructions: "Name the User Groups will fall under.",
+            instructions: "The assertion attribute the user groups are sent in."|t(plugin.handle),
             placeholder: 'userGroups',
             id: 'groupsAttributeName',
             name: 'groupsAttributeName',
+            class: 'code',
             maxlength: 64,
             value: provider.groupsAttributeName,
             errors: provider.getErrors('groupsAttributeName'),
@@ -32,29 +26,13 @@
 {% endmacro %}
 
 {% macro conditionalAllow(provider, plugin) %}
-    <h3 class="saml-cp-header-small">
-        Syncing and Access Control
-    </h3>
     <div class="field">
         <div class="heading">
-            <label>Sync Groups</label>
-            <div class="instructions">
-                <p class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
-                    Sync groups with the user data by toggling the appropriate lightswitch next to the
-                    desire group.
-                </p>
-            </div>
-            <br/>
-            <label>Access Control</label>
-            <div class="instructions">
-                <p>
-                    Allow group access by toggling the appropriate switch next to the desire group. If the user is assigned
-                    to any group toggled below, the user is allowed.
-                    "<strong>Allow Any</strong>" allows all users access.
-                    "<strong>No Group Assigned</strong>" encompasses all users that aren't associated to a Craft CMS
-                    User Group. When "Allow" is set here, users not assigned to a group are allowed to login to the Service Provider.
-                </p>
-            </div>
+            <label>{{ "Access Control"|t(plugin.handle) }}</label>
+        </div>
+        <div class="instructions">
+            <p>{{ "Users in any group switched on under **Allow Access** can sign in to this Service Provider. **Allow Any** allows every user, and **No Group Assigned** covers users who aren't in a user group."|t(plugin.handle)|md(inlineOnly=true) }}</p>
+            <p class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">{{ "Switch on **Sync Group** for each group to send to the Service Provider."|t(plugin.handle)|md(inlineOnly=true) }}</p>
         </div>
     </div>
     {% import "_includes/forms" as forms %}
@@ -65,14 +43,16 @@
 
     <table id="groups" class="data fullwidth collapsible">
         <thead>
+        <tr>
         <th scope="col">
             <span class="sync-group-settings {% if not provider.syncGroups %}hidden{% endif %}">
-                {{ "Sync Group"|t('app') }}
+                {{ "Sync Group"|t(plugin.handle) }}
             </span>
         </th>
-        <th scope="col">{{ "Allow Access"|t('app') }}</th>
+        <th scope="col">{{ "Allow Access"|t(plugin.handle) }}</th>
         <th scope="col">{{ "Name"|t('app') }}</th>
         <th scope="col">{{ "Handle"|t('app') }}</th>
+        </tr>
         </thead>
         <tbody>
         {% set allowany = {
@@ -154,7 +134,7 @@
 
                 </td>
                 <th scope="row" data-title="{{ 'Name'|t('app') }}"><a
-                            href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t('site') }}</a>
+                            href="{{ cpUrl('settings/users/groups/' ~ group.id) }}">{{ group.name|t('site') }}</a>
                 </th>
                 <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
             </tr>

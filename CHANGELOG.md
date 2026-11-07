@@ -1,5 +1,14 @@
 Changelog
 =========
+# Unreleased
+## Changed
+- Control panel pages use Craft's own markup and classes (section dividers, sidebar fields and metadata, copy-text inputs, secondary buttons), so they match the rest of the control panel
+## Fixed
+- The metadata XML field was nested inside the field heading and rendered at half width
+- Sync User Groups errors were looked up under a misspelled `syncCroups` key
+## Removed
+- `web/assets/css/saml-core.css`; the `SamlCore` asset bundle now only registers JavaScript
+- Unused `_cp/metadata/_macros/sites.twig` and `_cp/metadata/_includes/editableTable.twig` templates
 # 5.0.11 2026-11-05
 ## Security
 - requiring simplesamlphp/saml2 `~4.19.4` to fix GHSA-6vhm-xfmv-94pj (HTTP-Redirect DEFLATE DoS), GHSA-5cjr-mxj5-wmrx (XPath Transform DoS), GHSA-6929-8p9f-26jx (HTTP-Artifact auth bypass), and pulls robrichards/xmlseclibs 3.1.5 (AES-GCM tag validation)

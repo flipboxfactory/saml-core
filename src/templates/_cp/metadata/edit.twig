@@ -26,375 +26,277 @@
 } %}
 
 {% block details %}
-    <div>
-        <div class="meta">
-            <div class="data first">
-                <h5 class="heading">{{ "Enabled"|t('app') }}</h5>
-                <div class="value flex">
-                    <div class="flex-grow">
-                        <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
-                        {% if provider.enabled %}Enabled{% else %}Disabled{% endif %}
-                    </div>
-                    {% if actions|length %}
-                        <div>
-                            <div id="action-menubtn" class="btn menubtn" data-icon="settings"
-                                 title="{{ 'Actions'|t('app') }}"></div>
-                            <div class="menu">
-                                {% for actionList in actions %}
-                                    {% if not loop.first %}
-                                        <hr>{% endif %}
-                                    <ul>
-                                        {% for actionItem in actionList %}
-                                            <li><a
-                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
-                                                        {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
-                                                >{{ actionItem.label }}</a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endfor %}
-                            </div>
-                            <div id="action-spinner" class="spinner hidden"></div>
+    <input type="hidden" name="providerType" value="{{ provider.id ? provider.type : createType }}">
+    <dl class="meta read-only">
+        <div class="data">
+            <dt class="heading">{{ "Status"|t('app') }}</dt>
+            <dd class="value flex">
+                <div class="flex-grow">
+                    <span class="status {% if provider.enabled %}active{% else %}inactive{% endif %}"></span>
+                    {{ provider.enabled ? "Enabled"|t('app') : "Disabled"|t('app') }}
+                </div>
+                {% if actions|length %}
+                    <div>
+                        <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings"
+                                title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
+                        <div class="menu">
+                            {% for actionList in actions %}
+                                {% if not loop.first %}<hr>{% endif %}
+                                <ul>
+                                    {% for actionItem in actionList %}
+                                        <li><a
+                                                {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+                                                {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
+                                            >{{ actionItem.label }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endfor %}
                         </div>
-                    {% endif %}
-                </div>
-            </div>
-            <input type="hidden" name="providerType" value="{{ provider.id ? provider.type : createType }}">
+                        <div id="action-spinner" class="spinner hidden"></div>
+                    </div>
+                {% endif %}
+            </dd>
         </div>
-        <div class="meta">
-            <div class="data" style="padding: .7rem 1.5rem;font-size:smaller">
-                Entity ID is the unique ID for your provider.
-            </div>
-            <div class="data" style="padding: .7rem 1.5rem" >
-                <div class="required">
-                    <label>
-                        Entity ID
-                    </label>
-                </div>
-                <div class="">
-                    <div class="" style="margin-right: 1rem">
-                        {% if myType == provider.type or myType == createType %}
-                            {{ forms.textField({
-                                name: "entityId",
-                                id: 'entityId',
-                                class: "code",
-                                value: provider.entityId ?: ownEntityId,
-                                errors: provider.getErrors('entityId'),
-                                readonly: false,
-                                disabled: false
-                            }) }}
-                        {% else %}
-                            {{ forms.textField({
-                                name: "entityId",
-                                id: 'entityId',
-                                class: "code",
-                                value: provider.entityId,
-                                errors: provider.getErrors('entityId'),
-                                readonly: true,
-                                disabled: true
-                            }) }}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% if myType == provider.type or myType == createType %}
-            <div class="meta">
-                <div class="data" style="padding: .7rem 1.5rem;font-size:smaller">
-                    Choose the Craft Site you'd like to associate this provider with.
-                </div>
-                <div class="data" style="padding: .7rem 1.5rem" >
-                    {% set sites = [] %}
-                    {% for site in craft.app.sites.allSites() %}
-                        {% set sites = sites|merge([{
-                            label: site.name,
-                            value: site.id,
-                        }])%}
-                    {% endfor %}
-                    <div class="required">
-                        <label>
-                            Site
-                        </label>
-                    </div>
-                    <div class="" style="margin-right: 1rem">
-                            {{ forms.selectField({
-                                id: 'providerSite',
-                                name: 'providerSite',
-                                value: provider.id ? provider.siteId : '',
-                                errors: provider.getErrors('site'),
-                                options: sites,
-                                required: true
-                            }) }}
-                    </div>
-                </div>
-            </div>
+    </dl>
+
+    <div class="meta">
+        {% set ownEntity = myType == provider.type or myType == createType %}
+        {{ forms.textField({
+            label: "Entity ID"|t(plugin.handle),
+            instructions: "The unique ID for this provider."|t(plugin.handle),
+            name: "entityId",
+            id: 'entityId',
+            class: "code",
+            value: ownEntity ? (provider.entityId ?: ownEntityId) : provider.entityId,
+            errors: provider.getErrors('entityId'),
+            required: true,
+            readonly: not ownEntity,
+            disabled: not ownEntity,
+        }) }}
+
+        {% if ownEntity %}
+            {% set sites = [] %}
+            {% for site in craft.app.sites.allSites() %}
+                {% set sites = sites|merge([{
+                    label: site.name,
+                    value: site.id,
+                }]) %}
+            {% endfor %}
+            {{ forms.selectField({
+                label: "Site"|t('app'),
+                instructions: "The Craft site this provider is associated with."|t(plugin.handle),
+                id: 'providerSite',
+                name: 'providerSite',
+                value: provider.id ? provider.siteId : '',
+                errors: provider.getErrors('site'),
+                options: sites,
+                required: true,
+            }) }}
         {% endif %}
-        <div class="meta">
-        </div>
-        {% if provider.id %}
-            <hr>
-            <div class="meta read-only">
-                <div class="data">
-                    <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                    <div class="value">{{ provider.dateCreated|datetime('short') }}</div>
-                </div>
-                <div class="data">
-                    <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                    <div class="value">{{ provider.dateUpdated|datetime('short') }}</div>
-                </div>
+    </div>
+
+    {% if provider.id %}
+        <dl class="meta read-only">
+            <div class="data">
+                <dt class="heading">{{ "Created at"|t('app') }}</dt>
+                <dd class="value">{{ provider.dateCreated|datetime('short') }}</dd>
             </div>
-        {% endif %}
-    </div><!-- #settings -->
+            <div class="data">
+                <dt class="heading">{{ "Updated at"|t('app') }}</dt>
+                <dd class="value">{{ provider.dateUpdated|datetime('short') }}</dd>
+            </div>
+        </dl>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
+    <input type="hidden" name="action"
+           value="{{ baseActionPath }}/metadata/{% if createType == myType or myType == provider.type %}auto-create{% else %}save{% endif %}">
+    {{ redirectInput(baseCpPath ~ '/metadata/') }}
+    {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
 
-    <div id="name">
-        <input type="hidden" name="action"
-               value="{{ baseActionPath }}/metadata/{% if createType == myType or myType == provider.type %}auto-create{% else %}save{% endif %}">
-        {{ redirectInput(baseCpPath ~ '/metadata/' ) }}
+    {{ forms.textField({
+        first: true,
+        label: "Label"|t(plugin.handle),
+        instructions: "Friendly name for the provider. You can use the provider's name (like `OKTA`) or the environment (`DEV`) so everyone knows its purpose."|t(plugin.handle),
+        name: "label",
+        id: 'label',
+        required: true,
+        value: provider.label,
+        errors: provider.getErrors('label'),
+    }) }}
 
-        {% if provider.id %}<input type="hidden" name="identifier" value="{{ provider.id }}">{% endif %}
-
-        {{ forms.textField({
-            label: "Label"|t(plugin.handle ),
-            instructions: "Friendly name for the provider. You can use the providers name (like `OKTA`) or the environment (`DEV`) so everyone knows it's purpose."|t(plugin.handle ),
-            name: "label",
-            id: 'label',
-            required: true,
-            value: provider.label,
-            errors: provider.getErrors('label'),
-        }) }}
-    </div>
-    {#
-        Default showing
-    #}
     <div id="security">
         {% if createType == myType %}
-            <h2 class="saml-cp-header">Key Pairs</h2>
-            <div class="field">
-                <div class="heading">
-                    {% if provider.keychain %}
-                        <a target="_blank"
-                           class="go"
-                           href="{{ actionUrl(plugin.handle ~ '/metadata/download-certificate?keyId='~provider.keychain.id) }}">
-                            Download Certificate
-                        </a>
-                        <br/>
-                    {% endif %}
-                    <a class="go"
-                       href="/{{ craft.app.config.general.cpTrigger }}/{{ plugin.handle }}/keychain"
-                    >Manage key pairs</a>
-                    <div class="instructions">
-                        <p>Be careful when changing the keys. You need to exchange the certificate with the other
-                            provider to make new keys work correctly.</p>
-                        <p>
-                            Note: It is <strong>highly recommended</strong> to create and assign a key pair.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            {{ forms.selectField({
-                label: "Select Existing Key Pair"|t(plugin.handle),
+            <hr>
+
+            {% embed '_includes/forms/field' with {
+                label: "Key Pair"|t(plugin.handle),
+                instructions: "Changing the key pair means exchanging the new certificate with the other provider. Assigning a key pair is highly recommended."|t(plugin.handle),
                 id: 'keychain',
-                name: 'keychain',
-                value: provider.keychain ? provider.keychain.id : '',
+                required: true,
                 errors: provider.getErrors('keychain'),
-                options: allkeypairs|merge([{label:'None',value:null}]),
-                required: true
-            }) }}
-            <div class="field">
-                <div class="heading">
-                    <label>Automatically Generate and Assign a New Key Pair</label>
-                </div>
-                <div class="input ltr">
-                    <a id="generate-key" role="button" class="btn submit">Generate key pair</a>
-                </div>
-                {% do view.registerAssetBundle("flipbox\\keychain\\web\\assets\\bundles\\GenerateKeyPair") %}
-                {% js %}
-                    new Craft.GenerateKeyPair(
-                        $('#generate-key'),
-                        $('#keychain'),
-                        "{{ plugin.handle }}"
-                    );
-                {% endjs %}
+            } %}
+                {% block input %}
+                    {% import '_includes/forms' as forms %}
+                    <div class="flex">
+                        {{ forms.select({
+                            id: 'keychain',
+                            name: 'keychain',
+                            value: provider.keychain ? provider.keychain.id : '',
+                            options: allkeypairs|merge([{label: 'None'|t('app'), value: null}]),
+                        }) }}
+                        <button type="button" id="generate-key" class="btn add icon">{{ "Generate key pair"|t(plugin.handle) }}</button>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+
+            <div class="buttons">
+                {% if provider.keychain %}
+                    <a class="btn" data-icon="download" target="_blank"
+                       href="{{ actionUrl(plugin.handle ~ '/metadata/download-certificate', {keyId: provider.keychain.id}) }}">{{ "Download certificate"|t(plugin.handle) }}</a>
+                {% endif %}
+                <a class="btn" href="{{ cpUrl(plugin.handle ~ '/keychain') }}">{{ "Manage key pairs"|t(plugin.handle) }}</a>
             </div>
+
+            {% do view.registerAssetBundle("flipbox\\keychain\\web\\assets\\bundles\\GenerateKeyPair") %}
+            {% js %}
+                new Craft.GenerateKeyPair(
+                    $('#generate-key'),
+                    $('#keychain'),
+                    "{{ plugin.handle|e('js') }}"
+                );
+            {% endjs %}
         {% endif %}
+
         {% if myType == 'idp' and provider.type == 'sp' %}
-            <div class="field">
-                <h2 class="saml-cp-header">Encryption</h2>
-                <div class="heading">
-                    <label>{{ "Wants Encrypt Assertions"|t(plugin.handle) }}</label>
-                </div>
-                {{ forms.lightswitch({
-                    label: "Encrypt Assertions"|t(plugin.handle),
-                    id: 'encryptAssertions',
-                    name: 'encryptAssertions',
-                    on: provider.encryptAssertions,
-                    errors: provider.getErrors('encryptAssertion'),
-                    toggle: 'assertion-encryption-settings',
-                }) }}
-
-            </div>
-
+            <hr>
+            <h2>{{ "Encryption"|t(plugin.handle) }}</h2>
+            {{ forms.lightswitchField({
+                label: "Encrypt Assertions"|t(plugin.handle),
+                instructions: "Encrypt assertions sent to this Service Provider."|t(plugin.handle),
+                id: 'encryptAssertions',
+                name: 'encryptAssertions',
+                on: provider.encryptAssertions,
+                errors: provider.getErrors('encryptAssertion'),
+            }) }}
         {% endif %}
-
-        {% import 'saml-core/_cp/metadata/_macros/mapping' as  map %}
     </div>
 
     <div id="configure" class="hidden">
         {% if (( myType == 'sp' and provider.isIdentityProvider() ) or ( myType == 'idp' and provider.isServiceProvider() )) and provider.loginPath %}
-            <br/>
-            <h2 class="saml-cp-header">Login/Logout Paths</h2>
-            {{ forms.textField({
-                label: "Login Path"|t(plugin.handle ),
+            <hr>
+            <h2>{{ "Login/Logout Paths"|t(plugin.handle) }}</h2>
+            {{ forms.copytextField({
+                label: "Login Path"|t(plugin.handle),
                 instructions: myType == 'sp' ?
-                    "Use this as the `loginPath` value in the `general.php` configuration file."|t(plugin.handle ) :
-                    "URL to initiate SSO via IDP. In human terms, " ~
-                    "goto this link to initiate login with this Service Provider. " ~
-                    "[More Info](https://saml-idp.flipboxfactory.com/initiating-sso.html#identity-provider-idp-initiated)",
-                name: "loginPath",
+                    "Use this as the `loginPath` value in the `general.php` configuration file."|t(plugin.handle) :
+                    "Go to this URL to start IdP-initiated login with this Service Provider. [More info](https://saml-idp.flipboxfactory.com/initiating-sso.html#identity-provider-idp-initiated)"|t(plugin.handle),
                 id: 'loginPath',
-                class: "code",
+                class: 'code',
                 value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.loginRequestPath : provider.getLoginRequestEndpoint(),
-                readonly: true,
-                disabled: true
             }) }}
 
-            {{ forms.textField({
-                label: "Logout Path"|t(plugin.handle ),
-                instructions: "Use this URL to initiate Single Logout (SLO) with this provider."|t(plugin.handle ),
-                name: "logoutPath",
+            {{ forms.copytextField({
+                label: "Logout Path"|t(plugin.handle),
+                instructions: "Use this URL to initiate Single Logout (SLO) with this provider."|t(plugin.handle),
                 id: 'logoutPath',
-                class: "code",
+                class: 'code',
                 value: (myType == 'sp' and provider.isIdentityProvider()) ? provider.logoutRequestPath : provider.getLogoutRequestEndpoint(),
-                readonly: true,
-                disabled: true
             }) }}
         {% endif %}
 
-        {# Mapping #}
         {% if (myType == 'sp' and provider.type == 'idp') or (myType == 'idp' and provider.type == 'sp') %}
-            {% import 'saml-core/_cp/metadata/_macros/mapping' as  map %}
-            {{ map.mappingInputTable(
-                provider, plugin
-            ) }}
-            <br/>
+            {% import 'saml-core/_cp/metadata/_macros/mapping' as map %}
+            {{ map.mappingInputTable(provider, plugin) }}
         {% endif %}
 
-        {# Groups #}
         {% if (myType == 'idp' and provider.type == 'sp') %}
-            {% import 'saml-core/_cp/metadata/_macros/groups' as  groups %}
-            <h2 class="saml-cp-header">Groups</h2>
+            {% import 'saml-core/_cp/metadata/_macros/groups' as groups %}
+            <hr>
+            <h2>{{ "Groups"|t(plugin.handle) }}</h2>
             {{ groups.syncOptions(provider, plugin) }}
-
             {{ groups.conditionalAllow(provider, plugin) }}
-            <br>
-            <br>
         {% endif %}
-
     </div>
+
     <div id="metadata" class="hidden">
-        <h2 class="saml-cp-header">Metadata Options</h2>
+        <hr>
+        <h2>{{ "Metadata"|t(plugin.handle) }}</h2>
 
         {% if createType != myType %}
-            <p>Metadata can be configured in *ONE* of the following ways. One of the following is required.</p>
+            <p>{{ "Provide the metadata in one of the following ways."|t(plugin.handle) }}</p>
+            {{ forms.textField({
+                label: "Metadata URL"|t(plugin.handle),
+                instructions: "If the URL is public, the metadata is fetched on save. Useful if the metadata or certificates change often: save again to refresh it."|t(plugin.handle),
+                id: 'metadata-url-text',
+                name: 'metadata-url-text',
+                class: 'code',
+                autocomplete: false,
+                value: provider.getMetadataOptions().url,
+                errors: provider.getErrors('metadata-url-text'),
+            }) }}
         {% endif %}
-        <div class="field" id="metadata-url-field">
-            <div class="heading">
-                {% if createType != myType %}
-                <label>
-                </label>
 
-                <div class="flex">
-                    <div class="flex-grow ">
-                        {{ forms.textField({
-                            label: "1. Metadata By URL"|t('app'),
-                            instructions: 'If the URL is public the metadata will be fetched on save. This can be helpful if the metadata or certificates change frequently. Simply hit save to refresh the metadata.',
-                            id: 'metadata-url-text',
-                            name: 'metadata-url-text',
-                            autocomplete: false,
-                            value: provider.getMetadataOptions().url,
-                            errors: provider.getErrors('metadata-url-text'),
-                        }) }}
-                    </div>
-
-                </div>
-                {% endif %}
-                {{ forms.textareaField({
-                    label: createType == myType ? 'Metadata XML' : '2. Metadata XML',
-                    instructions: createType == myType ?
-                        "Share this XML with the other provider." :
-                        "Paste Metadata XML from the provider. This will be overwritten when the Metadata Url is being used."|t(plugin.handle ),
-                    class: "code",
+        {% embed '_includes/forms/field' with {
+            label: "Metadata XML"|t(plugin.handle),
+            instructions: createType == myType ?
+                "Share this XML with the other provider."|t(plugin.handle) :
+                "Paste the provider's metadata XML. It's overwritten when a metadata URL is set."|t(plugin.handle),
+            id: 'metadata-text',
+            errors: provider.getErrors('metadata-text'),
+        } %}
+            {% block input %}
+                {% import '_includes/forms' as forms %}
+                {% import "saml-core/_cp/metadata/_macros/utils" as utils %}
+                {{ forms.textarea({
+                    class: 'code',
                     id: 'metadata-text',
                     name: 'metadata-text',
-                    value: createType == myType and not provider.metadata ? 'This field is created automatically.' : provider.metadata,
-                    readonly: createType == myType ? true : false,
-                    disabled: createType == myType ? true : false,
-                    errors: provider.getErrors('metadata-text'),
-                    rows: 10
+                    value: createType == myType and not provider.metadata ? 'This field is created automatically.'|t(plugin.handle) : provider.metadata,
+                    readonly: createType == myType,
+                    disabled: createType == myType,
+                    rows: 10,
                 }) }}
-                {{ utils.copyFieldContents('metadata-text') }}
-            </div>
-        </div>
+                {% if createType == myType %}
+                    <div class="buttons">
+                        {{ utils.copyFieldContents('metadata-text') }}
+                    </div>
+                {% endif %}
+            {% endblock %}
+        {% endembed %}
 
-
-        {% if provider.id %}
-            <h2 class="saml-cp-header">Bindings</h2>
-            {% if singleSignOnServices %}
-                {% for binding, singleSignOnService in singleSignOnServices %}
-                    {{ forms.textField({
-                        label: "Single Signon Service (SSO) "|t(plugin.handle ),
-                        instructions: "Binding: " ~ binding|t(plugin.handle ),
-                        name: "acs",
-                        id: 'acs',
-                        class: "acs",
-                        value: singleSignOnService,
-                        errors: provider.getErrors('acs'),
-                        readonly: true,
-                        disabled: true
-                    }) }}
-                {% endfor %}
-
-            {% endif %}
-
-            {% if assertionConsumerServices %}
-                {% for binding, assertionConsumerService in assertionConsumerServices %}
-                    {{ forms.textField({
-                        label: "Assertion Consumer Service (ACS) " |t(plugin.handle ),
-                        instructions: "Binding: " ~ binding|t(plugin.handle ),
-                        name: "acs",
-                        id: 'acs',
-                        class: "acs",
-                        value: assertionConsumerService,
-                        errors: provider.getErrors('acs'),
-                        readonly: true,
-                        disabled: true
-                    }) }}
-                {% endfor %}
-
-            {% endif %}
-
-
-            {% if singleLogoutServices %}
-                {% for binding, singleLogoutService in singleLogoutServices %}
-                    {{ forms.textField({
-                        label: "Single Logout Service (SLO)" |t(plugin.handle ),
-                        instructions: "Binding: " ~ binding|t(plugin.handle ),
-                        name: "acs",
-                        id: 'acs',
-                        class: "acs",
-                        value: singleLogoutService,
-                        errors: provider.getErrors('acs'),
-                        readonly: true,
-                        disabled: true
-                    }) }}
-                {% endfor %}
-
-            {% endif %}
+        {% if provider.id and (singleSignOnServices or assertionConsumerServices or singleLogoutServices) %}
+            <hr>
+            <h2>{{ "Bindings"|t(plugin.handle) }}</h2>
+            {% for binding, url in singleSignOnServices ?: [] %}
+                {{ forms.copytextField({
+                    label: "Single Sign-On Service (SSO)"|t(plugin.handle),
+                    instructions: "Binding: `" ~ binding ~ "`",
+                    id: 'sso-' ~ loop.index,
+                    class: 'code',
+                    value: url,
+                }) }}
+            {% endfor %}
+            {% for binding, url in assertionConsumerServices ?: [] %}
+                {{ forms.copytextField({
+                    label: "Assertion Consumer Service (ACS)"|t(plugin.handle),
+                    instructions: "Binding: `" ~ binding ~ "`",
+                    id: 'acs-' ~ loop.index,
+                    class: 'code',
+                    value: url,
+                }) }}
+            {% endfor %}
+            {% for binding, url in singleLogoutServices ?: [] %}
+                {{ forms.copytextField({
+                    label: "Single Logout Service (SLO)"|t(plugin.handle),
+                    instructions: "Binding: `" ~ binding ~ "`",
+                    id: 'slo-' ~ loop.index,
+                    class: 'code',
+                    value: url,
+                }) }}
+            {% endfor %}
         {% endif %}
-
     </div>
 {% endblock %}
-

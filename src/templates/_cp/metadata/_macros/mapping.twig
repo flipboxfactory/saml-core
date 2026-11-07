@@ -10,39 +10,17 @@
         {{ forms.nameIdSectionForSP(provider, plugin) }}
     {% endif %}
 
-    <h2 class="saml-cp-header">Mapping</h2>
-    <div class="field">
-        <div class="heading">
-            <div class="instructions">
-                {% if plugin.settings.isIDP() %}
-                    <p>
-                        Configure the user attributes sent to the Service Provider.
-                        Map the SAML assertion attributes by defining the name of the attribute
-                        to the Craft CMS properties and fields. Use "Template Overrides"
-                        to do more complex logic. "Template Overrides" works exactly like
-                        <a target="_blank"
-                           href="https://docs.craftcms.com/v3/sections-and-entries.html#entry-uri-formats">
-                            "Entry URI Format".
-                        </a>
-                        and can have twig templating logic to build the value of the attribute. Any value within the
-                        "Template Override" column will nullify the selection of the "Craft User Property" column.
-                    </p>
-                {% else %}
-                    <p>
-                        Map the SAML assertion attributes to the Craft CMS properties and fields.
-                    </p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+    <hr>
+    <h2>{{ "Mapping"|t(plugin.handle) }}</h2>
+
     {% set cols = {
         attributeName: {
             type: 'text',
-            heading: 'Attribute Name',
+            heading: 'Attribute Name'|t(plugin.handle),
         },
         craftProperty: {
             type: 'select',
-            heading: 'Craft User Property',
+            heading: 'Craft User Property'|t(plugin.handle),
             options: craft.samlCp.getMappingFieldOptions(
                 plugin.settings.isIDP()
             ),
@@ -53,16 +31,19 @@
         {% set cols = cols | merge({
             templateOverride: {
                 type: 'singleline',
-                heading: 'Templated Override',
+                heading: 'Template Override'|t(plugin.handle),
             }
         }) %}
     {% endif %}
+
     {{ forms.editableTableField({
         label: "User Attribute Mapping"|t(plugin.handle),
-        instructions: "Each mapping on a different row."|t(plugin.handle),
+        instructions: plugin.settings.isIDP() ?
+            "Map Craft user properties and fields to the SAML assertion attributes sent to the Service Provider, one per row. A **Template Override** works like an [entry URI format](https://craftcms.com/docs/5.x/reference/element-types/entries.html#entry-uri-formats): it can use Twig to build the value, and overrides the **Craft User Property** column."|t(plugin.handle) :
+            "Map the SAML assertion attributes to Craft user properties and fields, one per row."|t(plugin.handle),
         id: 'mapping',
         name: 'mapping',
-        addRowLabel: "Add a new mapping",
+        addRowLabel: "Add a mapping"|t(plugin.handle),
         cols: cols,
         rows: provider.getMapping(),
         fullWidth: true,
@@ -73,50 +54,39 @@
     }) }}
 
     {% if provider.getType() == constant('\\flipbox\\saml\\core\\models\\SettingsInterface::SP') and plugin.settings.isIDP() %}
-        <h3 class="saml-cp-header-small">
-            Preview Mapping
-        </h3>
-        <div class="field">
-            <div class="heading">
-                <div class="instructions">
-                    <p>
-                        You must save before previewing the SAML assertion.
-                    </p>
-                </div>
-            </div>
-        </div>
-        {{ craftForms.textField({
-            instructions: "Enter user id to test different users."|t(plugin.handle ),
-            name: "userId",
+        {% embed '_includes/forms/field' with {
+            label: "Preview Mapping"|t(plugin.handle),
+            instructions: "Enter a user ID to preview the SAML assertion for that user. Save first to preview your latest changes."|t(plugin.handle),
             id: 'userId',
-            value: currentUser.id
-        }) }}
-        <div class="input ltr">
-            <a id="show-mapping-preview" role="button" class="btn">Preview Mapping</a>
-        </div>
-        <pre>
-            <code id="preview-mapping" class="html hidden">
-            </code>
-        </pre>
+        } %}
+            {% block input %}
+                {% import '_includes/forms' as craftForms %}
+                <div class="flex">
+                    {{ craftForms.text({
+                        name: 'userId',
+                        id: 'userId',
+                        value: currentUser.id,
+                        size: 10,
+                    }) }}
+                    <button type="button" id="show-mapping-preview" class="btn">{{ "Preview"|t('app') }}</button>
+                </div>
+            {% endblock %}
+        {% endembed %}
+        <pre><code id="preview-mapping" class="html hidden"></code></pre>
 
         {% do view.registerJsFile("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js") %}
         {% do view.registerCssFile("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-blue.min.css") %}
         {% js %}
             hljs.initHighlightingOnLoad();
         {% endjs %}
-        {% css %}
-            #show-mapping-preview {
-            margin: 20px 0;
-            }
-        {% endcss %}
 
         {% do view.registerAssetBundle("flipbox\\saml\\core\\web\\assets\\bundles\\SamlCore") %}
         {% js %}
             new Craft.SamlCoreMappingPreview(
                 $('#show-mapping-preview'),
                 $('#preview-mapping'),
-                '{{ plugin.handle }}',
-                '{{ provider.id }}',
+                '{{ plugin.handle|e('js') }}',
+                '{{ provider.id|e('js') }}',
                 $('#userId')
             );
         {% endjs %}
@@ -124,63 +94,41 @@
 {% endmacro %}
 
 {% macro editableTableField(config) %}
-    {% include '_includes/forms/editableTable' with config only %}
-{#    {% include 'saml-core/_cp/metadata/_includes/editableTable' with config only %}#}
+    {% import '_includes/forms' as forms %}
+    {{ forms.editableTableField(config) }}
 {% endmacro %}
 
 {% macro nameIdSectionForSP(provider, plugin) %}
     {% import '_includes/forms' as forms %}
-    <h2 class="saml-cp-header">Username/NameID Override</h2>
+    <hr>
+    <h2>{{ "Username/NameID Override"|t(plugin.handle) }}</h2>
 
-    <div class="field">
-        <div class="heading">
-            <div class="instructions">
-                <p>
-                    By default, the NameID will be used as for the Craft user's username.
-                    If the value with the NameID field is not desired, map a different attribute here.
-                    The field you specify is here is one that is being sent over in the
-                    SAML Response, as an Assertion Attribute.
-                </p>
-            </div>
-        </div>
-    </div>
-    {{ forms.text({
-        label: "NameID Override/Mapping"|t(plugin.handle),
+    {{ forms.textField({
+        label: "NameID Override"|t(plugin.handle),
+        instructions: "By default, the NameID is used as the Craft user's username. To use a different value, enter the name of an assertion attribute sent in the SAML Response."|t(plugin.handle),
         id: 'nameIdOverride',
         name: 'nameIdOverride',
+        class: 'code',
         placeholder: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
         value: provider.nameIdOverride,
         errors: provider.getErrors('nameIdOverride')
     }) }}
-
 {% endmacro %}
+
 {% macro nameIdSection(provider, plugin) %}
     {% import '_includes/forms' as forms %}
-    <h2 class="saml-cp-header">NameID</h2>
+    <hr>
+    <h2>{{ "NameID"|t(plugin.handle) }}</h2>
 
-    <div class="field">
-        <div class="heading">
-            <div class="instructions">
-                <p>
-                    NameID is essentially the username the Service Provider will use as the user's unique identifier.
-                    Build the NameID with available Craft CMS user properties. This field works exactly like
-                    <a target="_blank"
-                       href="https://docs.craftcms.com/v3/sections-and-entries.html#entry-uri-formats">
-                        "Entry URI Format".
-                    </a>
-                    and can have twig templating logic build the value of the NameID.
-                </p>
-            </div>
-        </div>
-    </div>
-    {{ forms.autosuggest({
-        label: "NameID Override/Mapping"|t(plugin.handle),
+    {{ forms.autosuggestField({
+        label: "NameID Override"|t(plugin.handle),
+        instructions: "The NameID is the unique identifier the Service Provider uses for the user, like a username. Build it from Craft user properties. It works like an [entry URI format](https://craftcms.com/docs/5.x/reference/element-types/entries.html#entry-uri-formats), so it can use Twig."|t(plugin.handle),
         id: 'nameIdOverride',
         name: 'nameIdOverride',
+        class: 'code',
         placeholder: "{username}",
         value: provider.nameIdOverride,
         suggestions: craft.samlCp.getMappingAutoSuggestions(),
         errors: provider.getErrors('nameIdOverride')
     }) }}
-
 {% endmacro %}
