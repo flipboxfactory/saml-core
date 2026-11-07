@@ -143,7 +143,8 @@ class SecurityHelper
 
             try {
                 $assertion = $encryptedAssertion->getAssertion(
-                    $xmlSecurityKey
+                    $xmlSecurityKey,
+                    $blacklist
                 );
                 \Craft::debug('Decryption with key #' . $method . ' succeeded.', AbstractPlugin::SAML_CORE_HANDLE);
                 return $assertion;

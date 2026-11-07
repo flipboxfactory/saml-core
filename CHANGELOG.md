@@ -1,5 +1,14 @@
 Changelog
 =========
+# 4.2.6 2026-11-07
+## Security
+- requiring simplesamlphp/saml2 `~4.19.4` to fix [GHSA-6vhm-xfmv-94pj](https://github.com/simplesamlphp/saml2/security/advisories/GHSA-6vhm-xfmv-94pj) (HTTP-Redirect DEFLATE DoS), [GHSA-5cjr-mxj5-wmrx](https://github.com/advisories/GHSA-5cjr-mxj5-wmrx) / CVE-2026-49289 (XPath Transform DoS), [GHSA-6929-8p9f-26jx](https://github.com/advisories/GHSA-6929-8p9f-26jx) / CVE-2026-49283 (HTTP-Artifact auth bypass), and pulls robrichards/xmlseclibs 3.1.5 ([GHSA-4v26-v6cg-g6f9](https://github.com/advisories/GHSA-4v26-v6cg-g6f9) / CVE-2026-32313, AES-GCM tag validation; [GHSA-c4cc-x928-vjw9](https://github.com/advisories/GHSA-c4cc-x928-vjw9) / CVE-2025-66578, canonicalization signature bypass)
+- implementing `Saml2Container::getInflateSizeLimit()` (8 MB) required by the patched saml2 releases. 4.2.5 allowed saml2 `^4.6.14`, so a `composer update` could pull saml2 4.19.4+ and fatal on the missing method
+- staying on saml2 4.19.x: 4.20.x requires the `simplesamlphp/composer-xmlprovider-installer` Composer plugin (Composer 2.9+), which would break updates on sites that haven't allowed it
+- `SecurityHelper::decryptAssertion()` now passes `$blacklist` through to saml2, so blacklisted algorithms are actually rejected
+## Added
+- PHPUnit regression tests for the above and a GitHub Actions workflow for the `v4` branch
+
 # 4.2.5 2024-02-13
 ## Fixed
 - backwards compatibility with logout
