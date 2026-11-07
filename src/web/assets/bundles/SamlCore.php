@@ -22,10 +22,6 @@ class SamlCore extends AssetBundle
      */
     public function init(): void
     {
-        $this->css = [
-            'css/saml-core.css',
-        ];
-
         $this->js = [
             'js/saml-core.js',
         ];

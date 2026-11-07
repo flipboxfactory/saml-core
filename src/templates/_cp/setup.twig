@@ -1,51 +1,24 @@
 {% extends "_layouts/cp" %}
-{% import "_includes/forms" as forms %}
-
-{#{% block sidebar %}#}
-    {#{% include templateIndex ~ '/_cp/_components/nav.twig' with {#}
-        {#plugin.handle: plugin.handle,#}
-        {#sel: 'setup',#}
-    {#} %}#}
-{#{% endblock %}#}
 
 {% block content %}
-
-    <div class="readable">
-        <h1>Setup</h1>
-    </div>
-    <hr/>
-    <div class="readable">
-        <h2>Getting Started</h2>
-    </div>
-    <p>Steps to getting started:</p>
+    <h2>{{ "Getting Started"|t(plugin.handle) }}</h2>
     <ol>
         <li>
-            <a href="{{ cpUrl(baseCpPath ~ '/metadata/my-provider') }}" class="go nowrap">
-                Create your metadata
-            </a>
+            <a href="{{ cpUrl(baseCpPath ~ '/metadata/my-provider') }}" class="go">{{ "Create your metadata"|t(plugin.handle) }}</a>
         </li>
         <li>
-            <a href="{{ cpUrl(baseCpPath ~ '/metadata/new-' ~ plugin.settings.remoteType) }}" class="go nowrap">
-                Install the {{ plugin.settings.remoteType | upper }}'s metadata
-            </a>
+            <a href="{{ cpUrl(baseCpPath ~ '/metadata/new-' ~ plugin.settings.remoteType) }}" class="go">{{ "Install the {type}’s metadata"|t(plugin.handle, {type: plugin.settings.remoteType|upper}) }}</a>
         </li>
     </ol>
-    <hr/>
 {% endblock %}
 
 {% block details %}
-
     {% if ownProvider %}
-
-        <div class="meta">
-            <div class="readable">
-                <h2>System Configuration</h2>
+        <dl class="meta read-only">
+            <div class="data">
+                <dt class="heading">{{ "Entity ID"|t(plugin.handle) }}</dt>
+                <dd class="value"><code>{{ ownProvider.entityId }}</code></dd>
             </div>
-            <hr/>
-            <h3>Entity Id</h3>
-            <p class="code">
-                {{ ownProvider.entityId }}
-            </p>
-        </div>
+        </dl>
     {% endif %}
 {% endblock %}
