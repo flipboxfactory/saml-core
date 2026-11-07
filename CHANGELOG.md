@@ -3,6 +3,7 @@ Changelog
 # Unreleased
 ## Changed
 - Control panel pages use Craft's own markup and classes (section dividers, sidebar fields and metadata, copy-text inputs, secondary buttons), so they match the rest of the control panel
+- The IdP mapping preview highlights XML with Craft's bundled highlighter (`PrismJsAsset`) instead of loading highlight.js from cdnjs
 ## Fixed
 - The metadata XML field was nested inside the field heading and rendered at half width
 - Sync User Groups errors were looked up under a misspelled `syncCroups` key

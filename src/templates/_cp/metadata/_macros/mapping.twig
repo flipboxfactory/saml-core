@@ -72,14 +72,10 @@
                 </div>
             {% endblock %}
         {% endembed %}
-        <pre><code id="preview-mapping" class="html hidden"></code></pre>
+        <pre class="highlight hidden"><code id="preview-mapping" class="language-xml"></code></pre>
 
-        {% do view.registerJsFile("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js") %}
-        {% do view.registerCssFile("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow-night-blue.min.css") %}
-        {% js %}
-            hljs.initHighlightingOnLoad();
-        {% endjs %}
-
+        {# Craft's bundled highlighter: Prism before Craft 5.12, a Prism-compatible shim from 5.12 #}
+        {% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
         {% do view.registerAssetBundle("flipbox\\saml\\core\\web\\assets\\bundles\\SamlCore") %}
         {% js %}
             new Craft.SamlCoreMappingPreview(

@@ -36,12 +36,12 @@
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        if (response.xml != undefined) {
-                            this.$previewEl.text(response.xml).html()
-                            hljs.highlightBlock(this.$previewEl[0]);
-                            if (this.$previewEl.hasClass('hidden')) {
-                                this.$previewEl.removeClass('hidden');
+                        if (response.xml !== undefined) {
+                            this.$previewEl.text(response.xml);
+                            if (window.Prism) {
+                                Prism.highlightElement(this.$previewEl[0]);
                             }
+                            this.$previewEl.closest('pre').removeClass('hidden');
                         }
                     }
                 }, this)
