@@ -10,31 +10,7 @@
         {{ forms.nameIdSectionForSP(provider, plugin) }}
     {% endif %}
 
-    <h2 class="saml-cp-header">Mapping</h2>
-    <div class="field">
-        <div class="heading">
-            <div class="instructions">
-                {% if plugin.settings.isIDP() %}
-                    <p>
-                        Configure the user attributes sent to the Service Provider.
-                        Map the SAML assertion attributes by defining the name of the attribute
-                        to the Craft CMS properties and fields. Use "Template Overrides"
-                        to do more complex logic. "Template Overrides" works exactly like
-                        <a target="_blank"
-                           href="https://docs.craftcms.com/v3/sections-and-entries.html#entry-uri-formats">
-                            "Entry URI Format".
-                        </a>
-                        and can have twig templating logic to build the value of the attribute. Any value within the
-                        "Template Override" column will nullify the selection of the "Craft User Property" column.
-                    </p>
-                {% else %}
-                    <p>
-                        Map the SAML assertion attributes to the Craft CMS properties and fields.
-                    </p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+    <h2>Mapping</h2>
     {% set cols = {
         attributeName: {
             type: 'text',
@@ -57,9 +33,11 @@
             }
         }) %}
     {% endif %}
-    {{ forms.editableTableField({
+    {{ craftForms.editableTableField({
         label: "User Attribute Mapping"|t(plugin.handle),
-        instructions: "Each mapping on a different row."|t(plugin.handle),
+        instructions: plugin.settings.isIDP()
+            ? 'Configure the user attributes sent to the Service Provider. Map the SAML assertion attributes by defining the name of the attribute to the Craft CMS properties and fields. Use "Template Overrides" to do more complex logic. "Template Overrides" works exactly like ["Entry URI Format"](https://docs.craftcms.com/v3/sections-and-entries.html#entry-uri-formats). and can have twig templating logic to build the value of the attribute. Any value within the "Template Override" column will nullify the selection of the "Craft User Property" column.'
+            : 'Map the SAML assertion attributes to the Craft CMS properties and fields.',
         id: 'mapping',
         name: 'mapping',
         addRowLabel: "Add a new mapping",
@@ -73,7 +51,7 @@
     }) }}
 
     {% if provider.getType() == constant('\\flipbox\\saml\\core\\models\\SettingsInterface::SP') and plugin.settings.isIDP() %}
-        <h3 class="saml-cp-header-small">
+        <h3>
             Preview Mapping
         </h3>
         <div class="field">
@@ -123,32 +101,15 @@
     {% endif %}
 {% endmacro %}
 
-{% macro editableTableField(config) %}
-    {% include '_includes/forms/editableTable' with config only %}
-{#    {% include 'saml-core/_cp/metadata/_includes/editableTable' with config only %}#}
-{% endmacro %}
-
 {% macro nameIdSectionForSP(provider, plugin) %}
     {% import '_includes/forms' as forms %}
-    <h2 class="saml-cp-header">Username/NameID Override</h2>
-
-    <div class="field">
-        <div class="heading">
-            <div class="instructions">
-                <p>
-                    By default, the NameID will be used as for the Craft user's username.
-                    If the value with the NameID field is not desired, map a different attribute here.
-                    The field you specify is here is one that is being sent over in the
-                    SAML Response, as an Assertion Attribute.
-                </p>
-            </div>
-        </div>
-    </div>
-    {{ forms.text({
+    <h2>Username/NameID Override</h2>
+    {{ forms.textField({
         label: "NameID Override/Mapping"|t(plugin.handle),
         id: 'nameIdOverride',
         name: 'nameIdOverride',
         placeholder: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+        instructions: "By default, the NameID will be used as for the Craft user's username. If the value with the NameID field is not desired, map a different attribute here. The field you specify is here is one that is being sent over in the SAML Response, as an Assertion Attribute.",
         value: provider.nameIdOverride,
         errors: provider.getErrors('nameIdOverride')
     }) }}
@@ -156,7 +117,7 @@
 {% endmacro %}
 {% macro nameIdSection(provider, plugin) %}
     {% import '_includes/forms' as forms %}
-    <h2 class="saml-cp-header">NameID</h2>
+    <h2>NameID</h2>
 
     <div class="field">
         <div class="heading">

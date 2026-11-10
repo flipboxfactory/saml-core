@@ -49,12 +49,13 @@ abstract class AbstractEditController extends AbstractController implements Ensu
             /**
              * Actions
              */
-            $variables['actions'] = $this->getPlugin()->getEditProvider()->getActions($variables['provider']);
+            $variables['formActions'] = $this->getPlugin()->getEditProvider()->getActions($variables['provider']);
         }
 
         $variables = array_merge($variables, $overwriteVariables);
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
     }
@@ -196,7 +197,7 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         /**
          * Actions
          */
-        $variables['actions'] = $this->getPlugin()->getEditProvider()->getActions($provider);
+        $variables['formActions'] = $this->getPlugin()->getEditProvider()->getActions($provider, true);
 
         /**
          * Edit Title
@@ -209,7 +210,8 @@ abstract class AbstractEditController extends AbstractController implements Ensu
         $variables['createType'] = $variables['myType'];
 
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
             $variables
         );
     }

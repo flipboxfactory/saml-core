@@ -8,6 +8,7 @@ use craft\records\Site;
 
 /**
  */
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 abstract class m201030_200000_provider_multisite extends Migration
 {
 

@@ -40,7 +40,8 @@ abstract class AbstractGeneralController extends AbstractController implements E
         ];
 
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'setup',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'setup',
             $variables
         );
     }
@@ -73,7 +74,8 @@ abstract class AbstractGeneralController extends AbstractController implements E
         $variables['fullPageForm'] = true;
 
         return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'settings',
+            $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'settings',
             $variables
         );
     }

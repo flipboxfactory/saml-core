@@ -21,6 +21,7 @@ use yii\db\ActiveRecordInterface;
  * @property \DateTime $lastLoginDate
  * @property \DateTime $dateCreated
  * @property \DateTime $dateUpdated
+ * @method array getErrors()
  */
 interface ProviderIdentityInterface extends ActiveRecordInterface
 {

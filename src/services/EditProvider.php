@@ -44,22 +44,26 @@ class EditProvider extends Component
      * @param ProviderInterface $provider
      * @return array
      */
-    public function getActions(ProviderInterface $provider)
+    public function getActions(ProviderInterface $provider, bool $isOwn = false)
     {
         $actions = [];
 
         if ($provider->id) {
+            $continueUrl = $this->getPlugin()->getHandle() . '/metadata/' . ($isOwn ? 'my-provider' : $provider->id);
             $actions = [
                 [
-                    //action list 1
-                    [
-                        'action' => $this->getPlugin()->getHandle() . '/metadata/change-status',
-                        'label' => $provider->enabled ? 'Disable' : 'Enable',
-                    ],
-                    [
-                        'action' => $this->getPlugin()->getHandle() . '/metadata/delete',
-                        'label' => 'Delete',
-                    ],
+                    'label' => 'Save and continue editing',
+                    'redirect' => \Craft::$app->getSecurity()->hashData($continueUrl, null),
+                    'shortcut' => true,
+                ],
+                [
+                    'action' => $this->getPlugin()->getHandle() . '/metadata/change-status',
+                    'label' => $provider->enabled ? 'Disable' : 'Enable',
+                ],
+                [
+                    'action' => $this->getPlugin()->getHandle() . '/metadata/delete',
+                    'label' => 'Delete',
+                    'destructive' => true,
                 ],
             ];
         }
@@ -173,7 +177,7 @@ class EditProvider extends Component
 
         foreach ($keypairs as $keypair) {
             $variables['allkeypairs'][] = [
-                'label' => $keypair->description,
+                'label' => $keypair->description ?: "(Untitled: $keypair->id)",
                 'value' => $keypair->id,
             ];
         }

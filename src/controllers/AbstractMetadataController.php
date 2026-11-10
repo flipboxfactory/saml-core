@@ -83,7 +83,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->save($providerRecord)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $providerRecord,
@@ -94,7 +95,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
     }
 
     /**
@@ -108,12 +109,12 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $this->requireAdmin(false);
         $this->requirePostRequest();
 
-        /** @var AbstractProvider $record */
         $record = $this->processSaveAction();
 
         if ($record->hasErrors() || ! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
@@ -124,9 +125,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
-
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
     }
 
     /**
@@ -147,10 +146,9 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
-        /** @var string $recordClass */
         $recordClass = $this->getPlugin()->getProviderRecordClass();
 
-        /** @var AbstractProvider $record */
+        /** @var ProviderInterface $record */
         $record = $recordClass::find()->where([
             'id' => $providerId,
         ])->one();
@@ -159,7 +157,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->save($record)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
@@ -170,7 +169,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
     }
 
     /**
@@ -185,7 +184,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
 
-        /** @var string $recordClass */
         $recordClass = $this->getPlugin()->getProviderRecordClass();
 
         /** @var ProviderInterface $record */
@@ -195,7 +193,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
 
         if (! $this->getPlugin()->getProvider()->delete($record)) {
             return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
+                $this->getPlugin()->getEditProvider()->getTemplateIndex() .
+                    AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
                 array_merge(
                     [
                         'provider' => $record,
@@ -206,7 +205,7 @@ abstract class AbstractMetadataController extends AbstractController implements 
             );
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t($this->getPlugin()->getHandle(), 'Provider deleted'));
     }
 
     /**
@@ -215,7 +214,6 @@ abstract class AbstractMetadataController extends AbstractController implements 
      */
     protected function processSaveAction()
     {
-
         $providerId = Craft::$app->request->getParam('identifier');
         $entityId = Craft::$app->request->getParam('entityId');
         $keyId = Craft::$app->request->getParam('keychain');
@@ -231,8 +229,8 @@ abstract class AbstractMetadataController extends AbstractController implements 
         $plugin = $this->getPlugin();
 
         $recordClass = $this->getPlugin()->getProviderRecordClass();
-        /** @var AbstractProvider $record */
         if ($providerId) {
+            /** @var ProviderInterface $record */
             $record = $recordClass::find()->where([
                 'id' => $providerId,
             ])->one();
@@ -248,17 +246,16 @@ abstract class AbstractMetadataController extends AbstractController implements 
         }
 
         $record->entityId = $entityId;
+
+        $site = null;
         if ($providerSite) {
-            if ($site = Site::findOne([
+            if (!($site = Site::findOne([
                 'id' => $providerSite,
-            ])) {
-                $record->setSite($site);
-            } else {
-                // @todo add
-                var_dump('wat?');
-                exit;
+            ]))) {
+                throw new \Exception("Site with ID: {$providerSite} not found.");
             }
         }
+        $record->setSite($site);
 
         // Metadata
         if (! $metadata && $metadataUrl) {
@@ -318,16 +315,14 @@ abstract class AbstractMetadataController extends AbstractController implements 
         }
 
 
+        $keychain = null;
         if ($keyId) {
             /** @var KeyChainRecord $keychain */
-            if ($keychain = KeyChainRecord::find()->where([
+            $keychain = KeyChainRecord::find()->where([
                 'id' => $keyId,
-            ])->one()) {
-                $record->setKeychain(
-                    $keychain
-                );
-            }
+            ])->one();
         }
+        $record->setKeychain($keychain);
 
         /**
          * Metadata should exist for the remote provider

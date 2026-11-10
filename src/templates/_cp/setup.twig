@@ -1,21 +1,14 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{#{% block sidebar %}#}
-    {#{% include templateIndex ~ '/_cp/_components/nav.twig' with {#}
-        {#plugin.handle: plugin.handle,#}
-        {#sel: 'setup',#}
-    {#} %}#}
-{#{% endblock %}#}
-
 {% block content %}
 
     <div class="readable">
-        <h1>Setup</h1>
+        <h2>Setup</h2>
     </div>
     <hr/>
     <div class="readable">
-        <h2>Getting Started</h2>
+        <h3>Getting Started</h3>
     </div>
     <p>Steps to getting started:</p>
     <ol>
@@ -30,22 +23,22 @@
             </a>
         </li>
     </ol>
-    <hr/>
 {% endblock %}
 
 {% block details %}
 
     {% if ownProvider %}
 
+        <h2>System Configuration</h2>
         <div class="meta">
-            <div class="readable">
-                <h2>System Configuration</h2>
+            <div class="field">
+                <div class="heading">
+                    Entity Id
+                </div>
+                <div class="input ltr code">
+                    {{ ownProvider.entityId }}
+                </div>
             </div>
-            <hr/>
-            <h3>Entity Id</h3>
-            <p class="code">
-                {{ ownProvider.entityId }}
-            </p>
         </div>
     {% endif %}
 {% endblock %}

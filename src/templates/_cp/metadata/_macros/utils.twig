@@ -5,28 +5,25 @@
             const textArea = document.querySelector('#{{ textId }}')
             const copyBtn = document.querySelector('#{{ copyButtonId }}')
             copyBtn.addEventListener('click', (event) => {
-                let copyTextarea = textArea;
-
-                copyTextarea.focus();
-                copyTextarea.select();
+                textArea.focus();
+                textArea.select();
 
                 try{
-                    if(navigator.clipboard !== undefined) {
-                        navigator.clipboard.writeText(copyTextarea.value)
+                    if (navigator.clipboard !== undefined) {
+                        navigator.clipboard.writeText(textArea.value)
                         .then(() => {
                             Craft.cp.displayNotice('Copied to clipboard!')
                         })
-                        .catch((error) => { alert(`Copy failed! ${error}`) })
-                    }else{
+                        .catch((error) => { Craft.cp.displayAlert('Copy failed!', error) })
+                    } else{
                         let successful = document.execCommand('copy');
                         Craft.cp.displayNotice('Copied to clipboard!');
                     }
-                }catch(e) {
-                    alert(`copy failed ${error}`)
+                } catch(e) {
+                    Craft.cp.displayAlert('Copy failed!', e)
                 }
             });
         })()
     {% endjs %}
-    <a href="javascript:void(0);" id="{{ copyButtonId }}" class="btn saml-clipboard-icon" data-icon="clipboard">
-    </a>
+    <a href="javascript:void(0);" id="{{ copyButtonId }}" class="btn" data-icon="clipboard" role="button" title="Copy to clipboard"><span class="visually-hidden">Copy to clipboard</span></a>
 {% endmacro %}

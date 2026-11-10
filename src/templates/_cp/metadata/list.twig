@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="elements">
-        <div class="saml-instructions readable">
+        <div class="field">
             <a href="{{ cpUrl(plugin.handle ~"/metadata/new-sp") }}" class="btn large submit icon add" style="float: right;">Add Service Provider</a>
             <h2>
                 Service Provider List
@@ -11,7 +11,7 @@
                 {{ spListInstructions }}
             </p>
         </div>
-        <div class="tableview">
+        <div class="tableview tablepane">
             <table class="data fullwidth">
                 <thead>
                 <tr>
@@ -57,7 +57,8 @@
                 </tbody>
             </table>
         </div>
-        <div class="saml-instructions readable">
+        <hr style="margin-inline: calc(var(--xl)*-1)">
+        <div class="field">
             <a href="{{ cpUrl(plugin.handle ~"/metadata/new-idp") }}" class="btn large submit icon add" style="float: right;">Add Identity Provider</a>
             <h2>
                 Identity Provider List
@@ -66,7 +67,7 @@
                 {{ idpListInstructions }}
             </p>
         </div>
-        <div class="tableview">
+        <div class="tableview tablepane">
             <table class="data fullwidth">
                 <thead>
                 <tr>
