@@ -45,6 +45,6 @@ jobs:
         continue-on-error: true
         run: composer audit
       - name: Coding standards
-        run: vendor/bin/phpcs --standard=psr2 src/containers/Saml2Container.php src/helpers/SecurityHelper.php
+        run: vendor/bin/phpcs --standard=psr2 src/containers/Saml2Container.php src/helpers/SecurityHelper.php src/controllers/AbstractSettingsController.php
       - name: Tests
         run: composer test
