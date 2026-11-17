@@ -9,6 +9,8 @@
 namespace flipbox\saml\core\controllers;
 
 use Craft;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\services\ProjectConfig;
 use flipbox\saml\core\AbstractPlugin;
 
 /**
@@ -35,17 +37,45 @@ abstract class AbstractSettingsController extends AbstractController implements 
     {
         /** @var AbstractPlugin $plugin */
         $plugin = $this->getPlugin();
-        
-        $settings = [
+
+        $settings = static::mergeStoredSettings($plugin->handle, [
             'entityId' => Craft::$app->request->getRequiredParam('entityId'),
             'endpointPrefix' => Craft::$app->request->getRequiredParam('endpointPrefix'),
-        ];
+        ]);
 
         Craft::$app->plugins->savePluginSettings(
-            $this->getPlugin(),
+            $plugin,
             $settings
         );
         return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Merges the posted settings over the plugin's settings stored in project config.
+     *
+     * Since Craft 4.16.18 / 5.8.22, `Plugins::savePluginSettings()` only writes the keys it is
+     * given to project config, so passing just the posted fields would drop every other stored
+     * setting. Values that only come from the plugin's config file are deliberately not included,
+     * so they don't get copied into project config.
+     *
+     * @param string $handle The plugin handle
+     * @param array $posted The settings posted from the settings page
+     * @return array
+     */
+    public static function mergeStoredSettings(string $handle, array $posted): array
+    {
+        $stored = Craft::$app->getProjectConfig()->get(
+            ProjectConfig::PATH_PLUGINS . '.' . $handle . '.settings'
+        );
+
+        if (!is_array($stored)) {
+            $stored = [];
+        }
+
+        return array_merge(
+            ProjectConfigHelper::unpackAssociativeArrays($stored),
+            $posted
+        );
     }
 
     /**

@@ -1,5 +1,8 @@
 Changelog
 =========
+# Unreleased
+## Fixed
+- Saving the plugin settings page no longer removes the plugin's other settings from project config on Craft 5.8.22+ / 4.16.18+, which only save the settings they're given ([saml-sp#262](https://github.com/flipboxfactory/saml-sp/issues/262))
 # 5.0.12 2026-11-07
 ## Changed
 - Control panel pages use Craft's own markup and classes (section dividers, sidebar fields and metadata, copy-text inputs, secondary buttons), so they match the rest of the control panel
