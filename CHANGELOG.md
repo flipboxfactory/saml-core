@@ -1,6 +1,6 @@
 Changelog
 =========
-# Unreleased
+# 5.0.13 2026-11-18
 ## Fixed
 - Saving the plugin settings page no longer removes the plugin's other settings from project config on Craft 5.8.22+ / 4.16.18+, which only save the settings they're given ([saml-sp#262](https://github.com/flipboxfactory/saml-sp/issues/262))
 # 5.0.12 2026-11-07
