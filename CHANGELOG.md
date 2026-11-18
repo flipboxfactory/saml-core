@@ -1,5 +1,8 @@
 Changelog
 =========
+# 4.2.7 2026-11-17
+## Fixed
+- Saving the plugin settings page no longer removes the plugin's other settings from project config on Craft 4.16.18+, which only saves the settings it's given ([saml-sp#262](https://github.com/flipboxfactory/saml-sp/issues/262))
 # 4.2.6 2026-11-07
 ## Security
 - requiring simplesamlphp/saml2 `~4.19.4` to fix [GHSA-6vhm-xfmv-94pj](https://github.com/simplesamlphp/saml2/security/advisories/GHSA-6vhm-xfmv-94pj) (HTTP-Redirect DEFLATE DoS), [GHSA-5cjr-mxj5-wmrx](https://github.com/advisories/GHSA-5cjr-mxj5-wmrx) / CVE-2026-49289 (XPath Transform DoS), [GHSA-6929-8p9f-26jx](https://github.com/advisories/GHSA-6929-8p9f-26jx) / CVE-2026-49283 (HTTP-Artifact auth bypass), and pulls robrichards/xmlseclibs 3.1.5 ([GHSA-4v26-v6cg-g6f9](https://github.com/advisories/GHSA-4v26-v6cg-g6f9) / CVE-2026-32313, AES-GCM tag validation; [GHSA-c4cc-x928-vjw9](https://github.com/advisories/GHSA-c4cc-x928-vjw9) / CVE-2025-66578, canonicalization signature bypass)
