@@ -1,5 +1,27 @@
 Changelog
 =========
+# Unreleased
+## Changed
+- Requires Craft CMS 6, PHP 8.5 and KeyChain 6. saml-core is a native Craft 6 library and doesn't need the Yii2 adapter. It stays on simplesamlphp/saml2 4.19.
+- `AbstractPlugin` is a Craft 6 plugin. It registers the SAML endpoints (same URLs as 5.x, without CSRF protection), the control panel screens and the form actions (admins only) for the plugin. Plugins provide their controllers through `controllers()` and their services through `services()`; each plugin has its own service instances.
+- Records are Eloquent models and services return Eloquent queries (`->first()`/`->get()` instead of `->one()`/`->all()`).
+- Control panel screens use Craft 6's native UI.
+- `AbstractInstall` is a Laravel migration. 5.x's incremental migrations are folded into it, so upgrading needs the latest 5.x first.
+- Provider/key pair links are looked up by provider UID, so SAML SP and SAML IdP providers with the same ID don't share a key pair.
+- `Metadata::fetchByUrl()` uses a timeout and a 5 MB limit, and only fetches `http(s)` URLs.
+- Single logout only acts on messages from a known, enabled provider that are signed by a key in its metadata and addressed to the endpoint they arrive at; a LogoutResponse must answer this session's LogoutRequest.
+- Message-created events are Laravel events: `events\MetadataCreated`, `LogoutRequestCreated` and `LogoutResponseCreated`.
+## Added
+- `helpers\SignatureVerifier`, which verifies a message against a provider's signing keys and fails closed.
+## Fixed
+- LogoutResponses set InResponseTo to the request's ID.
+- Signed LogoutRequests carry the decrypted certificate.
+- Signing keys are read from every X509Data element in a provider's metadata, and KeyDescriptors without a `use` attribute count as signing and encryption keys.
+- Uninstalling one SAML plugin no longer deletes the other's key pair links.
+## Removed
+- Twig control panel templates, the `SamlCore` asset bundle, `services\EditProvider`, `controllers\cp\view\metadata\AbstractPreviewController` and `VariablesTrait`.
+- `events\UserLogout` (use `events\LogoutRequestCreated`).
+
 # 5.0.13 2026-11-18
 ## Fixed
 - Saving the plugin settings page no longer removes the plugin's other settings from project config on Craft 5.8.22+ / 4.16.18+, which only save the settings they're given ([saml-sp#262](https://github.com/flipboxfactory/saml-sp/issues/262))
