@@ -306,43 +306,37 @@ trait EntityDescriptor
      * @param KeyDescriptor $keyDescriptor
      * @return array|X509Certificate[]
      */
-    private function x509Certificates(KeyDescriptor $keyDescriptor)
+    /**
+     * The X.509 certificates in a key descriptor, from every X509Data element, in document order.
+     *
+     * @return list<X509Certificate>
+     */
+    private function x509Certificates(KeyDescriptor $keyDescriptor): array
     {
-        $x509Datas = array_filter(
-            $keyDescriptor->getKeyInfo()->getInfo(),
-            function($keyInfo) {
-                return $keyInfo instanceof X509Data;
+        $certificates = [];
+        foreach ($keyDescriptor->getKeyInfo()->getInfo() as $info) {
+            if (! $info instanceof X509Data) {
+                continue;
             }
-        );
-
-        /** @var X509Certificate[] $x509Certificates */
-        $x509Certificates = [];
-
-        /** @var X509Data $x509Data */
-        foreach ($x509Datas as $x509Data) {
-            $x509Certificates = array_filter(
-                $x509Data->getData(),
-                function($datum) {
-                    return $datum instanceof X509Certificate;
+            foreach ($info->getData() as $datum) {
+                if ($datum instanceof X509Certificate) {
+                    $certificates[] = $datum;
                 }
-            );
+            }
         }
 
-        return $x509Certificates;
+        return $certificates;
     }
 
-    /**
-     * @return string
-     */
-    public function toXmlString()
+    public function toXmlString(): string
     {
-        return $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
+        return (string) $this->getMetadataModel()?->toXML()->ownerDocument?->saveXML();
     }
 
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toXmlString();
     }

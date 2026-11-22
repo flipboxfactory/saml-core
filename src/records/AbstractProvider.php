@@ -1,375 +1,346 @@
 <?php
 
+declare(strict_types=1);
+
 namespace flipbox\saml\core\records;
 
-use craft\db\ActiveRecord;
-use craft\helpers\StringHelper;
-use craft\records\Site;
+use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Shared\Concerns\HasUid;
+use CraftCms\Cms\Site\Data\Site as SiteData;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\records\traits\Ember;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Support\Str;
 use SAML2\DOMDocumentFactory;
 use SAML2\XML\md\EntityDescriptor;
-use yii\db\ActiveQuery;
-use yii\db\ActiveQueryInterface;
 
 /**
- * Class AbstractProvider
- * @package flipbox\saml\core\records
+ * A SAML provider: this system ("my provider") or a partner IdP/SP, described by its metadata.
+ *
+ * Concrete records set `TABLE_ALIAS` (their table name).
+ *
+ * @property int $id
+ * @property string|null $label
+ * @property string $entityId
+ * @property string $metadata The provider's metadata XML.
+ * @property string $sha256
+ * @property string $providerType {@see self::TYPE_IDP} or {@see self::TYPE_SP}
+ * @property bool $encryptAssertions
+ * @property string|null $encryptionMethod
+ * @property int|null $siteId
+ * @property string|null $groupOptions JSON; use {@see getGroupOptions()}.
+ * @property string|null $metadataOptions JSON; use {@see getMetadataOptions()}.
+ * @property bool $syncGroups
+ * @property string|null $groupsAttributeName
+ * @property string|null $nameIdOverride
+ * @property string|null $mapping JSON; use {@see getMapping()}.
+ * @property bool $enabled
+ * @property string $uid
+ * @property-read KeyChainRecord|null $keychain This system's key pair for the provider.
+ * @property-read Site|null $site
  */
-abstract class AbstractProvider extends ActiveRecord implements ProviderInterface
+abstract class AbstractProvider extends BaseModel implements ProviderInterface
 {
-    use traits\EntityDescriptor, traits\KeyChain, traits\MapUser, Ember;
+    use Ember;
+    use HasUid;
+    use traits\EntityDescriptor;
+    use traits\KeyChain;
+    use traits\MapUser;
 
     public const METADATA_HASH_ALGORITHM = 'sha256';
+
     public const DEFAULT_GROUPS_ATTRIBUTE_NAME = 'groups';
 
-    protected $metadataModel;
-    protected $cachedKeychain;
+    protected $attributes = [
+        'enabled' => true,
+        'encryptAssertions' => false,
+        'syncGroups' => true,
+        'groupsAttributeName' => self::DEFAULT_GROUPS_ATTRIBUTE_NAME,
+    ];
 
-    /**
-     * This method helps initiate the login process for a remote provider.
-     * When using this method, say your craft site is the SP. This method will be helpful
-     * on the IDP provider record. Going to this login path will
-     * initiate the login process for this IDP. Returns null when you getLoginPath for the
-     * local provider (the current craft site).
-     *
-     * @return string|null
-     */
-    abstract public function getLoginPath();
+    protected ?EntityDescriptor $metadataModel = null;
 
-    /**
-     * Similar to getLoginPath(), this method initiates logout with the intended remote
-     * provider.
-     *
-     * @return string|null
-     */
-    abstract public function getLogoutPath();
+    abstract public function getLoginPath(): string;
+
+    abstract public function getLogoutPath(): string;
 
     abstract protected function getDefaultSettings(): AbstractSettings;
 
-    public function getLoginRequestEndpoint(AbstractSettings $settings = null)
+    public function getTable(): string
     {
-        return UrlHelper::buildEndpointUrl(
-            $settings ?? $this->getDefaultSettings(),
-            UrlHelper::LOGIN_REQUEST_ENDPOINT,
-            $this,
-            true
-        );
-    }
-
-    public function getLoginEndpoint(AbstractSettings $settings = null)
-    {
-        return UrlHelper::buildEndpointUrl(
-            $settings ?? $this->getDefaultSettings(),
-            UrlHelper::LOGIN_ENDPOINT,
-            $this,
-            true
-        );
-    }
-
-    public function getLogoutRequestEndpoint(AbstractSettings $settings = null)
-    {
-        return UrlHelper::buildEndpointUrl(
-            $settings ?? $this->getDefaultSettings(),
-            UrlHelper::LOGOUT_REQUEST_ENDPOINT,
-            $this,
-            true
-        );
-    }
-
-    public function getLogoutEndpoint(AbstractSettings $settings = null)
-    {
-        return UrlHelper::buildEndpointUrl(
-            $settings ?? $this->getDefaultSettings(),
-            UrlHelper::LOGOUT_ENDPOINT,
-            $this,
-            true
-        );
+        return static::tableName();
     }
 
     /**
-     * @inheritDoc
+     * @return array<string, string>
      */
-    public function loadDefaultValues($skipIfSet = true)
+    protected function casts(): array
     {
-        parent::loadDefaultValues($skipIfSet);
+        return [
+            'enabled' => 'boolean',
+            'encryptAssertions' => 'boolean',
+            'syncGroups' => 'boolean',
+        ];
+    }
 
-        // fix the issue with postgres pulling zero as default
-        if (!trim($this->uid)) {
-            $this->generateUid();
-        }
-
-        return $this;
+    protected static function booted(): void
+    {
+        static::saving(function (self $provider): void {
+            $provider->prepareForSave();
+        });
     }
 
     /**
-     * @throws \Exception
+     * Encodes the option columns and normalises the metadata, as 5.x did before saving.
      */
-    public function generateUid()
+    protected function prepareForSave(): void
     {
-        if (!$this->uid) {
-            $this->uid = StringHelper::UUID();
+        if (! $this->entityId) {
+            $this->entityId = (string) $this->getEntityId();
+        }
+
+        foreach (['mapping', 'groupOptions', 'metadataOptions'] as $column) {
+            $value = $this->attributes[$column] ?? null;
+            if (is_array($value) || $value instanceof \JsonSerializable) {
+                $this->attributes[$column] = json_encode($value);
+            }
+        }
+
+        $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, (string) $this->metadata);
+
+        if ($model = $this->getMetadataModel()) {
+            $this->metadata = (string) $model->toXML()->ownerDocument?->saveXML();
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave($insert): bool
+    public function getLoginRequestEndpoint(?AbstractSettings $settings = null): string
     {
-        if (!$this->entityId) {
-            $this->entityId = $this->getEntityId();
-        }
+        return UrlHelper::buildEndpointUrl($settings ?? $this->getDefaultSettings(), UrlHelper::LOGIN_REQUEST_ENDPOINT, $this);
+    }
 
-        if (is_array($this->mapping)) {
-            $this->mapping = json_encode($this->mapping);
-        }
+    public function getLoginEndpoint(?AbstractSettings $settings = null): string
+    {
+        return UrlHelper::buildEndpointUrl($settings ?? $this->getDefaultSettings(), UrlHelper::LOGIN_ENDPOINT, $this);
+    }
 
-        if ($this->groupOptions instanceof GroupOptions) {
-            $this->groupOptions = json_encode($this->groupOptions);
-        }
+    public function getLogoutRequestEndpoint(?AbstractSettings $settings = null): string
+    {
+        return UrlHelper::buildEndpointUrl($settings ?? $this->getDefaultSettings(), UrlHelper::LOGOUT_REQUEST_ENDPOINT, $this);
+    }
 
-        if ($this->metadataOptions instanceof MetadataOptions) {
-            $this->metadataOptions = json_encode($this->metadataOptions);
-        }
-
-        $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, $this->metadata);
-
-        $this->metadata = $this->getMetadataModel()->toXML()->ownerDocument->saveXML();
-
-        if ($this->site instanceof Site) {
-            $this->siteId = $this->site->id;
-        }
-
-        return parent::beforeSave($insert);
+    public function getLogoutEndpoint(?AbstractSettings $settings = null): string
+    {
+        return UrlHelper::buildEndpointUrl($settings ?? $this->getDefaultSettings(), UrlHelper::LOGOUT_ENDPOINT, $this);
     }
 
     /**
-     * @return string
+     * The path that starts a login with this provider (`/sso/login/request/{uid}`).
      */
-    public function getEntityId()
+    public function getLoginRequestPath(?AbstractSettings $settings = null): string
     {
-        $metadata = $this->getMetadataModel();
-        return $metadata->getEntityID();
+        return UrlHelper::buildEndpointUrl($settings ?? $this->getDefaultSettings(), UrlHelper::LOGIN_REQUEST_ENDPOINT, $this, false);
     }
 
     /**
-     * @return EntityDescriptor
+     * The path that starts a logout with this provider (`/sso/logout/request/{uid}`).
      */
-    public function getMetadataModel()
+    public function getLogoutRequestPath(?AbstractSettings $settings = null): string
     {
-        if (!$this->metadataModel && $this->metadata) {
-            $this->metadataModel = new EntityDescriptor(
-                DOMDocumentFactory::fromString($this->metadata)->documentElement
-            );
+        return UrlHelper::buildEndpointUrl($settings ?? $this->getDefaultSettings(), UrlHelper::LOGOUT_REQUEST_ENDPOINT, $this, false);
+    }
+
+    public function generateUid(): void
+    {
+        $this->uid ??= Str::uuid()->toString();
+    }
+
+    public function getEntityId(): ?string
+    {
+        return $this->getMetadataModel()?->getEntityID() ?? ($this->attributes['entityId'] ?? null);
+    }
+
+    /**
+     * The parsed metadata. Parsing is strict and fails closed: invalid XML throws.
+     */
+    public function getMetadataModel(): ?EntityDescriptor
+    {
+        if (! $this->metadataModel && $this->metadata) {
+            $this->metadataModel = new EntityDescriptor(DOMDocumentFactory::fromString($this->metadata)->documentElement);
         }
 
         return $this->metadataModel;
     }
 
-    /**
-     * @param EntityDescriptor $descriptor
-     * @return $this
-     */
-    public function setMetadataModel(EntityDescriptor $descriptor)
+    public function setMetadataModel(EntityDescriptor $descriptor): static
     {
         $this->metadataModel = $descriptor;
+
         return $this;
     }
 
     /**
-     * @return bool
+     * Sets the metadata XML, dropping any parsed model of the old XML.
      */
-    public function isIdentityProvider()
+    public function setMetadataXml(?string $xml): static
+    {
+        $this->metadata = (string) $xml;
+        $this->metadataModel = null;
+        $this->idpSsoDescriptors = [];
+        $this->spSsoDescriptors = [];
+
+        return $this;
+    }
+
+    public function isIdentityProvider(): bool
     {
         return $this->providerType === static::TYPE_IDP;
     }
 
-    /**
-     * @return bool
-     */
-    public function isServiceProvider()
+    public function isServiceProvider(): bool
     {
         return $this->providerType === static::TYPE_SP;
     }
 
-    /**
-     * @return string
-     */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->providerType;
     }
 
     /**
-     * @return ActiveQuery
+     * @return HasOne<LinkRecord, $this>
      */
-    public function getLink()
+    public function link(): HasOne
     {
-        return $this->hasOne(LinkRecord::class, [
-            'providerId' => 'id',
-        ]);
+        return $this->hasOne(LinkRecord::class, 'providerUid', 'uid');
     }
 
     /**
-     * @return ActiveQuery
+     * @return HasOneThrough<KeyChainRecord, LinkRecord, $this>
      */
-    public function getKeychain()
+    public function keychain(): HasOneThrough
     {
-        return $this->hasOne(KeyChainRecord::class, [
-            'id' => 'keyChainId',
-        ])->viaTable(LinkRecord::tableName(), [
-            'providerId' => 'id',
-        ]);
+        // By UID: saml-sp and saml-idp share the link table, and their provider IDs overlap
+        return $this->hasOneThrough(KeyChainRecord::class, LinkRecord::class, 'providerUid', 'id', 'uid', 'keyChainId');
+    }
+
+    public function getKeychain(): ?KeyChainRecord
+    {
+        return $this->keychain;
     }
 
     /**
-     * @param KeyChainRecord $keyChain
-     * @return AbstractProvider
+     * Sets this system's key pair for the provider. Saving with {@see \flipbox\saml\core\services\AbstractProviderService::save()}
+     * links it.
      */
-    public function setKeychain(KeyChainRecord $keyChain)
+    public function setKeychain(?KeyChainRecord $keyChain): static
     {
-        $this->populateRelation('keychain', $keyChain);
-        return $this;
-    }
-
-    /**
-     *
-     */
-    public function setSite(Site $site)
-    {
-        $this->populateRelation('site', $site);
-        return $this;
-    }
-
-    /**
-     * Returns the provider's site.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getSite(): ActiveQueryInterface
-    {
-        return $this->hasOne(Site::class, ['id' => 'siteId']);
-    }
-
-    /**
-     * @return \craft\models\Site|null
-     */
-    public function getSiteModel()
-    {
-        $site = $this->getSite()->one();
-
-        if ($site instanceof Site) {
-            return new \craft\models\Site($site);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $mapping
-     * @return $this
-     */
-    public function setMapping(array $mapping)
-    {
-        $this->mapping = array_values($mapping);
+        $this->setRelation('keychain', $keyChain);
 
         return $this;
     }
 
     /**
-     * @return array
+     * @return BelongsTo<Site, $this>
      */
-    public function getMapping()
+    public function site(): BelongsTo
     {
-        $mapping = [];
-        if ($this->hasMapping()) {
-            $mapping = json_decode($this->mapping, true);
-        }
-
-        return $mapping;
+        return $this->belongsTo(Site::class, 'siteId');
     }
 
-    public function setMetadataOptions(MetadataOptions $metadataOptions)
+    public function setSite(?Site $site): static
     {
-        $this->metadataOptions = $metadataOptions;
+        $this->siteId = $site?->id;
+        $this->setRelation('site', $site);
+
+        return $this;
+    }
+
+    public function getSiteModel(): ?SiteData
+    {
+        return $this->siteId ? Sites::getSiteById($this->siteId) : null;
+    }
+
+    /**
+     * @param  array<int|string, array<string, mixed>>  $mapping
+     */
+    public function setMapping(array $mapping): static
+    {
+        $this->attributes['mapping'] = json_encode(array_values($mapping));
+
+        return $this;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getMapping(): array
+    {
+        $mapping = $this->hasMapping() ? json_decode((string) $this->attributes['mapping'], true) : [];
+
+        return is_array($mapping) ? array_values($mapping) : [];
+    }
+
+    public function setMetadataOptions(MetadataOptions $metadataOptions): static
+    {
+        $this->attributes['metadataOptions'] = json_encode($metadataOptions);
 
         return $this;
     }
 
     public function getMetadataOptions(): MetadataOptions
     {
-        $metadataOptions = new MetadataOptions();
-        if ($this->hasMetadataOptions()) {
-            $metadataOptions = MetadataOptions::jsonUnserialize($this->metadataOptions);
-        }
-
-        return $metadataOptions;
+        return $this->hasMetadataOptions()
+            ? MetadataOptions::jsonUnserialize((string) $this->attributes['metadataOptions'])
+            : new MetadataOptions;
     }
 
-    /**
-     * @param GroupOptions $groupOptions
-     * @return $this
-     */
-    public function setGroupOptions(GroupOptions $groupOptions)
+    public function setGroupOptions(GroupOptions $groupOptions): static
     {
-        $this->groupOptions = $groupOptions;
+        $this->attributes['groupOptions'] = json_encode($groupOptions);
 
         return $this;
     }
 
     public function getGroupOptions(): GroupOptions
     {
-        $groupOptions = new GroupOptions();
-        if ($this->hasGroupOptions()) {
-            $groupOptions = GroupOptions::jsonUnserialize($this->groupOptions);
-        }
-
-        return $groupOptions;
+        return $this->hasGroupOptions()
+            ? GroupOptions::jsonUnserialize((string) $this->attributes['groupOptions'])
+            : new GroupOptions;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasMapping()
+    public function hasMapping(): bool
     {
         return $this->hasJsonProperty('mapping');
     }
 
-    /**
-     * @return bool
-     */
     public function hasGroupOptions(): bool
     {
         return $this->hasJsonProperty('groupOptions');
     }
 
-    /**
-     * @return bool
-     */
     public function hasMetadataOptions(): bool
     {
         return $this->hasJsonProperty('metadataOptions');
     }
 
-    /**
-     * @param string $property
-     * @return bool
-     */
-    protected function hasJsonProperty(string $property)
+    protected function hasJsonProperty(string $property): bool
     {
-        if (!$this->{$property}) {
+        $value = $this->attributes[$property] ?? null;
+
+        if (! is_string($value) || $value === '') {
             return false;
         }
-        try {
-            json_decode($this->{$property}, true);
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
+
+        json_decode($value, true);
+
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }

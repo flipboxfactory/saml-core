@@ -2,14 +2,15 @@
 
 namespace flipbox\saml\core\services;
 
-use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use GuzzleHttp\Client;
+use flipbox\saml\core\events\MetadataCreated;
+use flipbox\saml\core\exceptions\InvalidMetadata;
+use Illuminate\Support\Facades\Http;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
@@ -23,20 +24,22 @@ use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\KeyDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
-use yii\base\Event;
-use yii\base\InvalidConfigException;
+use InvalidArgumentException;
 
 /**
  * Class AbstractMetadata
  * @package flipbox\saml\core\services\messages
  */
-class Metadata extends Component
+class Metadata extends PluginService
 {
     public const SET_SIGNING = Key::USAGE_SIGNING;
     public const SET_ENCRYPTION = Key::USAGE_ENCRYPTION;
     public const PROTOCOL = Constants::NS_SAMLP;
 
-    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
+    /**
+     * Largest metadata document fetched from a URL.
+     */
+    public const MAX_FETCH_BYTES = 5 * 1024 * 1024;
 
     /**
      * @var array
@@ -74,30 +77,43 @@ class Metadata extends Component
      * @return EntityDescriptor
      * @throws \Exception
      */
-    public function fetchByUrl(string $url)
+    /**
+     * Fetches and parses metadata from a URL (admin-supplied). Fails closed on HTTP errors, oversized documents and
+     * invalid XML.
+     *
+     * @throws InvalidMetadata
+     */
+    public function fetchByUrl(string $url): EntityDescriptor
     {
-        $client = new Client();
-        $response = $client->get($url);
-        return new EntityDescriptor(
-            DOMDocumentFactory::fromString(
-                $response->getBody()->getContents()
-            )->documentElement
-        );
+        if (! preg_match('#^https?://#i', $url)) {
+            throw new InvalidMetadata('Metadata URLs must use http or https.');
+        }
+
+        $response = Http::timeout(15)->connectTimeout(5)->withOptions(['stream' => true])->get($url);
+
+        if (! $response->successful()) {
+            throw new InvalidMetadata(sprintf('Fetching metadata failed with HTTP %d.', $response->status()));
+        }
+
+        $body = $response->toPsrResponse()->getBody();
+        $xml = '';
+        while (! $body->eof()) {
+            $xml .= $body->read(65536);
+            if (strlen($xml) > static::MAX_FETCH_BYTES) {
+                throw new InvalidMetadata('The metadata document is too large.');
+            }
+        }
+
+        return new EntityDescriptor(DOMDocumentFactory::fromString($xml)->documentElement);
     }
 
-    /**
-     * @param SettingsInterface $settings
-     * @param KeyChainRecord|null $withKeyPair
-     * @return EntityDescriptor
-     * @throws InvalidConfigException
-     */
     public function create(
         SettingsInterface $settings,
         AbstractProvider $provider,
     ): EntityDescriptor {
         $entityDescriptor = new EntityDescriptor();
 
-        $entityId = $provider ? $provider->entityId : $settings->getEntityId();
+        $entityId = $provider->entityId ?: $settings->getEntityId();
 
         $entityDescriptor->setEntityID($entityId);
 
@@ -119,16 +135,8 @@ class Metadata extends Component
             }
         }
 
-        /**
-         * Kick off event here so people can manipulate this object if needed
-         */
-        $event = new Event();
-
-        /**
-         * response
-         */
-        $event->data = $entityDescriptor;
-        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
+        // Listeners may change the metadata before it's published
+        event(new MetadataCreated($this->getPlugin(), $entityDescriptor));
 
         return $entityDescriptor;
     }
@@ -147,7 +155,7 @@ class Metadata extends Component
             Constants::BINDING_HTTP_POST,
             Constants::BINDING_HTTP_REDIRECT,
         ])) {
-            throw new InvalidConfigException('Binding not supported: ' . $binding);
+            throw new InvalidArgumentException('Binding not supported: ' . $binding);
         }
 
         if ($settings->getMyType() === $settings::SP) {
@@ -166,7 +174,7 @@ class Metadata extends Component
     protected function createIdpDescriptor(
         string $binding,
         AbstractSettings $settings,
-        AbstractProvider $provider = null,
+        ?AbstractProvider $provider = null,
     ) {
         $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
         $descriptor->setProtocolSupportEnumeration([

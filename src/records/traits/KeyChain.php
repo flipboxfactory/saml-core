@@ -1,39 +1,34 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\records\traits;
 
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\exceptions\InvalidMetadata;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 /**
- * Trait KeyPair
- * @package flipbox\saml\core\records\traits
- * @property KeyChainRecord $keychain
- * @mixin AbstractProvider
+ * @property-read KeyChainRecord|null $keychain
  */
 trait KeyChain
 {
-    /**
-     * @return string
-     */
-    public function defaultCipherType()
+    public function defaultCipherType(): string
     {
         return XMLSecurityKey::RSA_SHA256;
     }
 
     /**
-     * @return XMLSecurityKey
-     * @throws \Exception
+     * This system's private key for signing messages to the provider.
+     *
+     * @throws InvalidMetadata if the provider has no key pair
      */
-    public function keychainPrivateXmlSecurityKey()
+    public function keychainPrivateXmlSecurityKey(): XMLSecurityKey
     {
-        $xmlSecurityKey = new XMLSecurityKey($this->defaultCipherType(), [
-            'type' => 'private',
-        ]);
+        $keychain = $this->keychain ?? throw new InvalidMetadata('This provider has no key pair to sign with.');
 
-        $xmlSecurityKey->loadKey($this->keychain->getDecryptedKey());
+        $xmlSecurityKey = new XMLSecurityKey($this->defaultCipherType(), ['type' => 'private']);
+        $xmlSecurityKey->loadKey($keychain->getDecryptedKey());
 
         return $xmlSecurityKey;
     }

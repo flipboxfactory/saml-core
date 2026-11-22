@@ -3,6 +3,7 @@
 namespace flipbox\saml\core\helpers;
 
 use flipbox\saml\core\AbstractPlugin;
+use Illuminate\Support\Facades\Log;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use SAML2\EncryptedAssertion;
 use SAML2\Utilities\Certificate;
@@ -124,9 +125,9 @@ class SecurityHelper
     {
         $lastException = null;
         foreach (static::$validEncryptionMethods as $method) {
-            \Craft::debug('Trying method: ' . $method);
+            Log::debug('Trying method: ' . $method, ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
             if (in_array($method, $blacklist)) {
-                \Craft::debug('Decryption with key #' . $method . ' blacklisted.', AbstractPlugin::SAML_CORE_HANDLE);
+                Log::debug('Decryption with key #' . $method . ' blacklisted.', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
                 continue;
             }
             $xmlSecurityKey = new XMLSecurityKey($method, [
@@ -144,11 +145,11 @@ class SecurityHelper
                     $xmlSecurityKey,
                     $blacklist
                 );
-                \Craft::debug('Decryption with key #' . $method . ' succeeded.', AbstractPlugin::SAML_CORE_HANDLE);
+                Log::debug('Decryption with key #' . $method . ' succeeded.', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
                 return $assertion;
             } catch (\Exception $e) {
                 $lastException = $e;
-                \Craft::debug('Decryption with key #' . $method . ' failed. ', AbstractPlugin::SAML_CORE_HANDLE);
+                Log::debug('Decryption with key #' . $method . ' failed. ', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
             }
         }
 

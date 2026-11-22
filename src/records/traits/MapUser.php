@@ -1,38 +1,27 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\records\traits;
 
-use craft\elements\User;
-use flipbox\saml\core\records\AbstractProvider;
+use CraftCms\Cms\User\Elements\User;
+
+use function CraftCms\Cms\renderObjectTemplate;
 
 /**
- * Trait MapUser
- * @package flipbox\saml\core\records\traits
- * @mixin AbstractProvider
+ * @property string|null $nameIdOverride
  */
 trait MapUser
 {
     /**
-     * Current only used on the IDP side with this provider being the SP
-     *
-     * @param User $user
-     * @return string|null
-     * @throws \Throwable
-     * @throws \yii\base\Exception
+     * The NameID to send for a user: their username, or the provider's `nameIdOverride` object template.
      */
-    public function assignNameId(User $user)
+    public function assignNameId(User $user): string
     {
-        // Defaults to username
-        $nameId = $user->username;
-
         if ($this->nameIdOverride) {
-            $nameId = \Craft::$app->view->renderObjectTemplate(
-                $this->nameIdOverride,
-                $user
-            );
+            return renderObjectTemplate($this->nameIdOverride, $user);
         }
 
-        return $nameId;
+        return (string) $user->username;
     }
 }

@@ -3,9 +3,8 @@
 
 namespace flipbox\saml\core\models;
 
-use yii\base\Model;
 
-class MetadataOptions extends Model implements \JsonSerializable
+class MetadataOptions implements \JsonSerializable
 {
     use JsonModel;
     /**
@@ -83,7 +82,7 @@ class MetadataOptions extends Model implements \JsonSerializable
     {
         $expiryDate = null;
         if ($this->expiryDate instanceof \DateTime) {
-            $expiryDate = $this->expiryDate->format(\DateTime::ISO8601);
+            $expiryDate = $this->expiryDate->format(\DateTimeInterface::ATOM);
         }
         return [
             'expiryDate' => $expiryDate,

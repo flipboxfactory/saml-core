@@ -1,28 +1,36 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/9/18
- * Time: 2:10 PM
- */
+
+declare(strict_types=1);
+
 namespace flipbox\saml\core\records;
 
-use craft\db\ActiveRecord;
+use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Shared\Concerns\HasUid;
 use flipbox\keychain\records\KeyChainRecord;
-use yii\db\ActiveQuery;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class LinkRecord extends ActiveRecord
+/**
+ * Links a provider to this system's key pair for it. Shared by saml-sp and saml-idp.
+ *
+ * @property int $id
+ * @property int $providerId
+ * @property string $providerUid
+ * @property int $keyChainId
+ */
+class LinkRecord extends BaseModel
 {
+    use HasUid;
     use traits\Ember;
+
     public const TABLE_ALIAS = 'saml_provider_keychain_link';
 
+    protected $table = self::TABLE_ALIAS;
+
     /**
-     * @return ActiveQuery
+     * @return BelongsTo<KeyChainRecord, $this>
      */
-    public function getKeyChain()
+    public function keyChain(): BelongsTo
     {
-        return $this->hasOne(KeyChainRecord::class, [
-            'keyChainId' => 'uid',
-        ]);
+        return $this->belongsTo(KeyChainRecord::class, 'keyChainId');
     }
 }

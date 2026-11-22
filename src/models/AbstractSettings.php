@@ -1,146 +1,90 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 1/23/18
- * Time: 9:26 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\models;
 
-use craft\base\Model;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Url;
 
-abstract class AbstractSettings extends Model implements SettingsInterface
+abstract class AbstractSettings extends PluginSettings implements SettingsInterface
 {
     public const ENDPOINT_PREFIX = 'sso';
 
     /**
-     * @var string
+     * Which side of SAML this plugin is: {@see SettingsInterface::SP} or {@see SettingsInterface::IDP}. Set by the
+     * plugin's settings class.
      */
-    protected $myType;
+    protected ?string $myType = null;
 
     /**
-     * This is the system's entity id. Environmental Variables are allowed, ie, '$ENTITY_ID' (as a string)
-     * @var string
+     * This system's entity ID. Environment variables and aliases are allowed, e.g. `$SAML_ENTITY_ID`. Defaults to
+     * the site's base URL.
      */
-    protected $entityId;
+    public ?string $entityId = null;
 
     /**
-     * @var string
+     * The first path segment of the SAML endpoints, e.g. `sso` for `/sso/login`. Environment variables are allowed.
+     * Changing it changes the endpoint URLs in this system's metadata.
      */
-    public $endpointPrefix = self::ENDPOINT_PREFIX;
+    public string $endpointPrefix = self::ENDPOINT_PREFIX;
 
     /**
-     * This setting will destroy sessions when the Name Id matches a user with existing sessions.
-     * A current user session doesn't have to exist, ie, `\Craft::$app->user->isGuest === true`.
-     *
-     * This can be useful if the LogoutRequest is sent over AJAX.
-     *
-     * Warning: this will delete all current sessions for the user
-     *
-     * @var bool
+     * Whether an incoming (signature-verified) LogoutRequest ends every session of the user it names, even when the
+     * request's browser isn't logged in.
      */
-    public $sloDestroySpecifiedSessions = false;
+    public bool $sloDestroySpecifiedSessions = false;
 
-    /**
-     * @inheritdoc
-     */
-    public function attributes()
-    {
-        return array_merge(
-            parent::attributes(),
-            [
-                'entityId',
-            ]
-        );
-    }
-
-    /*******************************************
-     * ENTITY ID
-     *******************************************/
-
-    /**
-     * @param $entityId
-     * @return $this
-     */
-    public function setEntityId($entityId)
+    public function setEntityId(?string $entityId): static
     {
         $this->entityId = $entityId;
 
         return $this;
     }
 
-    /**
-     * @return string
-     * @throws \craft\errors\SiteNotFoundException
-     */
-    public function getEntityId()
+    public function getEntityId(): string
     {
-        if (!$this->entityId) {
-            $this->entityId = UrlHelper::baseUrl();
-        }
-
-        return \Craft::parseEnv($this->entityId);
+        return (string) Env::parse($this->getEntityIdRaw());
     }
 
-    /**
-     * @return string
-     * @throws \craft\errors\SiteNotFoundException
-     */
-    public function getEntityIdRaw()
+    public function getEntityIdRaw(): string
     {
-        if (!$this->entityId) {
-            $this->entityId = UrlHelper::baseUrl();
+        if (! $this->entityId) {
+            $this->entityId = Url::baseSiteUrl();
         }
 
         return $this->entityId;
     }
 
-    public function getEndpointPrefix()
+    public function getEndpointPrefix(): string
     {
-        return \Craft::parseEnv($this->endpointPrefix);
+        return (string) Env::parse($this->endpointPrefix);
     }
 
-    //@todo get rid of my type here. Should be back on the plugin
-    /**
-     * @param $myType
-     * @return $this
-     */
-    public function setMyType($myType)
+    public function setMyType(string $myType): static
     {
         $this->myType = $myType;
+
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getMyType()
+    public function getMyType(): ?string
     {
         return $this->myType;
     }
 
-    /**
-     * @return string
-     */
-    public function getRemoteType()
+    public function getRemoteType(): string
     {
         return $this->getMyType() === self::IDP ? self::SP : self::IDP;
     }
 
-    /**
-     * @return bool
-     */
-    public function isIDP()
+    public function isIDP(): bool
     {
         return $this->getMyType() === self::IDP;
     }
 
-    /**
-     * @return bool
-     */
-    public function isSP()
+    public function isSP(): bool
     {
         return $this->getMyType() === self::SP;
     }

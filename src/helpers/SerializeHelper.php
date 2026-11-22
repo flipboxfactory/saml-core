@@ -1,33 +1,32 @@
 <?php
 
-/**
- * @copyright  Copyright (c) Flipbox Digital Limited
- */
+declare(strict_types=1);
 
 namespace flipbox\saml\core\helpers;
 
-use craft\web\Response;
+use Illuminate\Http\Response;
 
 class SerializeHelper
 {
     /**
-     * set proper headers to present xml correctly
+     * An XML response, e.g. for metadata.
      */
-    public static function xmlContentType()
+    public static function xmlResponse(string $xml): Response
     {
-        \Craft::$app->getResponse()->format = Response::FORMAT_RAW;
-        \Craft::$app->getResponse()->getHeaders()->add('Content-Type', 'text/xml');
+        return new Response($xml, 200, ['Content-Type' => 'text/xml; charset=UTF-8']);
     }
 
     /**
-     * @param string $location
-     * @param array $parameters
-     * @return string
+     * Appends query parameters to a URL that may already have some.
+     *
+     * @param  array<string, mixed>  $parameters
      */
-    public static function redirectUrl(string $location, array $parameters)
+    public static function redirectUrl(string $location, array $parameters): string
     {
-        return $location .
-            (strpos($location, '?') === false ? '?' : '&') .
-            http_build_query($parameters);
+        if ($parameters === []) {
+            return $location;
+        }
+
+        return $location.(str_contains($location, '?') ? '&' : '?').http_build_query($parameters);
     }
 }

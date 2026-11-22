@@ -1,88 +1,38 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\helpers;
 
-use craft\helpers\UrlHelper as CraftUrlHelper;
-use craft\records\Site;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Url;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\records\AbstractProvider;
 
-class UrlHelper extends CraftUrlHelper
+/**
+ * Builds the SAML endpoint paths and URLs. These URLs are in partners' metadata, so they must stay as they are:
+ * `{site base URL}/{endpointPrefix}/{endpoint}/{provider UID}`.
+ */
+class UrlHelper
 {
-    /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
-     * @var string
-     */
     public const LOGIN_ENDPOINT = 'login';
 
-    /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
-     * @var string
-     */
     public const LOGOUT_ENDPOINT = 'logout';
 
-    /**
-     * This is the endpoint used to initiate login. Set the general.php config for `loginPath` to this.
-     * @see GeneralConfig::$loginPath
-     *
-     * @var string
-     */
     public const LOGIN_REQUEST_ENDPOINT = 'login/request';
 
-    /**
-     * This is the endpoint used to initiate logout. In this case, `logoutPath` cannot be used.
-     * Point your logout button to this endpoint.
-     *
-     * @var string
-     */
     public const LOGOUT_REQUEST_ENDPOINT = 'logout/request';
 
     /**
-     * @param AbstractSettings $settings
-     * @param string $endpoint
-     * @return string
+     * The route path of an endpoint, e.g. `sso/login`.
      */
-    public static function buildEndpointPath(AbstractSettings $settings, string $endpoint)
+    public static function buildEndpointPath(AbstractSettings $settings, string $endpoint): string
     {
-        return implode('/', [$settings->getEndpointPrefix(), $endpoint, ]);
+        return implode('/', [$settings->getEndpointPrefix(), $endpoint]);
     }
 
     /**
-     * @param string $baseUrl
-     * @return string
-     */
-    protected static function providerBaseUrl(string $baseUrl)
-    {
-        $url = '';
-        // alias
-        if (strpos($baseUrl, '@') === 0) {
-            $url = \Craft::getAlias($baseUrl);
-        }
-        // env var
-        if (strpos($baseUrl, '$') === 0) {
-            $url = \Craft::parseEnv($baseUrl);
-        }
-        // url
-        if (strpos($baseUrl, 'http') === 0) {
-            $url = $baseUrl;
-        }
-
-        // Trim last /
-        return preg_replace('#/$#', '', $url);
-    }
-
-    /**
-     * @param AbstractSettings $settings
-     * @param string $endpoint
-     * @param AbstractProvider $provider
-     * @param bool $fullUrl
-     * @return string
-     * @throws \yii\base\Exception
+     * The URL of an endpoint for a provider, on the provider's site when it has one with URLs.
      */
     public static function buildEndpointUrl(
         AbstractSettings $settings,
@@ -91,20 +41,30 @@ class UrlHelper extends CraftUrlHelper
         bool $fullUrl = true,
     ): string {
         $uri = implode('/', [$settings->getEndpointPrefix(), $endpoint, $provider->uid]);
-        $baseUrl = UrlHelper::baseUrl();
-        /** @var Site $site */
-        if (
-            ($site = $provider->site) &&
-                $site->hasUrls
-        ) {
-            $baseUrl = (string)$site->baseUrl;
+
+        if (! $fullUrl) {
+            return '/'.$uri;
         }
 
-        return $fullUrl ? implode('/', [
-            static::providerBaseUrl(
-                $baseUrl
-            ),
-            $uri,
-        ]) : "/" . $uri;
+        $site = $provider->site;
+        $baseUrl = $site !== null && $site->hasUrls ? (string) $site->baseUrl : Url::baseSiteUrl();
+
+        return implode('/', [static::providerBaseUrl($baseUrl), $uri]);
+    }
+
+    /**
+     * Resolves a site base URL that may be an alias (`@web`) or environment variable (`$PRIMARY_SITE_URL`), without
+     * its trailing slash. Anything else that isn't an absolute URL resolves to an empty string, as in 5.x.
+     */
+    protected static function providerBaseUrl(string $baseUrl): string
+    {
+        $url = '';
+        if (str_starts_with($baseUrl, '@') || str_starts_with($baseUrl, '$')) {
+            $url = (string) Env::parse($baseUrl);
+        } elseif (str_starts_with($baseUrl, 'http')) {
+            $url = $baseUrl;
+        }
+
+        return (string) preg_replace('#/$#', '', $url);
     }
 }

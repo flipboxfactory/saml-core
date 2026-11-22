@@ -3,11 +3,10 @@
 
 namespace flipbox\saml\core\models;
 
-use craft\elements\User;
-use yii\base\InvalidArgumentException;
-use yii\base\Model;
+use CraftCms\Cms\User\Elements\User;
+use InvalidArgumentException;
 
-class GroupOptions extends Model implements \JsonSerializable
+class GroupOptions implements \JsonSerializable
 {
     use JsonModel;
 

@@ -1,546 +1,359 @@
 <?php
-/**
- * @copyright Copyright (c) Flipbox Digital Limited
- * @license   https://flipboxfactory.com/software/saml-core/license
- * @link      https://www.flipboxfactory.com/software/saml-core/
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core;
 
-use craft\base\Plugin;
-use craft\events\RegisterTemplateRootsEvent;
-use craft\events\RegisterUrlRulesEvent;
-use craft\helpers\StringHelper;
-use craft\web\twig\variables\CraftVariable;
-use craft\web\View;
+use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Http\Middleware\RequireAdmin;
+use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Variables\CraftVariable;
+use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRoots;
 use flipbox\saml\core\containers\Logger;
 use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\SettingsInterface;
-use flipbox\saml\core\services\bindings\Factory;
+use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\AbstractProviderIdentity;
+use flipbox\saml\core\services\AbstractProviderIdentityService;
+use flipbox\saml\core\services\AbstractProviderService;
 use flipbox\saml\core\services\Cp;
 use flipbox\saml\core\services\EditProvider;
 use flipbox\saml\core\services\messages\LogoutRequest;
 use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
-use flipbox\saml\core\services\ProviderIdentityServiceInterface;
-use flipbox\saml\core\services\ProviderServiceInterface;
+use flipbox\saml\core\services\Session;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
+use LogicException;
 use SAML2\Compat\AbstractContainer;
-use yii\base\Event;
+
+use function CraftCms\Cms\t;
 
 /**
- * Class AbstractPlugin
+ * Base for the SAML plugins (saml-sp and saml-idp).
  *
- * @package flipbox\saml\core
+ * Subclasses provide their records, services ({@see services()}) and controllers ({@see controllers()}). This class
+ * registers the SAML endpoints and control panel routes for them, so every SAML plugin serves the same URLs:
+ *
+ * - `{endpointPrefix}/login[/{uid}]`, `{endpointPrefix}/logout[/{uid}]` (from partners; GET or POST, no CSRF)
+ * - `{endpointPrefix}/login/request[/{externalUid}[/{internalUid}]]` and the same for `logout/request` (start SSO/SLO)
+ * - control panel screens under `{handle}/…`, and form actions under `actions/{handle}/…`, for admins only
+ *
+ * @method AbstractSettings getSettings()
  */
 abstract class AbstractPlugin extends Plugin
 {
     public const SAML_CORE_HANDLE = 'saml-core';
 
-    /**
-     * @var bool
-     */
+    private const UUID = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+
     public bool $hasCpSettings = true;
 
-    /**
-     * @var bool
-     */
     public bool $hasCpSection = true;
 
+    /**
+     * @var array<string, object>
+     */
+    private array $serviceInstances = [];
+
+    /**
+     * Creates and registers this plugin's saml2 container, e.g. `new Saml2Container($this)` set on saml2's
+     * `ContainerSingleton`.
+     */
     abstract public function loadSaml2Container(): AbstractContainer;
 
     /**
-     * @return string
+     * @return class-string<AbstractProvider>
      */
-    abstract public function getProviderRecordClass();
+    abstract public function getProviderRecordClass(): string;
 
     /**
-     * @return string
+     * @return class-string<AbstractProviderIdentity>
      */
-    abstract public function getProviderIdentityRecordClass();
-
-    public function init(): void
-    {
-        parent::init();
-
-        $this->initCore();
-    }
+    abstract public function getProviderIdentityRecordClass(): string;
 
     /**
+     * Controller classes for the routes this class registers. Required keys:
      *
+     * - `login`: `index` (`{prefix}/login[/{uid}]`) and `request` (`{prefix}/login/request/…`)
+     * - `logout`: an {@see controllers\messages\AbstractLogoutController}
+     * - `metadata`: an {@see controllers\AbstractMetadataController}
+     * - `settings`: an {@see controllers\AbstractSettingsController}
+     * - `cp.general`, `cp.metadata.default`, `cp.metadata.edit`: control panel screens
+     * - `cp.keychain.index`, `cp.keychain.edit`: keychain's screens for this plugin
+     *
+     * @return array<string, class-string>
      */
-    public function initCore()
-    {
-        \Craft::setAlias('@flipbox/saml/core/web/assets', __DIR__ . '/web/assets');
-        $this->registerTemplates();
+    abstract protected function controllers(): array;
 
-        $this->setComponents(
-            [
+    /**
+     * This plugin's services, by ID. Subclasses add their own (at least `provider` and `providerIdentity`) and can
+     * replace core ones. Each class is constructed once per plugin, with the plugin as its `$plugin` argument.
+     *
+     * @return array<string, class-string>
+     */
+    protected function services(): array
+    {
+        return [
             'cp' => Cp::class,
-            'psr3logger' => [
-                'class' => Logger::class,
-            ],
             'metadata' => Metadata::class,
             'logoutRequest' => LogoutRequest::class,
             'logoutResponse' => LogoutResponse::class,
-            'editProvider' => [
-                'class' => EditProvider::class,
-                'plugin' => $this,
-            ],
-            ]
-        );
-
-        /**
-         * Set saml plugin to the craft variable
-         */
-        Event::on(
-            CraftVariable::class,
-            CraftVariable::EVENT_INIT,
-            function(Event $event) {
-                /**
-            * @var CraftVariable $variable
-            */
-                $variable = $event->sender;
-                $variable->set($this->getPluginVariableHandle(), self::getInstance());
-                $variable->set('samlCp', $this->getCp());
-            }
-        );
-
-        Event::on(
-            View::class,
-            View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
-            function(RegisterTemplateRootsEvent $e) {
-                if (is_dir($baseDir = (dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates'))) {
-                    $e->roots[static::SAML_CORE_HANDLE] = $baseDir;
-                }
-            }
-        );
+            'editProvider' => EditProvider::class,
+            'session' => Session::class,
+        ];
     }
 
     /**
-     * @inheritdoc
+     * One of this plugin's services.
      */
+    public function service(string $id): object
+    {
+        if (isset($this->serviceInstances[$id])) {
+            return $this->serviceInstances[$id];
+        }
+
+        $class = $this->services()[$id] ?? throw new LogicException("Plugin [$this->handle] has no [$id] service.");
+
+        return $this->serviceInstances[$id] = $this->app->make($class, ['plugin' => $this]);
+    }
+
+    public function boot(): void
+    {
+        // `craft.samlSp` / `craft.samlIdp` in templates, as in 5.x
+        $plugin = $this;
+        CraftVariable::macro($this->getPluginVariableHandle(), fn () => $plugin);
+
+        // saml-core's own templates (e.g. the HTTP-POST binding form), as `saml-core/…`
+        $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, self::SAML_CORE_HANDLE, __DIR__.'/templates');
+    }
+
+    public function bootHasRoutes(): void
+    {
+        parent::bootHasRoutes();
+
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
+        $this->registerEndpointRoutes();
+        $this->registerControlPanelRoutes();
+        $this->registerFormActionRoutes();
+    }
+
+    /**
+     * The SAML endpoints. Partners POST to these from their own sites, so CSRF protection doesn't apply; the
+     * messages are authenticated by their signatures instead.
+     */
+    protected function registerEndpointRoutes(): void
+    {
+        $controllers = $this->requireControllers(['login', 'logout']);
+        $login = UrlHelper::buildEndpointPath($this->getSettings(), UrlHelper::LOGIN_ENDPOINT);
+        $logout = UrlHelper::buildEndpointPath($this->getSettings(), UrlHelper::LOGOUT_ENDPOINT);
+        $name = "saml.$this->handle.";
+
+        $this->registerWebRoutes(function () use ($controllers, $login, $logout, $name) {
+            Route::withoutMiddleware(PreventRequestForgery::class)->group(function () use ($controllers, $login, $logout, $name) {
+                foreach (['login' => $login, 'logout' => $logout] as $type => $path) {
+                    Route::match(['GET', 'POST'], "$path/request/{externalUid?}/{internalUid?}", [$controllers[$type], 'request'])
+                        ->where(['externalUid' => self::UUID, 'internalUid' => self::UUID])
+                        ->name("$name$type.request");
+                    Route::match(['GET', 'POST'], "$path/{uid?}", [$controllers[$type], 'index'])
+                        ->where('uid', self::UUID)
+                        ->name("$name$type");
+                }
+            });
+        });
+    }
+
+    protected function registerControlPanelRoutes(): void
+    {
+        $c = $this->requireControllers(['cp.general', 'cp.metadata.default', 'cp.metadata.edit', 'cp.keychain.index', 'cp.keychain.edit']);
+        $handle = $this->handle;
+
+        $this->registerCpRoutes(function () use ($c, $handle) {
+            Route::middleware(RequireAdmin::class)->name("saml.$handle.cp.")->group(function () use ($c, $handle) {
+                Route::get($handle, [$c['cp.general'], 'setup'])->name('setup');
+                Route::get("$handle/settings", [$c['cp.general'], 'settings'])->name('settings');
+                Route::get("$handle/metadata", [$c['cp.metadata.default'], 'index'])->name('metadata');
+                Route::get("$handle/metadata/new", [$c['cp.metadata.edit'], 'index'])->name('metadata.new');
+                Route::get("$handle/metadata/new-idp", [$c['cp.metadata.edit'], 'newIdp'])->name('metadata.new-idp');
+                Route::get("$handle/metadata/new-sp", [$c['cp.metadata.edit'], 'newSp'])->name('metadata.new-sp');
+                Route::get("$handle/metadata/my-provider", [$c['cp.metadata.edit'], 'myProvider'])->name('metadata.my-provider');
+                Route::get("$handle/metadata/{providerId}", [$c['cp.metadata.edit'], 'index'])->whereNumber('providerId')->name('metadata.edit');
+                Route::get("$handle/keychain", [$c['cp.keychain.index'], 'index'])->name('keychain');
+                Route::get("$handle/keychain/new", [$c['cp.keychain.edit'], 'index'])->name('keychain.new');
+                Route::get("$handle/keychain/new-openssl", [$c['cp.keychain.edit'], 'openssl'])->name('keychain.openssl');
+                Route::get("$handle/keychain/{keypairId}", [$c['cp.keychain.edit'], 'index'])->whereNumber('keypairId')->name('keychain.edit');
+            });
+        });
+    }
+
+    /**
+     * Form actions at `actions/{handle}/…`, the Craft 5 action paths. Craft also registers them on the site's
+     * action trigger without authentication, so they require an admin here; Craft's web middleware applies CSRF.
+     */
+    protected function registerFormActionRoutes(): void
+    {
+        $c = $this->requireControllers(['metadata', 'settings']);
+
+        $this->registerActionRoutes(function () use ($c) {
+            Route::middleware(RequireAdmin::class)->group(function () use ($c) {
+                Route::get('metadata', [$c['metadata'], 'index']);
+                Route::get('metadata/download-certificate', [$c['metadata'], 'downloadCertificate']);
+                Route::post('metadata/save', [$c['metadata'], 'save']);
+                Route::post('metadata/auto-create', [$c['metadata'], 'autoCreate']);
+                Route::post('metadata/change-status', [$c['metadata'], 'changeStatus']);
+                Route::match(['post', 'delete'], 'metadata/delete', [$c['metadata'], 'delete']);
+                Route::post('settings/save', [$c['settings'], 'save']);
+            });
+        });
+    }
+
+    /**
+     * @param  list<string>  $keys
+     * @return array<string, class-string>
+     */
+    private function requireControllers(array $keys): array
+    {
+        $controllers = $this->controllers();
+        $missing = array_diff($keys, array_keys($controllers));
+
+        if ($missing !== []) {
+            throw new LogicException(sprintf('Plugin [%s] must provide controllers for: %s.', $this->handle, implode(', ', $missing)));
+        }
+
+        return $controllers;
+    }
+
     public function getSettingsResponse(): mixed
     {
-        \Craft::$app->getResponse()->redirect(
-            UrlHelper::cpUrl(static::getInstance()->getHandle() . '/settings')
-        );
+        return redirect()->to(\CraftCms\Cms\Support\Url::cpUrl($this->handle.'/settings'));
+    }
 
-        \Craft::$app->end();
+    public function getCpNavItem(): NavItem|array|null
+    {
+        $item = parent::getCpNavItem();
+
+        if ($item instanceof NavItem) {
+            $item->subnav(array_map(
+                fn (string $id, array $link) => new NavItem()->id($id)->label($link['label'])->href(\CraftCms\Cms\Support\Url::cpUrl($link['url'])),
+                array_keys($this->getSubNav()),
+                $this->getSubNav(),
+            ));
+        }
+
+        return $item;
     }
 
     /**
-     * @return array
+     * @return array<string, array{url: string, label: string}>
      */
-    private function getSubNav()
+    protected function getSubNav(): array
     {
         $nav = [
-            'saml.setup' => [
-                'url' => $this->getHandle() . '/',
-                'label' => \Craft::t(
-                    $this->getHandle(),
-                    'Setup'
-                ),
-            ],
-            'saml.myProvider' => [
-                'url' => $this->getHandle() . '/metadata/my-provider',
-                'label' => \Craft::t(
-                    $this->getHandle(),
-                    'My Provider'
-                ),
-            ],
-            'saml.providers' => [
-                'url' => $this->getHandle() . '/metadata',
-                'label' => \Craft::t(
-                    $this->getHandle(),
-                    'Provider List'
-                ),
-            ],
-            'saml.keychain' => [
-                'url' => $this->getHandle() . '/keychain',
-                'label' => \Craft::t(
-                    $this->getHandle(),
-                    'Keychain'
-                ),
-            ],
+            'saml.setup' => ['url' => $this->handle, 'label' => t('Setup', category: $this->handle)],
+            'saml.myProvider' => ['url' => $this->handle.'/metadata/my-provider', 'label' => t('My Provider', category: $this->handle)],
+            'saml.providers' => ['url' => $this->handle.'/metadata', 'label' => t('Provider List', category: $this->handle)],
+            'saml.keychain' => ['url' => $this->handle.'/keychain', 'label' => t('Keychain', category: $this->handle)],
         ];
 
-        if (\Craft::$app->config->general->allowAdminChanges) {
-            $nav['saml.settings'] = [
-                'url' => $this->getHandle() . '/settings',
-                'label' => \Craft::t(
-                    $this->getHandle(),
-                    'Settings'
-                ),
-            ];
+        if (\CraftCms\Cms\Cms::config()->allowAdminChanges) {
+            $nav['saml.settings'] = ['url' => $this->handle.'/settings', 'label' => t('Settings', category: $this->handle)];
         }
+
         return $nav;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getCpNavItem(): ?array
+    public function getPluginVariableHandle(): string
     {
-        return array_merge(
-            parent::getCpNavItem(), [
-            'subnav' => $this->getSubNav(),
-            ]
-        );
+        return Str::camel($this->handle);
     }
 
-    /**
-     * @return string
-     */
-    public function getPluginVariableHandle()
-    {
-        return StringHelper::camelCase($this->handle);
-    }
-
-    /**
-     * Registering the core templates for SP and IDP to use.
-     */
-    protected function registerTemplates()
-    {
-        Event::on(
-            View::class,
-            View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
-            function(RegisterTemplateRootsEvent $e) {
-                if (is_dir($baseDir = $this->getTemplateRoot())) {
-                    $e->roots[$this->getTemplateRootKey()] = $baseDir;
-                }
-            }
-        );
-    }
-
-    /**
-     * @return string
-     */
-    public function getMyType()
+    public function getMyType(): ?string
     {
         return $this->getSettings()->getMyType();
     }
 
-    /**
-     * @return string
-     */
-    public function getRemoteType()
+    public function getRemoteType(): string
     {
-        $type = SettingsInterface::SP;
-        if ($this->getMyType() === SettingsInterface::SP) {
-            $type = SettingsInterface::IDP;
-        }
-
-        return $type;
+        return $this->getMyType() === SettingsInterface::SP ? SettingsInterface::IDP : SettingsInterface::SP;
     }
 
-    /**
-     * @return string
-     */
-    public function getTemplateRoot()
+    public function getCp(): Cp
     {
-        return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates';
+        /** @var Cp */
+        return $this->service('cp');
     }
 
-    /**
-     * @return string
-     */
-    public function getTemplateRootKey()
+    public function getEditProvider(): EditProvider
     {
-        return $this->getHandle() . '-' . 'core';
-    }
-    /**
-     * EVENTs
-     */
-
-    /**
-     * @param RegisterUrlRulesEvent $event
-     */
-    public static function onRegisterCpUrlRules(RegisterUrlRulesEvent $event)
-    {
-        $handle = static::getInstance()->getHandle();
-        $event->rules = array_merge(
-            $event->rules,
-            [
-                $handle . '/' => $handle . '/cp/view/general/setup',
-                $handle . '/settings' => $handle . '/cp/view/general/settings',
-
-                /**
-                 * Keychain
-                 */
-                $handle . '/keychain' => $handle . '/cp/view/keychain/index',
-                $handle . '/keychain/new' => $handle . '/cp/view/keychain/edit',
-                $handle . '/keychain/new-openssl' => $handle . '/cp/view/keychain/edit/openssl',
-                $handle . '/keychain/<keypairId:\d+>' => $handle . '/cp/view/keychain/edit',
-
-                /**
-                 * Metadata
-                 */
-                $handle . '/metadata' => $handle . '/cp/view/metadata/default',
-                $handle . '/metadata/new' => $handle . '/cp/view/metadata/edit',
-                $handle . '/metadata/new-idp' => $handle . '/cp/view/metadata/edit/new-idp',
-                $handle . '/metadata/new-sp' => $handle . '/cp/view/metadata/edit/new-sp',
-                $handle . '/metadata/my-provider' => $handle . '/cp/view/metadata/edit/my-provider',
-                $handle . '/metadata/<providerId:\d+>' => $handle . '/cp/view/metadata/edit',
-            ]
-        );
+        /** @var EditProvider */
+        return $this->service('editProvider');
     }
 
-    /**
-     * @param RegisterUrlRulesEvent $event
-     */
-    public static function onRegisterSiteUrlRules(RegisterUrlRulesEvent $event)
+    public function getProvider(): AbstractProviderService
     {
-        $handle = static::getInstance()->getHandle();
-        $event->rules = array_merge(
-            $event->rules,
-            [
-                /**
-                 * LOGIN
-                 */
-                sprintf(
-                    'POST,GET %s',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGIN_ENDPOINT
-                    )
-                ) => $handle . '/login',
-                sprintf(
-                    'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGIN_ENDPOINT
-                    )
-                ) => $handle . '/login',
-                sprintf(
-                    'POST,GET %s',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGIN_REQUEST_ENDPOINT
-                    )
-                ) => $handle . '/login/request',
-                sprintf(
-                    'POST,GET %s' .
-                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGIN_REQUEST_ENDPOINT
-                    )
-                ) => $handle . '/login/request',
-                sprintf(
-                    'POST,GET %s' .
-                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>' .
-                    '/<internalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGIN_REQUEST_ENDPOINT
-                    )
-                ) => $handle . '/login/request',
-                /**
-                 * LOGOUT
-                 */
-                sprintf(
-                    'POST,GET %s/<uid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGOUT_ENDPOINT
-                    )
-                ) => $handle . '/logout',
-                sprintf(
-                    'POST,GET %s',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGOUT_ENDPOINT
-                    )
-                ) => $handle . '/logout',
-                sprintf(
-                    'POST,GET %s',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGOUT_REQUEST_ENDPOINT
-                    )
-                ) => $handle . '/logout/request',
-                sprintf(
-                    'POST,GET %s' .
-                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGOUT_REQUEST_ENDPOINT
-                    )
-                ) => $handle . '/logout/request',
-                sprintf(
-                    'POST,GET %s' .
-                    '/<externalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>' .
-                    '/<internalUid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>',
-                    UrlHelper::buildEndpointPath(
-                        static::getInstance()->getSettings(),
-                        UrlHelper::LOGOUT_REQUEST_ENDPOINT
-                    )
-                ) => $handle . '/logout/request',
-
-            ]
-        );
+        /** @var AbstractProviderService */
+        return $this->service('provider');
     }
 
-    /**
-     * @return AbstractSettings
-     */
-    public function getSettings(): ?\craft\base\Model
+    public function getProviderIdentity(): AbstractProviderIdentityService
     {
-        return parent::getSettings();
+        /** @var AbstractProviderIdentityService */
+        return $this->service('providerIdentity');
     }
 
-    /**
-     * Components
-     */
-
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @returns      Cp
-     */
-    public function getCp()
+    public function getMetadata(): Metadata
     {
-
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        return $this->get('cp');
+        /** @var Metadata */
+        return $this->service('metadata');
     }
 
-    /**
-     * @returns EditProvider
-     */
-    public function getEditProvider()
+    public function getLogoutRequest(): LogoutRequest
     {
-
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        return $this->get('editProvider');
+        /** @var LogoutRequest */
+        return $this->service('logoutRequest');
     }
 
-    /**
-     * @returns ProviderServiceInterface
-     */
-    public function getProvider()
+    public function getLogoutResponse(): LogoutResponse
     {
-
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        return $this->get('provider');
+        /** @var LogoutResponse */
+        return $this->service('logoutResponse');
     }
 
-    /**
-     * @returns ProviderIdentityServiceInterface
-     */
-    public function getProviderIdentity()
+    public function getSession(): Session
     {
-        return $this->get('providerIdentity');
+        /** @var Session */
+        return $this->service('session');
     }
 
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @return       Metadata
-     */
-    public function getMetadata()
+    public function getLogger(): Logger
     {
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        return $this->get('metadata');
+        return new Logger($this->handle);
     }
 
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @return       LogoutRequest
-     * @throws       \yii\base\InvalidConfigException
-     */
-    public function getLogoutRequest()
+    public static function error(string $message): void
     {
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        return $this->get('logoutRequest');
+        Log::error($message, ['category' => static::getInstance()->handle]);
     }
 
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     * @return       LogoutResponse
-     * @throws       \yii\base\InvalidConfigException
-     */
-    public function getLogoutResponse()
+    public static function warning(string $message): void
     {
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        return $this->get('logoutResponse');
+        Log::warning($message, ['category' => static::getInstance()->handle]);
     }
 
-    /**
-     * Bindings
-     */
-
-    /**
-     * @return Factory
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getBindingFactory()
+    public static function info(string $message): void
     {
-        /**
- * @noinspection PhpUnhandledExceptionInspection
-*/
-        /**
- * @noinspection PhpIncompatibleReturnTypeInspection
-*/
-        return $this->get('bindingFactory');
+        Log::info($message, ['category' => static::getInstance()->handle]);
     }
 
-    /**
-     * Log Functions
-     */
-
-    /**
-     * @param $message
-     */
-    public static function error($message)
+    public static function debug(string $message): void
     {
-        \Craft::error($message, static::getInstance()->getHandle());
-    }
-
-    /**
-     * @param $message
-     */
-    public static function warning($message)
-    {
-        \Craft::warning($message, static::getInstance()->getHandle());
-    }
-
-    /**
-     * @param $message
-     */
-    public static function info($message)
-    {
-        \Craft::info($message, static::getInstance()->getHandle());
-    }
-
-    /**
-     * @param $message
-     */
-    public static function debug($message)
-    {
-        \Craft::debug($message, static::getInstance()->getHandle());
+        Log::debug($message, ['category' => static::getInstance()->handle]);
     }
 }

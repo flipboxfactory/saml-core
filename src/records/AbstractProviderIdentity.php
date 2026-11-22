@@ -1,80 +1,73 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/28/18
- * Time: 9:45 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\records;
 
-use craft\db\ActiveRecord;
-use craft\validators\DateTimeValidator;
+use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Shared\Concerns\HasUid;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User;
 use flipbox\saml\core\records\traits\Ember;
-use yii\base\Model;
-use yii\db\ActiveQuery;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Class AbstractProviderIdentity
- * @package flipbox\saml\core\records
+ * A user's identity at a provider: the NameID they log in (or are sent) with.
+ *
+ * Concrete records set `TABLE_ALIAS` and implement {@see provider()}.
+ *
+ * @property int $id
+ * @property int $providerId
  * @property int $userId
+ * @property string $nameId
+ * @property string|null $sessionId
  * @property bool $enabled
- * @property string $sessionId
+ * @property \Carbon\CarbonInterface $lastLoginDate
+ * @property string $uid
  */
-abstract class AbstractProviderIdentity extends ActiveRecord implements ProviderIdentityInterface
+abstract class AbstractProviderIdentity extends BaseModel implements ProviderIdentityInterface
 {
     use Ember;
-    /**
-     * @var \craft\elements\User
-     */
-    private $user;
+    use HasUid;
+
+    protected $attributes = [
+        'enabled' => true,
+    ];
+
+    private ?User $user = null;
 
     /**
-     * @return \craft\elements\User|null
+     * @return BelongsTo<AbstractProvider, $this>
      */
-    public function getUser()
+    abstract public function provider(): BelongsTo;
+
+    public function getTable(): string
     {
-        if (!$this->userId) {
-            return null;
-        }
-        if (!$this->user) {
-            $this->user = \Craft::$app->getUsers()->getUserById(
-                $this->userId
-            );
-        }
-        return $this->user;
+        return static::tableName();
     }
 
     /**
-     * @return ActiveQuery
+     * @return array<string, string>
      */
-    abstract public function getProvider();
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
+    protected function casts(): array
     {
-        return array_merge(
-            parent::rules(),
-            [
-                [
-                    [
-                        'lastLoginDate',
-                    ],
-                    DateTimeValidator::class,
-                ],
-                [
-                    [
-                        'lastLoginDate',
-                        'sessionId',
-                    ],
-                    'safe',
-                    'on' => [
-                        Model::SCENARIO_DEFAULT,
-                    ],
-                ],
-            ]
-        );
+        return [
+            'enabled' => 'boolean',
+            'lastLoginDate' => 'datetime',
+        ];
+    }
+
+    public function getProvider(): ?AbstractProvider
+    {
+        return $this->provider()->first();
+    }
+
+    public function getUser(): ?User
+    {
+        if (! $this->userId) {
+            return null;
+        }
+
+        return $this->user ??= Users::getUserById((int) $this->userId);
     }
 }

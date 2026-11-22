@@ -1,20 +1,18 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\helpers;
 
-use craft\base\Field;
 use flipbox\saml\core\fields\AbstractExternalIdentity;
 
 class MappingHelper
 {
     /**
-     *
-     * @param Field $field
-     * @return bool
+     * Whether a user field can be used in attribute mapping (the external identity field can't).
      */
-    public static function isSupportedField(Field $field)
+    public static function isSupportedField(object $field): bool
     {
-        return !$field instanceof AbstractExternalIdentity;
+        return ! $field instanceof AbstractExternalIdentity;
     }
 }
