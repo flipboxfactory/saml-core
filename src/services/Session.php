@@ -1,54 +1,45 @@
 <?php
 
-/**
- * @copyright  Copyright (c) Flipbox Digital Limited
- */
+declare(strict_types=1);
 
 namespace flipbox\saml\core\services;
 
-use craft\base\Component;
-
-class Session extends Component
+/**
+ * SAML state kept in the user's session, namespaced per plugin.
+ */
+class Session extends PluginService
 {
     public const CORE_NAMESPACE = 'saml.core';
+
     public const REQUEST_ID_KEY = 'request.id';
+
     public const HASH_ALGO = 'sha256';
 
     /**
-     * @param $id
+     * Remembers the ID of a request we sent, to check a response's InResponseTo against.
      */
-    public function setRequestId($id)
+    public function setRequestId(?string $id): void
     {
-        \Craft::$app->getSession()->set(
-            $this->getName(static::REQUEST_ID_KEY),
-            $id
-        );
+        session()->put($this->getName(static::REQUEST_ID_KEY), $id);
+    }
+
+    public function getRequestId(): ?string
+    {
+        $id = session()->get($this->getName(static::REQUEST_ID_KEY));
+
+        return is_string($id) ? $id : null;
     }
 
     /**
-     * @return string
+     * A hash of the session ID, safe to store (e.g. as a SAML SessionIndex).
      */
-    public function getRequestId()
+    public function getId(): string
     {
-        return \Craft::$app->getSession()->get(
-            $this->getName(static::REQUEST_ID_KEY)
-        );
-    }
-    
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return hash(static::HASH_ALGO, \Craft::$app->session->getId());
+        return hash(static::HASH_ALGO, session()->getId());
     }
 
-    /**
-     * @param $key
-     * @return string
-     */
-    protected function getName($key)
+    protected function getName(string $key): string
     {
-        return static::CORE_NAMESPACE . '/' . $key;
+        return static::CORE_NAMESPACE.'/'.$this->getPlugin()->handle.'/'.$key;
     }
 }

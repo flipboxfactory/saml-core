@@ -1,257 +1,142 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/9/18
- * Time: 2:23 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\migrations;
 
-use craft\db\Migration;
-use craft\records\Site;
-use craft\records\User;
+use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Plugins;
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
-use yii\base\InvalidConfigException;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ColumnDefinition;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
+/**
+ * Base for the SAML plugins' install migrations (`database/migrations/Install.php`).
+ *
+ * Creates the plugin's provider and provider identity tables, and the provider/key pair link table that saml-sp and
+ * saml-idp share. Upgrades from 5.x already have these tables (5.x's incremental migrations are folded in here), so
+ * this only runs on a fresh install, and skips tables that exist.
+ */
 abstract class AbstractInstall extends Migration
 {
-    public const PROVIDER_AFTER_COLUMN = 'sha256';
-    protected $linkTableExist = false;
-
-    /**
-     * @return string
-     */
-    abstract protected function getIdentityTableName(): string;
-
-    /**
-     * @return string
-     */
     abstract protected function getProviderTableName(): string;
 
-    /**
-     * @inheritdoc
-     */
-    public function safeUp()
-    {
-        try {
-            /**
-             * if it doesn't exist, this will throw an exception
-             */
-            LinkRecord::getTableSchema();
-            $this->linkTableExist = true;
-        } catch (InvalidConfigException $e) {
-            \Craft::warning('Link table doesn\'t exist. Going to create it and the indexes.');
-        }
+    abstract protected function getIdentityTableName(): string;
 
+    public function up(): void
+    {
         $this->installKeyChain();
-        $this->createTables();
-        $this->createIndexes();
-        $this->addForeignKeys();
 
-        return true;
-    }
+        if (! Schema::hasTable($this->getProviderTableName())) {
+            Schema::create($this->getProviderTableName(), fn (Blueprint $table) => $this->defineProviderTable($table));
+        }
 
-    protected function installKeyChain()
-    {
-        if (!\Craft::$app->plugins->getPlugin('keychain')) {
-            \Craft::$app->plugins->installPlugin('keychain');
+        if (! Schema::hasTable(LinkRecord::TABLE_ALIAS)) {
+            Schema::create(LinkRecord::TABLE_ALIAS, function (Blueprint $table) {
+                $table->integer('id', true);
+                $table->integer('providerId');
+                $table->char('providerUid', 36);
+                $this->referenceColumn($table, 'keyChainId', KeyChainRecord::TABLE);
+                $table->foreign('keyChainId')->references('id')->on(KeyChainRecord::TABLE)->cascadeOnDelete();
+                $table->dateTime('dateCreated');
+                $table->dateTime('dateUpdated');
+                $table->char('uid', 36)->default('0');
+                $table->unique(['providerUid', 'keyChainId']);
+            });
+        }
+
+        if (! Schema::hasTable($this->getIdentityTableName())) {
+            Schema::create($this->getIdentityTableName(), function (Blueprint $table) {
+                $table->integer('id', true);
+                $table->integer('providerId');
+                $table->foreign('providerId')->references('id')->on($this->getProviderTableName())->cascadeOnDelete();
+                $this->referenceColumn($table, 'userId', Table::USERS);
+                $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete();
+                $table->string('nameId');
+                $table->string('sessionId')->nullable();
+                $table->boolean('enabled')->default(true);
+                $table->dateTime('lastLoginDate');
+                $table->dateTime('dateCreated');
+                $table->dateTime('dateUpdated');
+                $table->char('uid', 36)->default('0');
+                $table->index('nameId');
+                $table->unique(['providerId', 'nameId', 'userId']);
+            });
         }
     }
 
-    protected function getProviderFields()
+    protected function defineProviderTable(Blueprint $table): void
     {
-        return [
-            'id' => $this->primaryKey(),
-            'label' => $this->string(64),
-            'entityId' => $this->string()->notNull(),
-            'metadata' => $this->mediumText()->notNull(),
-            'sha256' => $this->string()->notNull(),
-            'providerType' => $this->enum('providerType', [
-                SettingsInterface::SP,
-                SettingsInterface::IDP,
-            ])->notNull(),
-            'encryptAssertions' => $this->boolean()->defaultValue(false)->notNull(),
-            'encryptionMethod' => $this->string(64)->null(),
-            'siteId' => $this->integer()->null(),
-            'groupOptions' => $this->text(),
-            'metadataOptions' => $this->text(),
-            'syncGroups' => $this->boolean()->defaultValue(true)->notNull(),
-            'groupsAttributeName' => $this->string(64)->defaultValue(AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME),
-            'nameIdOverride' => $this->text(),
-            'mapping' => $this->text(),
-            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ];
+        // INT ids, as in 5.x and Craft's own tables
+        $table->integer('id', true);
+        $table->string('label', 64)->nullable();
+        $table->string('entityId')->index();
+        $table->mediumText('metadata');
+        $table->string('sha256')->unique();
+        $table->enum('providerType', [SettingsInterface::SP, SettingsInterface::IDP]);
+        $table->boolean('encryptAssertions')->default(false);
+        $table->string('encryptionMethod', 64)->nullable();
+        $this->referenceColumn($table, 'siteId', Table::SITES)->nullable();
+        $table->foreign('siteId')->references('id')->on(Table::SITES)->nullOnDelete();
+        $table->text('groupOptions')->nullable();
+        $table->text('metadataOptions')->nullable();
+        $table->boolean('syncGroups')->default(true);
+        $table->string('groupsAttributeName', 64)->nullable()->default(AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME);
+        $table->text('nameIdOverride')->nullable();
+        $table->text('mapping')->nullable();
+        $table->boolean('enabled')->default(true);
+        $table->dateTime('dateCreated');
+        $table->dateTime('dateUpdated');
+        $table->char('uid', 36)->default('0');
     }
 
     /**
-     * Creates the tables.
-     *
-     * @return void
+     * A column of the same integer type as `$referencedTable.id`, so MySQL accepts a foreign key to it. (KeyChain's
+     * `id` is INT on sites upgraded from Craft 5, and may differ on fresh installs.)
      */
-    protected function createTables()
+    protected function referenceColumn(Blueprint $table, string $column, string $referencedTable): ColumnDefinition
     {
-        $this->createTable($this->getProviderTableName(), $this->getProviderFields());
+        $id = collect(Schema::getColumns($referencedTable))->firstWhere('name', 'id') ?? [];
+        $typeName = strtolower((string) ($id['type_name'] ?? 'int'));
+        $unsigned = str_contains(strtolower((string) ($id['type'] ?? '')), 'unsigned');
+        $big = in_array($typeName, ['bigint', 'int8', 'bigserial'], true);
 
-        if ($this->linkTableExist === false) {
-            $this->createTable(LinkRecord::tableName(), [
-                'id' => $this->primaryKey(),
-                'providerId' => $this->integer()->notNull(),
-                'providerUid' => $this->uid()->notNull(),
-                'keyChainId' => $this->integer()->notNull(),
-                'dateUpdated' => $this->dateTime()->notNull(),
-                'dateCreated' => $this->dateTime()->notNull(),
-                'uid' => $this->uid(),
-            ]);
+        return match (true) {
+            $big && $unsigned => $table->unsignedBigInteger($column),
+            $big => $table->bigInteger($column),
+            $unsigned => $table->unsignedInteger($column),
+            default => $table->integer($column),
+        };
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists($this->getIdentityTableName());
+
+        // The link table is shared with the other SAML plugin: remove only this plugin's links
+        if (Schema::hasTable(LinkRecord::TABLE_ALIAS) && Schema::hasTable($this->getProviderTableName())) {
+            DB::table(LinkRecord::TABLE_ALIAS)
+                ->whereIn('providerUid', DB::table($this->getProviderTableName())->select('uid'))
+                ->delete();
+
+            if (! DB::table(LinkRecord::TABLE_ALIAS)->exists()) {
+                Schema::drop(LinkRecord::TABLE_ALIAS);
+            }
         }
 
-        $this->createTable($this->getIdentityTableName(), [
-            'id' => $this->primaryKey(),
-            'providerId' => $this->integer()->notNull(),
-            'userId' => $this->integer()->notNull(),
-            'nameId' => $this->string()->notNull(),
-            'sessionId' => $this->string()->null(),
-            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
-            'lastLoginDate' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
+        Schema::dropIfExists($this->getProviderTableName());
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function safeDown()
+    protected function installKeyChain(): void
     {
-
-
-        // Delete tables
-        $this->dropTableIfExists($this->getIdentityTableName());
-        $this->dropTableIfExists(LinkRecord::tableName());
-        $this->dropTableIfExists($this->getProviderTableName());
-        return true;
-    }
-
-    /**
-     * Creates the indexes.
-     *
-     * @return void
-     */
-    protected function createIndexes()
-    {
-        $this->createIndex(
-            $this->db->getIndexName($this->getProviderTableName(), 'entityId', false, true),
-            $this->getProviderTableName(),
-            'entityId',
-            false
-        );
-        $this->createIndex(
-            $this->db->getIndexName($this->getProviderTableName(), [
-                'sha256',
-            ], true, true),
-            $this->getProviderTableName(),
-            [
-                'sha256',
-            ],
-            true
-        );
-
-        if ($this->linkTableExist === false) {
-            $this->createIndex(
-                $this->db->getIndexName(LinkRecord::tableName(), [
-                    'providerUid',
-                    'keyChainId',
-                ], true, true),
-                LinkRecord::tableName(),
-                [
-                    'providerUid',
-                    'keyChainId',
-                ],
-                true
-            );
+        if (! Plugins::isPluginInstalled('keychain')) {
+            Plugins::installPlugin('keychain');
         }
-
-        $this->createIndex(
-            $this->db->getIndexName($this->getIdentityTableName(), 'nameId', false, true),
-            $this->getIdentityTableName(),
-            'nameId',
-            false
-        );
-
-        $this->createIndex(
-            $this->db->getIndexName(
-                $this->getIdentityTableName(),
-                [
-                    'providerId',
-                    'nameId',
-                    'userId',
-                ],
-                true
-            ),
-            $this->getIdentityTableName(),
-            [
-                'providerId',
-                'nameId',
-                'userId',
-            ],
-            true
-        );
-    }
-
-    /**
-     * Adds the foreign keys.
-     *
-     * @return void
-     */
-    protected function addForeignKeys()
-    {
-        if ($this->linkTableExist === false) {
-            /**
-             * Link KeyChain
-             */
-            $this->addForeignKey(
-                $this->db->getForeignKeyName(LinkRecord::tableName(), 'keyChainId'),
-                LinkRecord::tableName(),
-                'keyChainId',
-                KeyChainRecord::tableName(),
-                'id',
-                'CASCADE'
-            );
-        }
-
-        $this->addForeignKey(
-            $this->db->getForeignKeyName($this->getIdentityTableName(), 'userId'),
-            $this->getIdentityTableName(),
-            'userId',
-            User::tableName(),
-            'id',
-            'CASCADE'
-        );
-        $this->addForeignKey(
-            $this->db->getForeignKeyName($this->getIdentityTableName(), 'providerId'),
-            $this->getIdentityTableName(),
-            'providerId',
-            $this->getProviderTableName(),
-            'id',
-            'CASCADE'
-        );
-
-        $this->addForeignKey(
-            $this->db->getForeignKeyName(
-                $this->getProviderTableName(),
-                'siteId'
-            ),
-            $this->getProviderTableName(),
-            'siteId',
-            Site::tableName(),
-            'id'
-        );
     }
 }

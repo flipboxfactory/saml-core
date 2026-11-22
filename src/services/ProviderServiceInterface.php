@@ -1,78 +1,27 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/9/18
- * Time: 10:42 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\services;
 
 use flipbox\keychain\records\KeyChainRecord;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\ProviderInterface;
+use Illuminate\Database\Eloquent\Builder;
 use SAML2\XML\md\EntityDescriptor;
-use yii\db\Query;
 
 interface ProviderServiceInterface
 {
     /**
-     * @param EntityDescriptor $entityDescriptor
-     * @param KeyChainRecord|null $keyChainRecord
-     * @return ProviderInterface
+     * @param  array<string, mixed>  $condition
+     * @return Builder<AbstractProvider>
      */
-    public function create(
-        EntityDescriptor $entityDescriptor,
-        KeyChainRecord $keyChainRecord = null,
-    ): ProviderInterface;
+    public function find(array $condition = []): Builder;
 
-    /**
-     * @param AbstractProvider $record
-     * @param bool $runValidation
-     * @param array|null $attributeNames
-     * @return AbstractProvider
-     * @throws \Exception
-     */
-    public function save(AbstractProvider $record, $runValidation = true, $attributeNames = null);
+    public function findOwn(): ?AbstractProvider;
 
-    /**
-     * @param ProviderInterface $provider
-     * @return bool|int
-     */
-    public function delete(ProviderInterface $record);
+    public function create(EntityDescriptor $entityDescriptor, ?KeyChainRecord $keyChainRecord = null): AbstractProvider;
 
-    /**
-     * @param AbstractProvider $provider
-     * @param KeyChainRecord $keyChain
-     * @param bool $runValidation
-     * @param array|null $attributeNames
-     * @throws \Exception
-     */
-    public function linkToKey(
-        AbstractProvider $provider,
-        KeyChainRecord $keyChain,
-        $runValidation = true,
-        $attributeNames = null,
-    );
+    public function save(AbstractProvider $record): AbstractProvider;
 
-    /**
-     * @param string $entityId
-     * @return Query|null
-     */
-    public function findByEntityId($entityId);
-
-    /**
-     * @return AbstractProvider|null
-     */
-    public function findOwn();
-
-    /**
-     * @return Query|null
-     */
-    public function findByIdp($condition = []);
-
-    /**
-     * @return Query|null
-     */
-    public function findBySp($condition = []);
+    public function delete(AbstractProvider $provider): bool;
 }

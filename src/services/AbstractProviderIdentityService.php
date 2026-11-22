@@ -1,106 +1,79 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/28/18
- * Time: 9:37 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\services;
 
-use craft\elements\User;
-use flipbox\saml\core\EnsureSAMLPlugin;
+use CraftCms\Cms\User\Elements\User;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
-use flipbox\saml\core\records\ProviderIdentityInterface;
-use flipbox\saml\core\records\ProviderInterface;
-use yii\base\Component;
-use yii\helpers\Json;
+use Illuminate\Database\Eloquent\Builder;
+use RuntimeException;
 
 /**
- * Class AbstractProviderIdentityService
- * @package flipbox\saml\core\services
- * @property \DateTime $lastLoginDate
+ * Finds and saves users' identities at providers.
  */
-abstract class AbstractProviderIdentityService extends Component implements ProviderIdentityServiceInterface, EnsureSAMLPlugin
+abstract class AbstractProviderIdentityService extends PluginService implements ProviderIdentityServiceInterface
 {
     /**
-     * @inheritdoc
+     * @return Builder<AbstractProviderIdentity>
      */
-    public function findByNameId(string $nameId, ProviderInterface $provider)
+    public function findByNameId(string $nameId, AbstractProvider $provider): Builder
     {
-        return $this->find([
-            'nameId' => $nameId,
-            'providerId' => $provider->id,
-        ]);
+        return $this->find(['nameId' => $nameId, 'providerId' => $provider->id]);
     }
 
     /**
-     * @inheritdoc
+     * @return Builder<AbstractProviderIdentity>
      */
-    public function findByUser(User $user)
+    public function findByUser(User $user): Builder
     {
-        return $this->find([
-            'userId' => $user->getId(),
-        ]);
+        return $this->find(['userId' => $user->id]);
+    }
+
+    public function findByUserAndProvider(User $user, AbstractProvider $provider): ?AbstractProviderIdentity
+    {
+        return $this->find(['userId' => $user->id, 'providerId' => $provider->id])->first();
     }
 
     /**
-     * @param User $user
-     * @param AbstractProvider $provider
-     * @return ProviderInterface|null
+     * The user's identity at the provider, or a new unsaved one using the provider's NameID for them.
      */
-    public function findByUserAndProvider(User $user, AbstractProvider $provider)
+    public function findByUserAndProviderOrCreate(User $user, AbstractProvider $provider): AbstractProviderIdentity
     {
-        return $this->find([
-            'userId' => $user->getId(),
-            'providerId' => $provider->id,
-        ])->one();
-    }
+        if ($identity = $this->findByUserAndProvider($user, $provider)) {
+            return $identity;
+        }
 
-    public function findByUserAndProviderOrCreate(User $user, AbstractProvider $provider)
-    {
         $recordClass = $this->getPlugin()->getProviderIdentityRecordClass();
-        return
-            $this->findByUserAndProvider($user, $provider)
-            ??
-            new $recordClass([
-                'nameId' => $provider->assignNameId($user),
-                'providerId' => $provider->id,
-                'enabled' => true,
-                'userId' => $user->getId(),
-                'lastLoginDate' => new \DateTime(),
-            ]);
+
+        return new $recordClass([
+            'nameId' => $provider->assignNameId($user),
+            'providerId' => $provider->id,
+            'enabled' => true,
+            'userId' => $user->id,
+            'lastLoginDate' => now(),
+        ]);
     }
 
     /**
-     * @inheritdoc
+     * @param  array<string, mixed>  $condition
+     * @return Builder<AbstractProviderIdentity>
      */
-    public function find($condition = [])
+    public function find(array $condition = []): Builder
     {
-        /** @var AbstractProviderIdentity $class */
         $class = $this->getPlugin()->getProviderIdentityRecordClass();
 
-        /** @var AbstractProviderIdentity $class */
-        $providerId = $class::find()->where($condition);
-
-        return $providerId;
+        return $class::query()->where($condition);
     }
 
     /**
-     * @param ProviderIdentityInterface $record
-     * @param bool $runValidation
-     * @param array|null $attributeNames
-     * @return ProviderIdentityInterface
-     * @throws \Exception
+     * @throws RuntimeException if it can't be saved
      */
-    public function save(
-        ProviderIdentityInterface $record,
-        $runValidation = true,
-        $attributeNames = null,
-    ): ProviderIdentityInterface {
-        if (!$record->save($runValidation, $attributeNames)) {
-            throw new \Exception(Json::encode($record->getErrors()));
+    public function save(AbstractProviderIdentity $record): AbstractProviderIdentity
+    {
+        if (! $record->save()) {
+            throw new RuntimeException('The provider identity couldn’t be saved.');
         }
 
         return $record;

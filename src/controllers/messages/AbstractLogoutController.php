@@ -1,211 +1,194 @@
 <?php
 
-/**
- * @copyright  Copyright (c) Flipbox Digital Limited
- */
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers\messages;
 
-use craft\db\Table;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Url;
+use flipbox\saml\core\exceptions\InvalidSignature;
 use flipbox\saml\core\helpers\MessageHelper;
-use flipbox\saml\core\models\AbstractSettings;
+use flipbox\saml\core\helpers\SignatureVerifier;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\AbstractProviderIdentity;
-use flipbox\saml\core\records\ProviderInterface;
 use flipbox\saml\core\services\bindings\Factory;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse;
-use yii\web\HttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Throwable;
+
+use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUserElement;
 
 /**
- * Class AbstractLogoutController
- * @package flipbox\saml\core\controllers\messages
+ * Single logout (`{prefix}/logout`, `{prefix}/logout/request`).
+ *
+ * Incoming LogoutRequests and LogoutResponses are only acted on when they come from a known, enabled partner, are
+ * signed by a key in that partner's metadata, and name this endpoint as their Destination. A LogoutResponse must also answer the request this session sent.
  */
-abstract class AbstractLogoutController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
+abstract class AbstractLogoutController extends AbstractController
 {
-    protected array|bool|int $allowAnonymous = [
-        'actionIndex',
-        'actionRequest',
-    ];
-
-    public $enableCsrfValidation = false;
+    /**
+     * The partner to log out from, by UID, or the default one.
+     */
+    abstract protected function getRemoteProvider(?string $uid = null): ?AbstractProvider;
 
     /**
-     * @return ProviderInterface
+     * Receives a LogoutRequest or LogoutResponse from a partner.
      */
-    abstract protected function getRemoteProvider($uid = null);
-
-    /**
-     * @param \yii\base\Action $action
-     * @return bool
-     */
-    public function beforeAction($action): bool
+    public function index(Request $request, ?string $uid = null): mixed
     {
-        if (in_array(
-            $action->actionMethod,
-            [
-                'actionIndex',
-                'actionRequest',
-            ]
-        )) {
-            return true;
-        }
-        return parent::beforeAction($action);
-    }
-
-
-    /**
-     * @return \yii\web\Response
-     * @throws HttpException
-     * @throws \flipbox\saml\core\exceptions\InvalidMetadata
-     * @throws \yii\base\ExitException
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function actionIndex($externalUid = null)
-    {
-        $message = Factory::receive();
-
-        $isRequest = $message instanceof LogoutRequest;
-        $isResponse = $message instanceof LogoutResponse;
-
-        if ((!$isRequest && !$isResponse) ||
-            $isResponse && $this->getPlugin()->getSession()->getRequestId() !== $message->getInResponseTo()) {
-            throw new HttpException(400, "Invalid request");
+        try {
+            $message = Factory::receive($request);
+        } catch (Throwable $e) {
+            throw new BadRequestHttpException('Invalid SAML message.', $e);
         }
 
-        $settings = $this->getPlugin()->getSettings();
-
-        /** @var AbstractProvider $theirProvider */
-        $theirProvider = $this->getPlugin()->getProvider()->findByEntityId(
-            MessageHelper::getIssuer($message->getIssuer())
-        )->one();
-        $condition = [
-            'enabled' => 1,
-        ];
-
-        if ($externalUid) {
-            $condition['uid'] = $externalUid;
-        } else {
-            $condition['entityId'] = $settings->getEntityId();
+        if (! $message instanceof LogoutRequest && ! $message instanceof LogoutResponse) {
+            throw new BadRequestHttpException('Invalid SAML message.');
         }
-        /** @var AbstractProvider $ourProvider */
-        $ourProvider = $this->getPlugin()->getProvider()->find($condition)->one();
 
-        if ($isRequest) {
-            if (\Craft::$app->getUser()->isGuest) {
-                $this->destroySpecifiedSession(
-                    $message,
-                    $theirProvider,
-                    $this->getPlugin()->getSettings()
-                );
+        // SAML bindings 3.4.5.2/3.5.5.2: a signed message names where it was sent; it must be here
+        $destination = (string) $message->getDestination();
+        if ($destination === '' || rtrim($destination, '/') !== rtrim($request->url(), '/')) {
+            throw new BadRequestHttpException('The logout message wasn’t sent to this endpoint.');
+        }
+
+        $theirProvider = $this->findIssuer($message);
+
+        try {
+            SignatureVerifier::verify($message, $theirProvider);
+        } catch (InvalidSignature) {
+            throw new BadRequestHttpException('The logout message isn’t signed by the provider.');
+        }
+
+        if ($message instanceof LogoutResponse) {
+            $session = $this->getPlugin()->getSession();
+            $requestId = $session->getRequestId();
+
+            if (! $requestId || ! hash_equals($requestId, (string) $message->getInResponseTo())) {
+                throw new BadRequestHttpException('The logout response doesn’t match a logout request from this session.');
             }
 
-            /** @var LogoutResponse $response */
-            $response = $this->getPlugin()->getLogoutResponse()->create(
-                $message,
-                $theirProvider,
-                $ourProvider
-            );
+            $session->setRequestId(null);
 
-            /**
-             * Add the request id to the the response.
-             */
-            $response->setInResponseTo($message->getId());
-
-            \Craft::$app->user->logout(true);
-            Factory::send($response, $theirProvider);
-            \Craft::$app->end();
+            return new RedirectResponse($this->logoutUrl());
         }
 
-        return $this->redirect(
-            \Craft::$app->config->general->logoutPath
-        );
+        $ourProvider = $this->findOwnProvider($uid);
+
+        if ($this->getPlugin()->getSettings()->sloDestroySpecifiedSessions) {
+            $this->destroySpecifiedSessions($message, $theirProvider);
+        }
+
+        $this->logoutCurrentUser($request);
+
+        Factory::send($this->getPlugin()->getLogoutResponse()->create($message, $theirProvider, $ourProvider), $theirProvider);
     }
 
     /**
-     * @param LogoutRequest $message
-     * @param AbstractProvider $theirProvider
-     * @throws \yii\db\Exception
+     * Starts a logout with a partner, for the current user (`{prefix}/logout/request[/{externalUid}[/{internalUid}]]`).
      */
-    protected function destroySpecifiedSession(
-        LogoutRequest $message,
-        AbstractProvider $theirProvider,
-        AbstractSettings $settings,
-    ) {
-        if (!$settings->sloDestroySpecifiedSessions) {
-            return;
-        }
-
-        /** @var AbstractProviderIdentity $user */
-        $user = $this->getPlugin()->getProviderIdentity()->findByNameId(
-            $message->getNameId()->getValue(),
-            $theirProvider
-        )->one();
-
-        if ($user) {
-            \Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'userId' => $user->userId,
-                ])
-                ->execute();
-        }
-    }
-
-
-    /**
-     * @param null $uid
-     * @throws \flipbox\saml\core\exceptions\InvalidMetadata
-     * @throws \yii\base\ExitException
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function actionRequest($externalUid = null, $internalUid = null)
+    public function request(Request $request, ?string $externalUid = null, ?string $internalUid = null): mixed
     {
-        // Backwards compatibility with 1.0
-        // The request shouldn't get here with a SAMLResponse
-        if (\Craft::$app->request->getBodyParam('SAMLResponse')) {
-            return $this->actionIndex();
+        // A partner may post its LogoutResponse here
+        if ($request->has('SAMLResponse')) {
+            return $this->index($request);
         }
 
-        /** @var AbstractProvider $theirProvider */
+        $user = currentUserElement();
         $theirProvider = $this->getRemoteProvider($externalUid);
+        $identity = $user && $theirProvider
+            ? $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)
+            : null;
 
-        if ($internalUid) {
-            /** @var AbstractProvider $ourProvider */
-            $ourProvider = $this->getPlugin()->getProvider()->find(['uid' => $internalUid])->one();
-        } else {
-            /** @var AbstractProvider $ourProvider */
-            $ourProvider = $this->getPlugin()->getProvider()->findOwn();
+        if (! $identity) {
+            $this->getPlugin()::warning('Logout not available: the user isn’t logged in with the provider.');
+
+            return new RedirectResponse($this->logoutUrl());
         }
 
-        $user = \Craft::$app->user->getIdentity();
-        $identity = null;
+        $ourProvider = $internalUid
+            ? $this->getPlugin()->getProvider()->find(['uid' => $internalUid, 'enabled' => true])->first()
+            : $this->getPlugin()->getProvider()->findOwn();
 
-        if (!$user || (
-                $user &&
-                !$identity = $this->getPlugin()->getProviderIdentity()->findByUserAndProvider($user, $theirProvider)
-            )
-        ) {
-            $saml = $this->getPlugin();
-            $saml::warning('Logout not available. User is not logged in.');
-            // Logout locally only
-            return $this->redirect(
-                \Craft::$app->config->general->logoutPath
-            );
+        if (! $ourProvider) {
+            throw new BadRequestHttpException('This system’s provider isn’t configured.');
         }
 
         $logoutRequest = $this->getPlugin()->getLogoutRequest()->create(
             $theirProvider,
             $ourProvider,
             $identity,
-            \Craft::$app->config->general->getPostLogoutRedirect()
+            (string) Cms::config()->getPostLogoutRedirect(),
         );
 
-        /**
-         * Save id to session so we can validate the response.
-         */
         $this->getPlugin()->getSession()->setRequestId($logoutRequest->getId());
 
         Factory::send($logoutRequest, $theirProvider);
-        \Craft::$app->end();
+    }
+
+    /**
+     * The enabled partner that issued the message.
+     */
+    protected function findIssuer(LogoutRequest|LogoutResponse $message): AbstractProvider
+    {
+        $entityId = MessageHelper::getIssuer($message->getIssuer());
+
+        $provider = $entityId ? $this->getPlugin()->getProvider()->find([
+            'entityId' => $entityId,
+            'providerType' => $this->getPlugin()->getRemoteType(),
+            'enabled' => true,
+        ])->first() : null;
+
+        return $provider ?? throw new BadRequestHttpException('The logout message isn’t from a known provider.');
+    }
+
+    protected function findOwnProvider(?string $uid): AbstractProvider
+    {
+        $provider = $uid
+            ? $this->getPlugin()->getProvider()->find(['uid' => $uid, 'enabled' => true])->first()
+            : $this->getPlugin()->getProvider()->findOwn();
+
+        return $provider ?? throw new BadRequestHttpException('This system’s provider isn’t configured.');
+    }
+
+    /**
+     * Ends every session of the user the (verified) LogoutRequest names (`sloDestroySpecifiedSessions`). Only
+     * reaches other devices with the database session driver.
+     */
+    protected function destroySpecifiedSessions(LogoutRequest $message, AbstractProvider $theirProvider): void
+    {
+        $nameId = $message->getNameId()?->getValue();
+        if (! $nameId) {
+            return;
+        }
+
+        $identity = $this->getPlugin()->getProviderIdentity()->findByNameId($nameId, $theirProvider)->first();
+
+        if ($identity && $user = $identity->getUser()) {
+            Users::invalidateUserSessions($user);
+        }
+    }
+
+    protected function logoutCurrentUser(Request $request): void
+    {
+        if (craftAuth()->check()) {
+            craftAuth()->logout();
+        }
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+    }
+
+    protected function logoutUrl(): string
+    {
+        $path = Cms::config()->getLogoutPath();
+
+        return Url::siteUrl(is_string($path) && $path !== '' ? $path : '');
     }
 }

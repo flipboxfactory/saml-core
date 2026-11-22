@@ -2,14 +2,15 @@
 
 namespace flipbox\saml\core\services;
 
-use craft\base\Component;
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\events\MetadataCreated;
+use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
-use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
@@ -23,32 +24,34 @@ use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\KeyDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
-use yii\base\Event;
-use yii\base\InvalidConfigException;
 
 /**
  * Class AbstractMetadata
- * @package flipbox\saml\core\services\messages
  */
-class Metadata extends Component
+class Metadata extends PluginService
 {
     public const SET_SIGNING = Key::USAGE_SIGNING;
+
     public const SET_ENCRYPTION = Key::USAGE_ENCRYPTION;
+
     public const PROTOCOL = Constants::NS_SAMLP;
 
-    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
+    /**
+     * Largest metadata document fetched from a URL.
+     */
+    public const MAX_FETCH_BYTES = 5 * 1024 * 1024;
 
     /**
-     * @var array
+     * @var list<string>
      */
-    protected $supportedBindings = [
+    protected array $supportedBindings = [
         Constants::BINDING_HTTP_POST,
     ];
 
     /**
-     * @return array
+     * @return list<string>
      */
-    public function getSupportedBindings()
+    public function getSupportedBindings(): array
     {
         return $this->supportedBindings;
     }
@@ -70,34 +73,45 @@ class Metadata extends Component
     }
 
     /**
-     * @param string $url
-     * @return EntityDescriptor
      * @throws \Exception
      */
-    public function fetchByUrl(string $url)
+    /**
+     * Fetches and parses metadata from a URL (admin-supplied). Fails closed on HTTP errors, oversized documents and
+     * invalid XML.
+     *
+     * @throws InvalidMetadata
+     */
+    public function fetchByUrl(string $url): EntityDescriptor
     {
-        $client = new Client();
-        $response = $client->get($url);
-        return new EntityDescriptor(
-            DOMDocumentFactory::fromString(
-                $response->getBody()->getContents()
-            )->documentElement
-        );
+        if (! preg_match('#^https?://#i', $url)) {
+            throw new InvalidMetadata('Metadata URLs must use http or https.');
+        }
+
+        $response = Http::timeout(15)->connectTimeout(5)->withOptions(['stream' => true])->get($url);
+
+        if (! $response->successful()) {
+            throw new InvalidMetadata(sprintf('Fetching metadata failed with HTTP %d.', $response->status()));
+        }
+
+        $body = $response->toPsrResponse()->getBody();
+        $xml = '';
+        while (! $body->eof()) {
+            $xml .= $body->read(65536);
+            if (strlen($xml) > static::MAX_FETCH_BYTES) {
+                throw new InvalidMetadata('The metadata document is too large.');
+            }
+        }
+
+        return new EntityDescriptor(DOMDocumentFactory::fromString($xml)->documentElement);
     }
 
-    /**
-     * @param SettingsInterface $settings
-     * @param KeyChainRecord|null $withKeyPair
-     * @return EntityDescriptor
-     * @throws InvalidConfigException
-     */
     public function create(
-        SettingsInterface $settings,
+        AbstractSettings $settings,
         AbstractProvider $provider,
     ): EntityDescriptor {
-        $entityDescriptor = new EntityDescriptor();
+        $entityDescriptor = new EntityDescriptor;
 
-        $entityId = $provider ? $provider->entityId : $settings->getEntityId();
+        $entityId = $provider->entityId ?: $settings->getEntityId();
 
         $entityDescriptor->setEntityID($entityId);
 
@@ -119,35 +133,27 @@ class Metadata extends Component
             }
         }
 
-        /**
-         * Kick off event here so people can manipulate this object if needed
-         */
-        $event = new Event();
-
-        /**
-         * response
-         */
-        $event->data = $entityDescriptor;
-        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
+        // Listeners may change the metadata before it's published
+        event(new MetadataCreated($this->getPlugin(), $entityDescriptor));
 
         return $entityDescriptor;
     }
 
     /**
-     * @param string $binding
-     * @return IdpSsoDescriptor|SpSsoDescriptor
-     * @throws InvalidConfigException
+     * @return IDPSSODescriptor|SPSSODescriptor
+     *
+     * @throws InvalidArgumentException
      */
     protected function createDescriptor(
         string $binding,
-        SettingsInterface $settings,
+        AbstractSettings $settings,
         AbstractProvider $provider,
     ) {
-        if (!in_array($binding, [
+        if (! in_array($binding, [
             Constants::BINDING_HTTP_POST,
             Constants::BINDING_HTTP_REDIRECT,
         ])) {
-            throw new InvalidConfigException('Binding not supported: ' . $binding);
+            throw new InvalidArgumentException('Binding not supported: '.$binding);
         }
 
         if ($settings->getMyType() === $settings::SP) {
@@ -160,15 +166,14 @@ class Metadata extends Component
     }
 
     /**
-     * @param string $binding
      * @return IDPSSODescriptor
      */
     protected function createIdpDescriptor(
         string $binding,
         AbstractSettings $settings,
-        AbstractProvider $provider = null,
+        ?AbstractProvider $provider = null,
     ) {
-        $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
+        $descriptor = new IDPSSODescriptor;
         $descriptor->setProtocolSupportEnumeration([
             static::PROTOCOL,
         ]);
@@ -182,7 +187,7 @@ class Metadata extends Component
         }
 
         // SSO
-        $ssoEndpoint = new EndpointType();
+        $ssoEndpoint = new EndpointType;
         $ssoEndpoint->setBinding($binding);
         $ssoEndpoint->setLocation(
             UrlHelper::buildEndpointUrl(
@@ -205,18 +210,15 @@ class Metadata extends Component
 
         // todo add attributes from mapping
 
-
-
         return $descriptor;
     }
 
     /**
-     * @param string $binding
      * @return SPSSODescriptor
      */
     protected function createSpDescriptor(string $binding, AbstractSettings $settings, AbstractProvider $provider)
     {
-        $descriptor = new SPSSODescriptor();
+        $descriptor = new SPSSODescriptor;
         $descriptor->setProtocolSupportEnumeration([
             static::PROTOCOL,
         ]);
@@ -225,7 +227,7 @@ class Metadata extends Component
         $descriptor->setWantAssertionsSigned(true);
 
         // ACS
-        $acsEndpoint = new IndexedEndpointType();
+        $acsEndpoint = new IndexedEndpointType;
         $acsEndpoint->setIndex(1);
         $acsEndpoint->setBinding($binding);
         $acsEndpoint->setLocation(
@@ -240,21 +242,21 @@ class Metadata extends Component
             $acsEndpoint,
         ]);
 
-        //SLO
+        // SLO
         $this->addSloEndpoint(
             $descriptor,
             $settings,
             $provider
         );
 
-        //todo add attribute consuming service
-//        var_dump(
-//            $provider->getMapping()
-//        );exit;
-//        $attributeConsumingService = new AttributeConsumingService();
-//        $attributeConsumingService->addRequestedAttribute($att = new RequestedAttribute());
-//        $att->setName('username');
-//        $descriptor->addAttributeConsumingService($attributeConsumingService);
+        // todo add attribute consuming service
+        //        var_dump(
+        //            $provider->getMapping()
+        //        );exit;
+        //        $attributeConsumingService = new AttributeConsumingService();
+        //        $attributeConsumingService->addRequestedAttribute($att = new RequestedAttribute());
+        //        $att->setName('username');
+        //        $descriptor->addAttributeConsumingService($attributeConsumingService);
 
         return $descriptor;
     }
@@ -263,8 +265,8 @@ class Metadata extends Component
         SSODescriptorType $descriptorType,
         AbstractSettings $settings,
         AbstractProvider $provider,
-    ) {
-        $sloEndpointRedirect = new EndpointType();
+    ): void {
+        $sloEndpointRedirect = new EndpointType;
         $sloEndpointRedirect->setBinding(
             Constants::BINDING_HTTP_REDIRECT
         );
@@ -278,7 +280,7 @@ class Metadata extends Component
             $sloLogoutEndpointUrl
         );
 
-        $sloEndpointPost = new EndpointType();
+        $sloEndpointPost = new EndpointType;
         $sloEndpointPost->setBinding(
             Constants::BINDING_HTTP_POST
         );
@@ -292,34 +294,28 @@ class Metadata extends Component
         ]);
     }
 
-
-
-    /**
-     * @param SSODescriptorType $ssoDescriptor
-     * @param KeyChainRecord $keyChainRecord
-     */
     protected function setCertificate(
         SSODescriptorType $ssoDescriptor,
         KeyChainRecord $keyChainRecord,
         string $signOrEncrypt,
-    ) {
+    ): void {
         /**
          * Validate use string
          */
-        if (!in_array($signOrEncrypt, [
+        if (! in_array($signOrEncrypt, [
             self::SET_SIGNING,
             self::SET_ENCRYPTION,
         ])) {
-            throw new \InvalidArgumentException('Sign or Encrypt argument can only be "signing" or "encrypt"');
+            throw new InvalidArgumentException('Sign or Encrypt argument can only be "signing" or "encrypt"');
         }
 
         /**
          * Create sub object
          */
-        $keyDescriptor = new KeyDescriptor();
-        $keyInfo = new KeyInfo();
-        $x509Data = new X509Data();
-        $x509Certificate = new X509Certificate();
+        $keyDescriptor = new KeyDescriptor;
+        $keyInfo = new KeyInfo;
+        $x509Data = new X509Data;
+        $x509Certificate = new X509Certificate;
 
         $keyInfo->addInfo($x509Data);
 
@@ -334,26 +330,18 @@ class Metadata extends Component
         $ssoDescriptor->addKeyDescriptor($keyDescriptor);
     }
 
-    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord): void
     {
-        $this->setSign($ssoDescriptor,$keyChainRecord);
-        $this->setEncrypt($ssoDescriptor,$keyChainRecord);
+        $this->setSign($ssoDescriptor, $keyChainRecord);
+        $this->setEncrypt($ssoDescriptor, $keyChainRecord);
     }
 
-    /**
-     * @param SSODescriptorType
-     * @param KeyChainRecord $keyChainRecord
-     */
-    protected function setSign(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    protected function setSign(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord): void
     {
         $this->setCertificate($ssoDescriptor, $keyChainRecord, static::SET_SIGNING);
     }
 
-    /**
-     * @param SSODescriptorType
-     * @param KeyChainRecord $keyChainRecord
-     */
-    protected function setEncrypt(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    protected function setEncrypt(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord): void
     {
         $this->setCertificate($ssoDescriptor, $keyChainRecord, static::SET_ENCRYPTION);
     }

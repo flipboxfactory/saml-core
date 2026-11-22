@@ -6,31 +6,28 @@
 
 namespace flipbox\saml\core\services\messages;
 
-use craft\base\Component;
+use flipbox\saml\core\events\LogoutResponseCreated;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\services\PluginService;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse as SamlLogoutResponse;
 use SAML2\XML\saml\Issuer;
-use yii\base\Event;
 
 /**
  * Class AbstractLogoutResponse
- * @package flipbox\saml\core\services\messages
  */
-class LogoutResponse extends Component
+class LogoutResponse extends PluginService
 {
-    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
-
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create(
         LogoutRequest $request,
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
-    ) {
-        $logout = new SamlLogoutResponse();
+    ): SamlLogoutResponse {
+        $logout = new SamlLogoutResponse;
 
         /**
          * Set remote destination
@@ -46,8 +43,9 @@ class LogoutResponse extends Component
         /**
          * Set session id
          */
+        // InResponseTo is the ID of the request being answered (SAML core 3.2.2)
         $logout->setInResponseTo(
-            $request->getSessionIndex()
+            $request->getId()
         );
 
         $logout->setRelayState(
@@ -58,7 +56,7 @@ class LogoutResponse extends Component
          * Set issuer
          */
         $logout->setIssuer(
-            $issuer = new Issuer()
+            $issuer = new Issuer
         );
         $issuer->setValue(
             $ourProvider->getEntityId()
@@ -76,17 +74,7 @@ class LogoutResponse extends Component
         /**
          * Kick off event here so people can manipulate this object if needed
          */
-        $event = new Event();
-
-        /**
-         * request
-         */
-        $event->sender = $request;
-        /**
-         * response
-         */
-        $event->data = $logout;
-        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
+        event(new LogoutResponseCreated($this->getPlugin(), $logout));
 
         return $logout;
     }

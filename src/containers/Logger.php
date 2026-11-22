@@ -1,173 +1,46 @@
 <?php
 
-/**
- * @copyright  Copyright (c) Flipbox Digital Limited
- * @license    https://github.com/flipbox/craft-psr3/blob/master/LICENSE
- * @link       https://github.com/flipbox/craft-psr3
- */
+declare(strict_types=1);
 
 namespace flipbox\saml\core\containers;
 
-use Craft;
-use Psr\Log\LoggerInterface;
-use yii\base\Component;
-use yii\helpers\ArrayHelper;
-use yii\log\Logger as YiiLogger;
+use Illuminate\Support\Facades\Log;
+use Psr\Log\AbstractLogger;
+use Stringable;
 
 /**
- * @author Flipbox Factory <hello@flipboxfactory.com>
- * @since 1.0.0
+ * PSR-3 logger for saml2 and the SAML plugins, writing to Laravel's log with a `category` (default `saml-core`).
+ *
+ * `{placeholder}` tokens in messages are replaced from the context, as PSR-3 describes. The context is otherwise
+ * passed through, so never put secrets in it.
  */
-class Logger extends Component implements LoggerInterface
+class Logger extends AbstractLogger
 {
-    /**
-     * The Yii2 category to use when logging
-     *
-     * @var string
-     */
-    public string $category = 'saml-core';
+    public function __construct(public string $category = 'saml-core') {}
 
     /**
-     * The logger
-     *
-     * @var null|YiiLogger
+     * @param  array<string, mixed>  $context
      */
-    public $logger;
-
-    /**
-     * The default level to use when an arbitrary level is used.
-     *
-     * @var string
-     */
-    public $level = YiiLogger::LEVEL_INFO;
-
-    /**
-     * The PSR-3 to Yii2 log level map
-     *
-     * @var array
-     */
-    public $map = [
-        'emergency' => YiiLogger::LEVEL_ERROR,
-        'alert' => YiiLogger::LEVEL_ERROR,
-        'critical' => YiiLogger::LEVEL_ERROR,
-        'error' => YiiLogger::LEVEL_ERROR,
-        'warning' => YiiLogger::LEVEL_WARNING,
-        'notice' => YiiLogger::LEVEL_INFO,
-        'info' => YiiLogger::LEVEL_INFO,
-        'debug' => YiiLogger::LEVEL_TRACE,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function log($level, string|Stringable $message, array $context = []): void
     {
-        $this->logger = Craft::$app->log->getLogger();
+        $category = $context['category'] ?? $this->category;
+        unset($context['category']);
+
+        Log::log((string) $level, self::interpolate((string) $message, $context), [...$context, 'category' => $category]);
     }
 
     /**
-     * Log a message, transforming from PSR3 to the closest Yii2.
-     *
-     * @inheritdoc
+     * @param  array<string, mixed>  $context
      */
-    public function log($level, $message, array $context = []): void
+    private static function interpolate(string $message, array $context): string
     {
-        // Resolve category from 'context'
-        $category = ArrayHelper::remove($context, 'category', $this->category);
-
-        // Resolve level
-        $level = ArrayHelper::getValue($this->map, $level, $this->level);
-
-        $this->logger->log(
-            $this->interpolate($message, $context),
-            $level,
-            $category
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function emergency($message, array $context = []): void
-    {
-        $this->log('emergency', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function alert($message, array $context = []): void
-    {
-        $this->log('alert', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function critical($message, array $context = []): void
-    {
-        $this->log('critical', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function error($message, array $context = []): void
-    {
-        $this->log('error', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function warning($message, array $context = []): void
-    {
-        $this->log('warning', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function notice($message, array $context = []): void
-    {
-        $this->log('notice', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function info($message, array $context = []): void
-    {
-        $this->log('info', $message, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function debug($message, array $context = []): void
-    {
-        $this->log('debug', $message, $context);
-    }
-
-    /**
-     * Interpolates context values into the message placeholders.
-     *
-     * @param string $message
-     * @param array $context
-     * @return string
-     */
-    private function interpolate(string $message, array $context = [])
-    {
-        // build a replacement array with braces around the context keys
-        $replace = array();
-        foreach ($context as $key => $val) {
-            // check that the value can be casted to string
-            if (!is_array($val) && (!is_object($val) || method_exists($val, '__toString'))) {
-                $replace['{' . $key . '}'] = $val;
+        $replace = [];
+        foreach ($context as $key => $value) {
+            if (is_scalar($value) || $value instanceof Stringable) {
+                $replace['{'.$key.'}'] = (string) $value;
             }
         }
 
-        // interpolate replacement values into the message and return
         return strtr($message, $replace);
     }
 }

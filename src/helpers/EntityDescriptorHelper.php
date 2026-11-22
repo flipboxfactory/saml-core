@@ -1,6 +1,5 @@
 <?php
 
-
 namespace flipbox\saml\core\helpers;
 
 use SAML2\Constants;
@@ -15,14 +14,19 @@ use SAML2\XML\md\SSODescriptorType;
 class EntityDescriptorHelper
 {
     public const ENDPOINT_SERVICE_ARTIFACT_RESOLUTION = 'ArtifactResolution';
+
     public const ENDPOINT_SERVICE_SINGLE_LOGOUT = 'SingleLogout';
+
     public const ENDPOINT_SERVICE_MANAGE_NAME_ID = 'ManageNameID';
 
     public const ENDPOINT_SERVICE_ASSERTION_CONSUMER = 'AssertionConsumer';
+
     public const ENDPOINT_SERVICE_ATTRIBUTE_CONSUMING = 'AttributeConsuming';
 
     public const ENDPOINT_SERVICE_SINGLE_SIGN_ON = 'SingleSignOn';
+
     public const ENDPOINT_SERVICE_ASSERTION_ID_REQUEST = 'AssertionIDRequest';
+
     public const ENDPOINT_SERVICE_NAME_ID_MAPPING = 'NameIDMapping';
 
     public const ENDPOINT_SERVICE_OPTIONS = [
@@ -42,8 +46,7 @@ class EntityDescriptorHelper
     ];
 
     /**
-     * @param  EntityDescriptor $entityDescriptor
-     * @return IDPSSODescriptor[]
+     * @return list<IDPSSODescriptor>
      */
     public static function getIdpDescriptors(EntityDescriptor $entityDescriptor): array
     {
@@ -51,8 +54,7 @@ class EntityDescriptorHelper
     }
 
     /**
-     * @param  EntityDescriptor $entityDescriptor
-     * @return SPSSODescriptor[]
+     * @return list<SPSSODescriptor>
      */
     public static function getSpDescriptors(EntityDescriptor $entityDescriptor): array
     {
@@ -60,9 +62,10 @@ class EntityDescriptorHelper
     }
 
     /**
-     * @param  EntityDescriptor $entityDescriptor
-     * @param  string           $type
-     * @return SSODescriptorType[]
+     * @template T of SSODescriptorType
+     *
+     * @param  class-string<T>  $type
+     * @return list<T>
      */
     protected static function getDescriptors(EntityDescriptor $entityDescriptor, string $type): array
     {
@@ -81,31 +84,25 @@ class EntityDescriptorHelper
      */
 
     /**
-     * @param  SSODescriptorType[] $roleDescriptors
-     * @param  string              $binding
-     * @return EndpointType|null
+     * @param  SSODescriptorType[]  $roleDescriptors
      */
-    public static function getFirstArtifactResolutionService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstArtifactResolutionService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_ARTIFACT_RESOLUTION, $roleDescriptors, $binding);
     }
 
     /**
-     * @param  SSODescriptorType[] $roleDescriptors
-     * @param  string              $binding
-     * @return EndpointType|null
+     * @param  SSODescriptorType[]  $roleDescriptors
      */
-    public static function getFirstSLOService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstSLOService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_SINGLE_LOGOUT, $roleDescriptors, $binding);
     }
 
     /**
-     * @param  SSODescriptorType[] $roleDescriptors
-     * @param  string              $binding
-     * @return EndpointType|null
+     * @param  SSODescriptorType[]  $roleDescriptors
      */
-    public static function getFirstManageNameIDService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstManageNameIDService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_MANAGE_NAME_ID, $roleDescriptors, $binding);
     }
@@ -115,21 +112,17 @@ class EntityDescriptorHelper
      */
 
     /**
-     * @param  SPSSODescriptor[] $roleDescriptors
-     * @param  string            $binding
-     * @return EndpointType|null
+     * @param  SPSSODescriptor[]  $roleDescriptors
      */
-    public static function getFirstSpAssertionConsumerService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstSpAssertionConsumerService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_ASSERTION_CONSUMER, $roleDescriptors, $binding);
     }
 
     /**
-     * @param  SPSSODescriptor[] $roleDescriptors
-     * @param  string            $binding
-     * @return EndpointType|null
+     * @param  SPSSODescriptor[]  $roleDescriptors
      */
-    public static function getFirstSpAttributeConsumingService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstSpAttributeConsumingService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_ATTRIBUTE_CONSUMING, $roleDescriptors, $binding);
     }
@@ -139,65 +132,43 @@ class EntityDescriptorHelper
      */
 
     /**
-     * @param  IDPSSODescriptor[] $roleDescriptors
-     * @param  string             $binding
-     * @return EndpointType|null
+     * @param  IDPSSODescriptor[]  $roleDescriptors
      */
-    public static function getFirstIdpSSOService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstIdpSSOService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_SINGLE_SIGN_ON, $roleDescriptors, $binding);
     }
 
     /**
-     * @param  IDPSSODescriptor[] $roleDescriptors
-     * @param  string             $binding
-     * @return EndpointType|null
+     * @param  IDPSSODescriptor[]  $roleDescriptors
      */
-    public static function getFirstIdpAssertionIdRequestService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstIdpAssertionIdRequestService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_ASSERTION_ID_REQUEST, $roleDescriptors, $binding);
     }
 
     /**
-     * @param  IDPSSODescriptor[] $roleDescriptors
-     * @param  string             $binding
-     * @return EndpointType|null
+     * @param  IDPSSODescriptor[]  $roleDescriptors
      */
-    public static function getFirstIdpNameIDMappingService(array $roleDescriptors, string $binding = null): ?EndpointType
+    public static function getFirstIdpNameIDMappingService(array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
         return static::getFirstService(self::ENDPOINT_SERVICE_NAME_ID_MAPPING, $roleDescriptors, $binding);
     }
 
     /**
-     * @param  SSODescriptorType[] $roleDescriptors
-     * @param  string              $binding
-     * @param  string              $service
-     * @return EndpointType|null
+     * @param  SSODescriptorType[]  $roleDescriptors
      */
-    protected static function getFirstService(string $service, array $roleDescriptors, string $binding = null): ?EndpointType
+    protected static function getFirstService(string $service, array $roleDescriptors, ?string $binding = null): ?EndpointType
     {
-        if (!in_array($service, static::ENDPOINT_SERVICE_OPTIONS)) {
-            throw new \InvalidArgumentException('Unknown service passed: ' . $service);
+        if (! in_array($service, static::ENDPOINT_SERVICE_OPTIONS)) {
+            throw new \InvalidArgumentException('Unknown service passed: '.$service);
         }
 
-        \Craft::info(
-            sprintf(
-                'Looping thru %s role descriptors',
-                count($roleDescriptors)
-            ),
-            'saml-core'
-        );
-
-        $serviceMethod = 'get' . $service . 'Service';
-
-        \Craft::info(
-            'Using Service method: ' . $serviceMethod,
-            'saml-core'
-        );
+        $serviceMethod = 'get'.$service.'Service';
 
         $return = null;
         foreach ($roleDescriptors as $descriptor) {
-            /*if (static::isRoleDescriptorSaml($descriptor) && $return = static::getFirstIndexedEndpointType(*/
+            /* if (static::isRoleDescriptorSaml($descriptor) && $return = static::getFirstIndexedEndpointType( */
             if ($return = static::getFirstIndexedEndpointType(
                 call_user_func([$descriptor, $serviceMethod]),
                 $binding
@@ -210,10 +181,6 @@ class EntityDescriptorHelper
         return $return;
     }
 
-    /**
-     * @param  RoleDescriptor $roleDescriptor
-     * @return bool
-     */
     protected static function isRoleDescriptorSaml(RoleDescriptor $roleDescriptor): bool
     {
         foreach ($roleDescriptor->getProtocolSupportEnumeration() as $protocolSupportEnumeration) {
@@ -221,20 +188,19 @@ class EntityDescriptorHelper
                 return true;
             }
         }
+
         return false;
     }
 
-
     /**
-     * @param  IndexedEndpointType[] $endpointTypes
-     * @param  $binding
+     * @param  IndexedEndpointType[]  $endpointTypes
      * @return EndpointType|null
      */
-    protected static function getFirstIndexedEndpointType(array $endpointTypes, string $binding = null)
+    protected static function getFirstIndexedEndpointType(array $endpointTypes, ?string $binding = null)
     {
 
         // Is there one?
-        if (!isset($endpointTypes[0])) {
+        if (! isset($endpointTypes[0])) {
             return null;
         }
 
@@ -248,12 +214,9 @@ class EntityDescriptorHelper
         $return = null;
 
         /**
- * @var EndpointType $endpointType
-*/
+         * @var EndpointType $endpointType
+         */
         foreach ($endpointTypes as $endpointType) {
-            if (!$endpointType instanceof EndpointType) {
-                throw new \InvalidArgumentException();
-            }
 
             if ($endpointType->getBinding() === $binding) {
                 $return = $endpointType;

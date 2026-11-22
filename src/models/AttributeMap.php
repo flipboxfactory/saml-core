@@ -1,42 +1,46 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\models;
 
-use craft\elements\User;
-use yii\base\Model;
+use CraftCms\Cms\User\Elements\User;
 
-class AttributeMap extends Model
+use function CraftCms\Cms\renderObjectTemplate;
+
+/**
+ * Maps a SAML attribute to a user property, or to an object template rendered against the user.
+ */
+class AttributeMap
 {
-    /**
-     * @var string
-     */
-    public $craftProperty;
-    /**
-     * @var string
-     */
-    public $attributeName;
-    /**
-     * @var string
-     */
-    public $templateOverride;
+    use JsonModel {
+        JsonModel::__construct as private configure;
+    }
 
-    public function renderValue(User $user)
+    public ?string $craftProperty = null;
+
+    public ?string $attributeName = null;
+
+    public ?string $templateOverride = null;
+
+    /**
+     * @param  array<string, mixed>  $config
+     */
+    public function __construct(array $config = [])
     {
-        $value = null;
-        if (!$this->templateOverride && !$this->craftProperty) {
+        $this->configure($config);
+    }
+
+    public function renderValue(User $user): mixed
+    {
+        if (! $this->templateOverride && ! $this->craftProperty) {
             return '';
         }
 
         if ($this->templateOverride) {
-            $value = \Craft::$app->view->renderObjectTemplate(
-                $this->templateOverride,
-                $user
-            );
-        } else {
-            $value = $user->{$this->craftProperty};
+            return renderObjectTemplate($this->templateOverride, $user);
         }
 
-        return $value;
+        return $user->{$this->craftProperty};
     }
 }

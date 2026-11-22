@@ -1,120 +1,72 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\services;
 
-use craft\base\Component;
-use craft\elements\User;
+use CraftCms\Cms\Support\Facades\Users;
 use flipbox\saml\core\helpers\MappingHelper;
 
-class Cp extends Component
+use function CraftCms\Cms\t;
+
+/**
+ * Options for the control panel's attribute mapping.
+ */
+class Cp extends PluginService
 {
-    public function getMappingFieldOptions($isIdp = true)
+    /**
+     * @return list<array{label: string, value: string}>
+     */
+    public function getMappingFieldOptions(bool $isIdp = true): array
     {
-        $user = new User();
         $options = [
-            [
-                'label' => $user->getAttributeLabel('firstName'),
-                'value' => 'firstName',
-            ],
-            [
-                'label' => $user->getAttributeLabel('lastName'),
-                'value' => 'lastName',
-            ],
-            [
-                'label' => $user->getAttributeLabel('email'),
-                'value' => 'email',
-            ],
-            [
-                'label' => $user->getAttributeLabel('username'),
-                'value' => 'username',
-            ],
+            ['label' => t('First Name'), 'value' => 'firstName'],
+            ['label' => t('Last Name'), 'value' => 'lastName'],
+            ['label' => t('Email'), 'value' => 'email'],
+            ['label' => t('Username'), 'value' => 'username'],
         ];
 
         if ($isIdp) {
-            array_unshift($options, [
-                'label' => 'N/A (using override)',
-                'value' => '',
-            ]);
-            $options[] = [
-                'label' => $user->getAttributeLabel('uid'),
-                'value' => 'uid',
-            ];
-            $options[] = [
-                'label' => $user->getAttributeLabel('id'),
-                'value' => 'id',
-            ];
+            array_unshift($options, ['label' => 'N/A (using override)', 'value' => '']);
+            $options[] = ['label' => t('UID'), 'value' => 'uid'];
+            $options[] = ['label' => t('ID'), 'value' => 'id'];
         }
 
-        foreach ($user->getFieldLayout()->getCustomFields() as $field) {
-            if (MappingHelper::isSupportedField($field)) {
-                $options[] = [
-                    'label' => $field->name,
-                    'value' => $field->handle,
-                ];
-            }
+        foreach ($this->customFields() as $field) {
+            $options[] = ['label' => (string) $field->name, 'value' => (string) $field->handle];
         }
 
         return $options;
     }
 
-    public function getMappingAutoSuggestions()
+    /**
+     * @return list<array{label: string, data: list<array{hint: string, name: string}>}>
+     */
+    public function getMappingAutoSuggestions(): array
     {
-        $user = new User();
-        $options = [
-            [
-                'hint' => $user->getAttributeLabel('firstName'),
-                'name' => '{firstName}',
-            ],
-            [
-                'hint' => $user->getAttributeLabel('lastName'),
-                'name' => '{lastName}',
-            ],
-            [
-                'hint' => $user->getAttributeLabel('email'),
-                'name' => '{email}',
-            ],
-            [
-                'hint' => $user->getAttributeLabel('username'),
-                'name' => '{username}',
-            ],
-            [
-                'hint' => $user->getAttributeLabel('uid'),
-                'name' => '{uid}',
-            ],
-            [
-                'hint' => $user->getAttributeLabel('id'),
-                'name' => '{id}',
-            ],
-        ];
-
-        $contentOptions = [];
-        foreach ($user->getFieldLayout()->getCustomFields() as $field) {
-            if (!MappingHelper::isSupportedField($field)) {
-                continue;
-            }
-
-            $fieldType = get_class($field);
-            $contentOptions[] = [
-                'hint' => $field->name . " ($fieldType)",
-                'name' => '{' . $field->handle . '}',
-            ];
+        $standard = [];
+        foreach (['firstName' => 'First Name', 'lastName' => 'Last Name', 'email' => 'Email', 'username' => 'Username', 'uid' => 'UID', 'id' => 'ID'] as $attribute => $label) {
+            $standard[] = ['hint' => t($label), 'name' => '{'.$attribute.'}'];
         }
 
-        $return = [
-            [
-                'label' => 'Standard Fields',
-                'data' => $options,
-            ],
-        ];
-
-        if (!empty($contentOptions)) {
-            $return[] = [
-                'label' => 'Content Fields',
-                'data' => $contentOptions,
-            ];
+        $content = [];
+        foreach ($this->customFields() as $field) {
+            $content[] = ['hint' => $field->name.' ('.$field::class.')', 'name' => '{'.$field->handle.'}'];
         }
 
-        return $return;
+        return [
+            ['label' => 'Standard Fields', 'data' => $standard],
+            ...($content === [] ? [] : [['label' => 'Content Fields', 'data' => $content]]),
+        ];
+    }
+
+    /**
+     * @return list<object{name: string, handle: string}>
+     */
+    private function customFields(): array
+    {
+        $fields = Users::getFieldLayout()->getCustomFields();
+
+        return array_values(array_filter($fields, MappingHelper::isSupportedField(...)));
     }
 }

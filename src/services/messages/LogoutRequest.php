@@ -6,40 +6,33 @@
 
 namespace flipbox\saml\core\services\messages;
 
-use craft\base\Component;
-use flipbox\saml\core\events\UserLogout;
+use flipbox\saml\core\events\LogoutRequestCreated;
+use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
+use flipbox\saml\core\services\PluginService;
 use SAML2\Constants;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest as SamlLogoutRequest;
 use SAML2\XML\saml\Issuer;
 use SAML2\XML\saml\NameID;
-use yii\base\Event;
 
 /**
  * Class LogoutRequest
- * @package flipbox\saml\core\services\messages
  */
-class LogoutRequest extends Component
+class LogoutRequest extends PluginService
 {
-    public const EVENT_AFTER_MESSAGE_CREATED = 'eventAfterMessageCreated';
-
     /**
-     * @param AbstractProvider $theirProvider
-     * @param AbstractProvider $ourProvider
-     * @param AbstractProviderIdentity $identity
-     * @return SamlLogoutRequest
      * @throws \Exception
      */
     public function create(
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
-        string $relayState = null,
-    ) {
-        $logout = new SamlLogoutRequest();
+        ?string $relayState = null,
+    ): SamlLogoutRequest {
+        $logout = new SamlLogoutRequest;
 
         /**
          * Set remote destination
@@ -59,7 +52,7 @@ class LogoutRequest extends Component
             (new \DateTime('+5 minutes'))->getTimestamp()
         );
         $logout->setIssueInstant(
-            (new \DateTime())->getTimestamp()
+            (new \DateTime)->getTimestamp()
         );
         $logout->setConsent(
             Constants::CONSENT_UNSPECIFIED
@@ -73,7 +66,7 @@ class LogoutRequest extends Component
          * Set NameId
          */
         $logout->setNameID(
-            $nameId = new NameID()
+            $nameId = new NameID
         );
 
         $nameId->setValue($identity->nameId);
@@ -83,7 +76,7 @@ class LogoutRequest extends Component
          * Set issuer
          */
         $logout->setIssuer(
-            $issuer = new Issuer()
+            $issuer = new Issuer
         );
         $issuer->setValue(
             $ourProvider->getEntityId()
@@ -97,21 +90,16 @@ class LogoutRequest extends Component
                 $ourProvider->keychainPrivateXmlSecurityKey()
             );
 
+            // The decrypted PEM certificate, without armour: the stored column is ciphertext when encrypted at rest
             $logout->setCertificates([
-                $ourProvider->keychain->certificate,
+                SecurityHelper::cleanCertificate($ourProvider->keychain->getDecryptedCertificate()),
             ]);
         }
 
         /**
          * Kick off event here so people can manipulate this object if needed
          */
-        $event = new UserLogout();
-
-        /**
-         * response
-         */
-        $event->request = $logout;
-        $this->trigger(static::EVENT_AFTER_MESSAGE_CREATED, $event);
+        event(new LogoutRequestCreated($this->getPlugin(), $logout));
 
         return $logout;
     }
@@ -120,9 +108,9 @@ class LogoutRequest extends Component
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
-        string $relayState = null,
-    ) {
-        return (new HTTPRedirect())->getRedirectURL(
+        ?string $relayState = null,
+    ): string {
+        return (new HTTPRedirect)->getRedirectURL(
             $this->create(
                 $theirProvider,
                 $ourProvider,

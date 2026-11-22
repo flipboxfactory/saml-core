@@ -10,16 +10,18 @@ use flipbox\saml\core\records\ProviderInterface;
 
 class ProviderHelper
 {
-    public static function providerMappingToKeyValue(ProviderInterface $provider)
+    /**
+     * The provider's attribute mapping as `attributeName => craftProperty`.
+     *
+     * @return array<string, string>
+     */
+    public static function providerMappingToKeyValue(ProviderInterface $provider): array
     {
         $mapping = $provider->getMapping();
-        if (!is_array($mapping)) {
-            return [];
-        }
 
         $newMap = [];
         foreach ($mapping as $map) {
-            $newMap[$map['attributeName']] = $map['craftProperty'];
+            $newMap[(string) ($map['attributeName'] ?? '')] = (string) ($map['craftProperty'] ?? '');
         }
 
         return $newMap;

@@ -1,37 +1,43 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\containers;
 
-use craft\web\Response;
+use CraftCms\Cms\View\TemplateMode;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\MessageHelper;
 use flipbox\saml\core\helpers\SerializeHelper;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Psr\Log\LoggerInterface;
 use SAML2\Compat\AbstractContainer;
 
+use function CraftCms\Cms\template;
+
+/**
+ * Connects simplesamlphp/saml2 to Craft.
+ *
+ * saml2's bindings "send" a message by calling {@see redirect()} or {@see postRedirect()} and expect the request to
+ * end there. Laravel can't end a request mid-stack, so both throw an {@see HttpResponseException} carrying the
+ * response, which Laravel returns as the request's response.
+ */
 class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
 {
     public const TEMPLATE_PATH = 'saml-core/_components/post-binding-submit.twig';
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * Maximum size of an inflated HTTP-Redirect message (saml2 4.19.4+ requires a limit).
      */
-    protected $logger;
+    public const INFLATE_SIZE_LIMIT = 8 * 1024 * 1024;
 
+    protected LoggerInterface $logger;
 
-    /**
-     * @var AbstractPlugin
-     */
-    protected $plugin;
-
-    /**
-     * Create a new SimpleSAMLphp compatible container.
-     */
-    public function __construct(AbstractPlugin $plugin)
+    public function __construct(protected AbstractPlugin $plugin)
     {
-        $this->logger = new Logger();
-        $this->plugin = $plugin;
+        $this->logger = new Logger;
     }
 
     public function getPlugin(): AbstractPlugin
@@ -39,131 +45,77 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
         return $this->plugin;
     }
 
-
-    /**
-     * {@inheritdoc}
-     * @return \Psr\Log\LoggerInterface
-     */
-    public function getLogger(): \Psr\Log\LoggerInterface
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-
-    /**
-     * {@inheritdoc}
-     * @return string
-     */
     public function generateId(): string
     {
         return MessageHelper::generateId();
     }
 
-
-    /**
-     * {@inheritdoc}
-     * @return void
-     */
     public function debugMessage($message, string $type): void
     {
-        if ($message instanceof \DOMDocument || $message instanceof \DOMElement) {
-            $message = $message->ownerDocument->saveXML();
+        if ($message instanceof \DOMElement) {
+            $message = (string) $message->ownerDocument?->saveXML($message);
         }
 
         $this->getLogger()->debug($message, ['type' => $type]);
     }
 
-
     /**
-     * {@inheritdoc}
-     * @param string $url
-     * @param array $data
-     * @return void
+     * @param  array<string, mixed>  $data
+     *
+     * @throws HttpResponseException always
      */
     public function redirect(string $url, array $data = []): void
     {
-        $url = SerializeHelper::redirectUrl($url, $data);
-
-        \Craft::$app->response->redirect($url);
-
-        \Craft::$app->end();
+        throw new HttpResponseException(new RedirectResponse(SerializeHelper::redirectUrl($url, $data)));
     }
 
-
     /**
-     * {@inheritdoc}
-     * @param string $url
-     * @param array $data
-     * @return void
+     * Sends an auto-submitting form that POSTs the message to `$url` (the HTTP-POST binding).
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws HttpResponseException always
      */
     public function postRedirect(string $url, array $data = []): void
     {
         $data['destination'] = $url;
+        $data['RelayState'] ??= '';
 
-        if (!isset($data['RelayState'])) {
-            $data['RelayState'] = '';
-        }
-
-        $view = \Craft::$app->getView();
-        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-        \Craft::$app->response->data = $view->renderTemplate(
-            $this->getTemplatePath(),
-            $data
-        );
-        \Craft::$app->response->format = Response::FORMAT_HTML;
-        \Craft::$app->response->send();
-        \Craft::$app->end();
+        throw new HttpResponseException(new Response(template($this->getTemplatePath(), $data, TemplateMode::Cp), 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            // The form carries a signed message for a single use
+            'Cache-Control' => 'no-store, private',
+        ]));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getTempDir(): string
     {
-        $tempDir = \Craft::$app->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'saml2';
-        if (!file_exists($tempDir)) {
-            mkdir($tempDir);
+        $tempDir = storage_path('saml2');
+
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0770, true);
         }
 
         return $tempDir;
     }
 
-
-    /**
-     * @inheritDoc
-     */
-    public function writeFile(string $filename, string $data, int $mode = null): void
+    public function writeFile(string $filename, string $data, ?int $mode = null): void
     {
-        if ($mode === null) {
-            $mode = 660;
-        }
-        file_put_contents(
-            $filename,
-            $data
-        );
-        chmod(
-            $filename,
-            $mode
-        );
+        file_put_contents($filename, $data);
+        chmod($filename, $mode ?? 0600);
     }
 
-    /**
-     * Max bytes gzinflate() may produce when decoding an HTTP-Redirect message (GHSA-6vhm-xfmv-94pj).
-     * Matches the saml2 library default.
-     */
     public function getInflateSizeLimit(): int
     {
-        return 8 * 1024 * 1024;
+        return self::INFLATE_SIZE_LIMIT;
     }
 
-    /**
-     * SAML Plugin Utils
-     */
-
-    /**
-     * @return string
-     */
-    protected function getTemplatePath()
+    protected function getTemplatePath(): string
     {
         return static::TEMPLATE_PATH;
     }

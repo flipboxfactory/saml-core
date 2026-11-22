@@ -17,23 +17,25 @@ These are commercial SSO/identity plugins that customers buy to protect their Cr
 ## Before every commit
 
 ```bash
-composer check   # ECS + PHPStan + Codeception; must pass
+composer check   # Pint + Larastan + Pest; must pass
 composer fix-cs  # auto-fix style, then re-run check
 ```
 
-Tests need MySQL and `tests/.env` (see README "Development").
+This branch needs PHP 8.5 (Craft 6). Without it locally, run commands through `../../.dev/php85/run` from the worktree. Tests boot Craft with KeyChain and a fixture SAML plugin (`tests/fixtures/plugin`) on in-memory SQLite; set `DB_CONNECTION`/`DB_HOST`/`DB_DATABASE`/`DB_USERNAME`/`DB_PASSWORD` for MySQL or PostgreSQL (CI runs all three). MySQL is strict about foreign key column types: match the referenced column (Craft's ids are INT).
 
 ## Rules
 
-- Add or update tests in `tests/unit/` for every behaviour change or bug fix. Bug fixes get a test that fails without the fix.
+- Add or update Pest tests in `tests/Feature/` (Craft booted) or `tests/Unit/` for every behaviour change or bug fix. Bug fixes get a test that fails without the fix.
 - Don't lower the PHPStan level or add a baseline. Use an inline `@phpstan-ignore <identifier>` with a reason only for genuine false positives.
 - Keep style-only changes (`fix-cs`) in their own commit, separate from logic changes.
-- Don't commit generated or local files: `tests/.env`, `tests/_output`, `tests/_support/_generated`, `vendor/`, `composer.lock`.
-- `simplesamlphp/saml2` is the only SAML dependency. Stay on `~4.19.x` for 5.x: 4.20+ and v6 need a Composer plugin (Composer 2.9+) that would break site updates; see CHANGELOG 5.0.11.
+- Don't commit generated or local files: `tests/.env`, `tests/_output`, `vendor/`, `composer.lock`.
+- The SAML endpoint URLs (`{endpointPrefix}/login|logout[/request]…`) are in partners' metadata: don't change them. `RoutesTest` pins them.
+- Verify every incoming SAML message with `helpers\SignatureVerifier` before acting on it.
+- `simplesamlphp/saml2` is the only SAML dependency. Stay on `~4.19.x` for 5.x and 6.x: 4.20+ and v6 need a Composer plugin (Composer 2.9+) that would break site updates; see CHANGELOG 5.0.11.
 
 ## Workflow
 
-- Default branch is `master`. Work on a branch and open a PR; CI (`.github/workflows/ci.yml`) must be green.
+- Default branch is `master` (Craft 5 until Craft 6 GA). Craft 6 work targets `craft/6.0`. Work on a branch and open a PR; CI (`.github/workflows/ci.yml`) must be green.
 - **PR titles and commit messages use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)**: `<type>(<scope>): <description>`, e.g. `fix(sso): ...` (see `CONTRIBUTING.md`). Always title PRs this way: the title is the squash-merge commit and decides the release. Pick the type by what users get: `fix:` for a bug or security fix, `feat:` for new behaviour, `!` for a breaking change to public API or config; otherwise a non-releasing type. If unsure whether a change should release, ask.
 - SemVer from the PR title: `fix:`/`perf:` → patch, `feat:` → minor, `<type>!:` or a `BREAKING CHANGE:` line in the PR body → major. `docs`, `test`, `ci`, `chore`, `build`, `refactor`, `style` and `revert` don't release. A releasing PR adds its notes at the top of `CHANGELOG.md` under `# Unreleased` (with `## Security|Fixed|Added|Changed|Removed`; `# Unreleased [CRITICAL]` for a critical release). Don't touch `composer.json` `version` or write version headings. The "Release check" CI job enforces this.
 - Merging to `master` releases once checks and tests pass: CI renames `Unreleased` to `# X.Y.Z YYYY-MM-DD`, sets the `composer.json` version, pushes a `chore(release): X.Y.Z` commit and the unprefixed tag (`5.0.11`) as the release GitHub App, and creates the GitHub release from that section (`.github/scripts/version.sh`). Never bump, tag or release manually.

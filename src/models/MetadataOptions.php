@@ -1,93 +1,71 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\models;
 
-use yii\base\Model;
+use DateInterval;
+use DateTime;
+use DateTimeInterface;
 
-class MetadataOptions extends Model implements \JsonSerializable
+/**
+ * Where a provider's metadata is fetched from, and how often it's refreshed.
+ */
+class MetadataOptions implements \JsonSerializable
 {
     use JsonModel;
-    /**
-     * @var string
-     */
-    public $url;
+
+    public ?string $url = null;
 
     /**
-     * @var string
+     * An ISO 8601 duration, e.g. `P1D`.
      */
-    protected $expiryInterval;
+    protected ?string $expiryInterval = null;
 
-    /**
-     * @var \DateTime
-     */
-    protected $expiryDate;
+    protected ?DateTimeInterface $expiryDate = null;
 
-    /**
-     * @param string|null $expiry
-     * @return $this
-     */
-    public function setExpiryInterval($expiry)
+    public function setExpiryInterval(?string $expiry): static
     {
-        if (!$expiry) {
+        if (! $expiry) {
+            $this->expiryInterval = null;
             $this->expiryDate = null;
+
             return $this;
         }
 
         $this->expiryInterval = $expiry;
-
-        $now = new \DateTime();
-
-        if (is_null($this->expiryDate)) {
-            $this->expiryDate = $now->add(new \DateInterval($this->expiryInterval));
-        }
+        $this->expiryDate ??= (new DateTime)->add(new DateInterval($expiry));
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getExpiryInterval()
+    public function getExpiryInterval(): ?string
     {
         return $this->expiryInterval;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getExpiryDate()
+    public function getExpiryDate(): ?DateTimeInterface
     {
         return $this->expiryDate;
     }
 
-    /**
-     * @param string|null $expiry
-     * @return \DateTime
-     */
-    public function setExpiryDate($expiry)
+    public function setExpiryDate(?string $expiry): static
     {
-        if (!$expiry) {
-            return $this;
+        if ($expiry) {
+            $this->expiryDate = new DateTime($expiry);
         }
-
-        $this->expiryDate = new \DateTime($expiry);
 
         return $this;
     }
 
     /**
-     * @return array
+     * @return array{expiryDate: ?string, expiryInterval: ?string, url: ?string}
      */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
-        $expiryDate = null;
-        if ($this->expiryDate instanceof \DateTime) {
-            $expiryDate = $this->expiryDate->format(\DateTime::ISO8601);
-        }
         return [
-            'expiryDate' => $expiryDate,
-            'expiryInterval' => $this->getExpiryInterval(),
+            'expiryDate' => $this->expiryDate?->format(DateTimeInterface::ATOM),
+            'expiryInterval' => $this->expiryInterval,
             'url' => $this->url,
         ];
     }

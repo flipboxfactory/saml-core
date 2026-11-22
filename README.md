@@ -13,8 +13,8 @@ It is not a plugin. You normally don't install it directly; it comes in as a dep
 
 ## Requirements
 
-- Craft CMS 5 (saml-core 5.x)
-- PHP 8.2+
+- saml-core 6.x: Craft CMS 6 and PHP 8.5. It's a native Craft 6 library: no Yii2 adapter.
+- saml-core 5.x: Craft CMS 5 and PHP 8.2+.
 
 ## Installation
 
@@ -24,20 +24,27 @@ Install [SAML SP](https://github.com/flipboxfactory/saml-sp) or [SAML IdP](https
 composer require flipboxfactory/saml-core
 ```
 
+## For plugin developers (6.x)
+
+A SAML plugin extends `AbstractPlugin` and provides its records, services and controllers:
+
+- `getProviderRecordClass()` / `getProviderIdentityRecordClass()`: Eloquent models extending `records\AbstractProvider` / `records\AbstractProviderIdentity`, with a `TABLE_ALIAS`.
+- `services()`: adds at least `provider` and `providerIdentity` (subclasses of `services\AbstractProviderService` / `AbstractProviderIdentityService`). Each plugin has its own service instances.
+- `controllers()`: classes for the routes saml-core registers. The SAML endpoints (`{endpointPrefix}/login`, `/logout` and their `/request` URLs) keep their 5.x URLs and skip CSRF; the control panel screens and form actions require an admin.
+- `database/migrations/Install.php`: a migration extending `migrations\AbstractInstall`.
+
+Incoming messages are only parsed by `services\bindings\Factory::receive()`; verify them with `helpers\SignatureVerifier`, which fails closed (no signing keys, unsigned, or no key verifies).
+
 ## Development
 
-Checks follow Craft's [coding guidelines](https://craftcms.com/docs/5.x/extend/coding-guidelines.html): [craftcms/ecs](https://github.com/craftcms/ecs) and [craftcms/phpstan](https://github.com/craftcms/phpstan). Tests use Codeception with Craft's test module and need a MySQL database:
+Tests use Pest with Orchestra Testbench and a fixture SAML plugin (`tests/fixtures/plugin`). They run on SQLite by default; set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` for MySQL or PostgreSQL. Style is checked with Pint, static analysis with Larastan.
 
 ```bash
-docker run -d --rm --name saml-core-test-mysql -e MYSQL_ROOT_PASSWORD=password \
-  -e MYSQL_DATABASE=saml_core_test -p 127.0.0.1:3306:3306 mysql:8.0
-cp tests/.env.example tests/.env   # adjust CRAFT_DB_* if needed
-
 composer check      # check-cs + phpstan + test
-composer fix-cs     # auto-fix coding standards
+composer fix-cs     # auto-fix code style
 ```
 
-CI runs the same checks on every push and pull request.
+CI runs the same checks on SQLite, MySQL and PostgreSQL for every push and pull request.
 
 ## Contributing
 

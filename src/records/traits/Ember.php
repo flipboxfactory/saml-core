@@ -1,82 +1,50 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\records\traits;
 
-use yii\base\Model;
-
 /**
- * Trait Ember
- * @package flipbox\saml\core\records
+ * Table naming from `TABLE_ALIAS`, and enabled/disabled helpers.
+ *
  * @property bool $enabled
  */
 trait Ember
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function tableAlias()
+    public static function tableAlias(): string
     {
         return static::TABLE_ALIAS; // @phpstan-ignore classConstant.notFound (defined by concrete records)
     }
 
     /**
-     * {@inheritdoc}
+     * The table name (without Laravel's table prefix, which the query builder adds).
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return '{{%' . static::tableAlias() . '}}';
+        return static::tableAlias();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function stateRules()
+    public function isEnabled(): bool
     {
-        return [
-            [
-                [
-                    'enabled',
-                ],
-                'safe',
-                'on' => [
-                    Model::SCENARIO_DEFAULT,
-                ],
-            ],
-        ];
+        return (bool) $this->enabled;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isEnabled()
+    public function isDisabled(): bool
     {
-        return (bool)$this->enabled;
+        return ! $this->isEnabled();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function isDisabled()
-    {
-        return !$this->isEnabled();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function toEnabled()
+    public function toEnabled(): static
     {
         $this->enabled = true;
+
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function toDisabled()
+    public function toDisabled(): static
     {
         $this->enabled = false;
+
         return $this;
     }
 }

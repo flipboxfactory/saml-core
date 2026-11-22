@@ -1,16 +1,18 @@
-/build
-/vendor
-/storage
-composer.phar
-composer.lock
-.DS_Store
-.idea
-.env
-node_modules
 
-# Tests
-tests/.env
-tests/_support/_generated
-tests/_craft/config/project/
+.DS_Store
+.env
+.idea
 .phpunit.cache
+.phpunit.result.cache
+/build
+/storage
+/vendor
+# Tests
+composer.lock
+composer.phar
 cpresources/
+node_modules
+tests/_craft/config/project/
+tests/_output
+tests/_support/_generated
+tests/.env

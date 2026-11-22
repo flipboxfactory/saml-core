@@ -1,17 +1,24 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers\messages;
 
-use craft\web\Controller;
 use flipbox\saml\core\containers\UtilizeSaml2Container;
 use flipbox\saml\core\EnsureSAMLPlugin;
 
-abstract class AbstractController extends Controller implements EnsureSAMLPlugin, UtilizeSaml2Container
+/**
+ * Base for controllers that receive or send SAML messages. Loads the plugin's saml2 container first.
+ */
+abstract class AbstractController implements EnsureSAMLPlugin, UtilizeSaml2Container
 {
-    public function init(): void
+    public function __construct()
     {
-        parent::init();
         $this->loadContainer();
+    }
+
+    public function loadContainer(): void
+    {
+        $this->getPlugin()->loadSaml2Container();
     }
 }
