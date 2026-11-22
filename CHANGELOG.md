@@ -1,6 +1,6 @@
 Changelog
 =========
-# Unreleased
+# 6.0.0-beta.1 2026-11-22
 ## Changed
 - Requires Craft CMS 6, PHP 8.5 and KeyChain 6. saml-core is a native Craft 6 library and doesn't need the Yii2 adapter. It stays on simplesamlphp/saml2 4.19.
 - `AbstractPlugin` is a Craft 6 plugin. It registers the SAML endpoints (same URLs as 5.x, without CSRF protection), the control panel screens and the form actions (admins only) for the plugin. Plugins provide their controllers through `controllers()` and their services through `services()`; each plugin has its own service instances.
