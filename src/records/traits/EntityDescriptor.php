@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace flipbox\saml\core\records\traits;
 
@@ -11,301 +12,169 @@ use SAML2\Certificate\Key;
 use SAML2\Utilities\Certificate;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
-use SAML2\XML\md\EntityDescriptor as SAML2EntityDescriptor;
+use SAML2\XML\md\EndpointType;
 use SAML2\XML\md\IDPSSODescriptor;
-use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\KeyDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 
 /**
- * Trait EntityDescriptor
- * @package flipbox\saml\core\records\traits
- * @method SAML2EntityDescriptor getMetadataModel
+ * Endpoints and keys from a provider's metadata.
+ *
  * @mixin AbstractProvider
  */
 trait EntityDescriptor
 {
     /**
-     * IDP descriptors from the metadata
-     * @see AbstractProvider::getMetadataModel()
-     * @var IDPSSODescriptor[]
+     * @var list<IDPSSODescriptor>
      */
-    private $idpSsoDescriptors = [];
+    private array $idpSsoDescriptors = [];
 
     /**
-     * SP descriptors from the metadata
-     * @see AbstractProvider::getMetadataModel()
-     * @var SPSSODescriptor[]
+     * @var list<SPSSODescriptor>
      */
-    private $spSsoDescriptors = [];
+    private array $spSsoDescriptors = [];
 
     /**
-     * Get the role descriptors from metadata
-     * @return IDPSSODescriptor[]
+     * @return list<IDPSSODescriptor>
      */
-    public function idpSsoDescriptors()
+    public function idpSsoDescriptors(): array
     {
-        if (!$this->idpSsoDescriptors) {
-            $this->idpSsoDescriptors = EntityDescriptorHelper::getIdpDescriptors($this->getMetadataModel());
+        if (! $this->idpSsoDescriptors && $model = $this->getMetadataModel()) {
+            /** @var list<IDPSSODescriptor> $descriptors */
+            $descriptors = EntityDescriptorHelper::getIdpDescriptors($model);
+            $this->idpSsoDescriptors = $descriptors;
         }
 
         return $this->idpSsoDescriptors;
     }
 
     /**
-     * Get the role descriptors from metadata
-     * @return SPSSODescriptor[]
+     * @return list<SPSSODescriptor>
      */
-    public function spSsoDescriptors()
+    public function spSsoDescriptors(): array
     {
-        if (!$this->spSsoDescriptors) {
-            $this->spSsoDescriptors = EntityDescriptorHelper::getSpDescriptors($this->getMetadataModel());
+        if (! $this->spSsoDescriptors && $model = $this->getMetadataModel()) {
+            /** @var list<SPSSODescriptor> $descriptors */
+            $descriptors = EntityDescriptorHelper::getSpDescriptors($model);
+            $this->spSsoDescriptors = $descriptors;
         }
 
         return $this->spSsoDescriptors;
     }
 
-    /**
-     * @param null $binding
-     * @return IndexedEndpointType|null
-     */
-    public function firstSpAcsService($binding = null)
+    public function firstSpAcsService(?string $binding = null): ?EndpointType
     {
         return EntityDescriptorHelper::getFirstSpAssertionConsumerService($this->spSsoDescriptors(), $binding);
     }
 
-    /** SSO */
-
-    /**
-     * @param null $binding
-     * @return IndexedEndpointType|null
-     */
-    public function firstIdpSsoService($binding = null)
+    public function firstIdpSsoService(?string $binding = null): ?EndpointType
     {
         return EntityDescriptorHelper::getFirstIdpSSOService($this->idpSsoDescriptors(), $binding);
     }
 
-    /** SLO */
-
-    /**
-     * @param null $binding
-     * @return IndexedEndpointType|null
-     */
-    public function firstIdpSloService($binding = null)
+    public function firstIdpSloService(?string $binding = null): ?EndpointType
     {
         return EntityDescriptorHelper::getFirstSLOService($this->idpSsoDescriptors(), $binding);
     }
 
-    /**
-     * @param null $binding
-     * @return IndexedEndpointType|null
-     */
-    public function firstSpSloService($binding = null)
+    public function firstSpSloService(?string $binding = null): ?EndpointType
     {
         return EntityDescriptorHelper::getFirstSLOService($this->spSsoDescriptors(), $binding);
     }
 
-    /** X509s */
-
     /**
-     * @return XMLSecurityKey
-     * @throws \Exception
+     * The first signing certificate in the metadata, as a public key, or null if there isn't one.
      */
-    public function signingXMLSecurityKey()
+    public function signingXMLSecurityKey(): ?XMLSecurityKey
     {
-        if (!$certificate = $this->firstCertificateForSigning()) {
-            return null;
-        }
+        $certificate = $this->firstCertificate(Key::USAGE_SIGNING);
 
-        return $this->certificateToXMLSecurityKey($certificate);
+        return $certificate ? $this->certificateToXMLSecurityKey($certificate) : null;
     }
 
     /**
-     * @return array
-     * @throws \Exception
-     */
-    public function signingXMLSecurityKeyStore()
-    {
-        $store = [];
-        if (!($keyDescriptors = $this->keyDescriptors())) {
-            return $store;
-        }
-
-        $keyDescriptors = $this->keyDescriptorsByType($keyDescriptors, Key::USAGE_SIGNING);
-
-        foreach ($keyDescriptors as $keyDescriptor) {
-            $x509Certificates = $this->x509Certificates($keyDescriptor);
-            $store = array_merge(
-                $store,
-                $this->certificatesToXMLSecurityKeyStore($x509Certificates)
-            );
-        }
-
-        return $store;
-    }
-
-    /**
-     * @return XMLSecurityKey|null
-     * @throws \Exception
+     * Every signing certificate in the metadata, as public keys (empty if there are none).
      *
-     * For Decryption
-     * @see SecurityHelper::decryptAssertion()
+     * @return list<XMLSecurityKey>
      */
-    public function encryptionKey()
-    {
-        if (!$certificate = $this->firstCertificateForEncryption()) {
-            return null;
-        }
-
-        $pem = Certificate::convertToCertificate(
-            SecurityHelper::cleanCertificateWhiteSpace(
-                $certificate->getCertificate()
-            )
-        );
-
-        $xmlSecurityKey = new XMLSecurityKey(
-            XMLSecurityKey::RSA_OAEP_MGF1P,
-            [
-                'type' => 'public',
-            ]
-        );
-
-        $xmlSecurityKey->loadKey($pem);
-
-        return $xmlSecurityKey;
-    }
-
-    /**
-     * @param X509Certificate $certificate
-     * @return XMLSecurityKey
-     * @throws \Exception
-     */
-    protected function certificateToXMLSecurityKey(X509Certificate $certificate)
-    {
-        $pem = Certificate::convertToCertificate(
-            SecurityHelper::cleanCertificateWhiteSpace(
-                $certificate->getCertificate()
-            )
-        );
-
-        $xmlSecurityKey = new XMLSecurityKey(
-            XMLSecurityKey::RSA_SHA256,
-            [
-                'type' => 'public',
-            ]
-        );
-
-        $xmlSecurityKey->loadKey($pem, false, true);
-
-        return $xmlSecurityKey;
-    }
-
-    /**
-     * @param array $certificates
-     * @return array
-     * @throws \Exception
-     */
-    protected function certificatesToXMLSecurityKeyStore(array $certificates)
+    public function signingXMLSecurityKeyStore(): array
     {
         $store = [];
-        foreach ($certificates as $certificate) {
-            $store[] = $this->certificateToXMLSecurityKey($certificate);
+        foreach ($this->keyDescriptorsByType($this->keyDescriptors(), Key::USAGE_SIGNING) as $keyDescriptor) {
+            foreach ($this->x509Certificates($keyDescriptor) as $certificate) {
+                $store[] = $this->certificateToXMLSecurityKey($certificate);
+            }
         }
+
         return $store;
     }
 
     /**
-     * @param array $keyDescriptors
-     * @param string $signingOrEncrypt
-     * @return KeyDescriptor|null
+     * The first encryption certificate in the metadata, as an RSA-OAEP public key, or null if there isn't one.
      */
-    protected function firstKeyDescriptor(array $keyDescriptors, string $signingOrEncrypt)
+    public function encryptionKey(): ?XMLSecurityKey
     {
-        /** @var KeyDescriptor[] $keyDescriptorFiltered */
-        $keyDescriptorFiltered = $this->keyDescriptorsByType($keyDescriptors, $signingOrEncrypt);
-
-        return count($keyDescriptorFiltered) > 0 ? array_shift($keyDescriptorFiltered) : null;
-    }
-
-    /**
-     * @return X509Certificate|null
-     */
-    protected function firstCertificateForSigning()
-    {
-        return $this->firstCertificate(Key::USAGE_SIGNING);
-    }
-
-    /**
-     * @return X509Certificate|null
-     */
-    protected function firstCertificateForEncryption()
-    {
-        return $this->firstCertificate(Key::USAGE_ENCRYPTION);
-    }
-
-    /**
-     * @return X509Certificate|null
-     */
-    protected function firstCertificate($use)
-    {
-        if (!($keyDescriptors = $this->keyDescriptors())) {
+        if (! $certificate = $this->firstCertificate(Key::USAGE_ENCRYPTION)) {
             return null;
         }
 
-        /** @var KeyDescriptor $keyDescriptor */
-        $keyDescriptor = $this->firstKeyDescriptor($keyDescriptors, $use);
+        $xmlSecurityKey = new XMLSecurityKey(XMLSecurityKey::RSA_OAEP_MGF1P, ['type' => 'public']);
+        $xmlSecurityKey->loadKey($this->certificatePem($certificate));
 
-        if (is_null($keyDescriptor)) {
-            return null;
-        }
-
-        $certificates = $this->x509Certificates($keyDescriptor);
-        return !empty($certificates) ? $certificates[0] : null;
+        return $xmlSecurityKey;
     }
 
-    /**
-     * @return KeyDescriptor[]
-     */
-    private function keyDescriptors()
+    protected function certificateToXMLSecurityKey(X509Certificate $certificate): XMLSecurityKey
     {
-        if (empty($this->spSsoDescriptors()) && empty($this->idpSsoDescriptors())) {
-            return null;
-        }
+        $xmlSecurityKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, ['type' => 'public']);
+        $xmlSecurityKey->loadKey($this->certificatePem($certificate), false, true);
 
-        if ($this->isIdentityProvider()) {
-            /** @var IDPSSODescriptor $ssoDescriptor */
-            $ssoDescriptor = $this->idpSsoDescriptors()[0];
-        } else {
-            /** @var SPSSODescriptor $ssoDescriptor */
-            $ssoDescriptor = $this->spSsoDescriptors()[0];
-        }
-
-        return $ssoDescriptor->getKeyDescriptor();
+        return $xmlSecurityKey;
     }
 
-    /**
-     * @param array $keyDescriptors
-     * @param string $signingOrEncrypt
-     * @return KeyDescriptor[]
-     */
-    private function keyDescriptorsByType(array $keyDescriptors, string $signingOrEncrypt)
+    protected function certificatePem(X509Certificate $certificate): string
     {
+        return Certificate::convertToCertificate(SecurityHelper::cleanCertificateWhiteSpace($certificate->getCertificate()));
+    }
 
-        /** @var KeyDescriptor[] $keyDescriptorsFiltered */
-        $keyDescriptorsFiltered = array_filter(
-            $keyDescriptors,
-            function(KeyDescriptor $keyDescriptor) use ($signingOrEncrypt) {
-                return $keyDescriptor->getUse() === $signingOrEncrypt;
+    protected function firstCertificate(string $use): ?X509Certificate
+    {
+        foreach ($this->keyDescriptorsByType($this->keyDescriptors(), $use) as $keyDescriptor) {
+            if ($certificates = $this->x509Certificates($keyDescriptor)) {
+                return $certificates[0];
             }
-        );
+        }
 
-        return $keyDescriptorsFiltered;
+        return null;
     }
 
     /**
-     * @param KeyDescriptor $keyDescriptor
-     * @return array|X509Certificate[]
+     * The key descriptors of the provider's first SSO descriptor of its type.
+     *
+     * @return list<KeyDescriptor>
      */
+    private function keyDescriptors(): array
+    {
+        $descriptors = $this->isIdentityProvider() ? $this->idpSsoDescriptors() : $this->spSsoDescriptors();
+
+        return isset($descriptors[0]) ? array_values($descriptors[0]->getKeyDescriptor()) : [];
+    }
+
+    /**
+     * Key descriptors for a use. One without a `use` attribute is for both signing and encryption (SAML metadata
+     * 2.4.1.1).
+     *
+     * @param  list<KeyDescriptor>  $keyDescriptors
+     * @return list<KeyDescriptor>
+     */
+    private function keyDescriptorsByType(array $keyDescriptors, string $use): array
+    {
+        return array_values(array_filter(
+            $keyDescriptors,
+            fn (KeyDescriptor $keyDescriptor) => in_array($keyDescriptor->getUse(), [$use, null, ''], true),
+        ));
+    }
+
     /**
      * The X.509 certificates in a key descriptor, from every X509Data element, in document order.
      *
@@ -333,9 +202,6 @@ trait EntityDescriptor
         return (string) $this->getMetadataModel()?->toXML()->ownerDocument?->saveXML();
     }
 
-    /**
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->toXmlString();

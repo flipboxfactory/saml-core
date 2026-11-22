@@ -1,89 +1,41 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 3/9/18
- * Time: 2:48 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers;
 
-use Craft;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig;
-use flipbox\saml\core\AbstractPlugin;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Plugins;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
 
 /**
- * Class AbstractGeneralController
- * @package flipbox\saml\core\controllers\cp\view
+ * Saves the settings page (`actions/{handle}/settings/save`).
+ *
+ * Only the posted settings change: Craft keeps the plugin's other stored settings, and doesn't copy values set in
+ * `config/craft/{handle}.php` into project config.
  */
-abstract class AbstractSettingsController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
+abstract class AbstractSettingsController extends AbstractController
 {
-    /**
-     * @return array
-     */
-    protected function verbs(): array
+    public function save(Request $request): Response
     {
-        return [
-            'save' => ['post', 'put'],
-        ];
-    }
+        abort_unless(Cms::config()->allowAdminChanges, 403, 'Administrative changes are disallowed in this environment.');
 
-    /**
-     * @return mixed
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function actionSave()
-    {
-        /** @var AbstractPlugin $plugin */
-        $plugin = $this->getPlugin();
-
-        $settings = static::mergeStoredSettings($plugin->handle, [
-            'entityId' => Craft::$app->request->getRequiredParam('entityId'),
-            'endpointPrefix' => Craft::$app->request->getRequiredParam('endpointPrefix'),
+        $validated = $request->validate([
+            'entityId' => ['required', 'string', 'max:255'],
+            'endpointPrefix' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_\-\/$@{}.]+$/'],
         ]);
 
-        Craft::$app->plugins->savePluginSettings(
-            $plugin,
-            $settings
-        );
-        return $this->redirectToPostedUrl();
-    }
+        $plugin = $this->getPlugin();
 
-    /**
-     * Merges the posted settings over the plugin's settings stored in project config.
-     *
-     * Since Craft 4.16.18 / 5.8.22, `Plugins::savePluginSettings()` only writes the keys it is
-     * given to project config, so passing just the posted fields would drop every other stored
-     * setting. Values that only come from the plugin's config file are deliberately not included,
-     * so they don't get copied into project config.
-     *
-     * @param string $handle The plugin handle
-     * @param array $posted The settings posted from the settings page
-     * @return array
-     */
-    public static function mergeStoredSettings(string $handle, array $posted): array
-    {
-        $stored = Craft::$app->getProjectConfig()->get(
-            ProjectConfig::PATH_PLUGINS . '.' . $handle . '.settings'
-        );
-
-        if (!is_array($stored)) {
-            $stored = [];
+        if (! Plugins::savePluginSettings($plugin, $validated)) {
+            return $this->asFailure(t('Couldn’t save settings.', category: $plugin->handle), [
+                'errors' => $plugin->getSettings()->errors()->getMessages(),
+            ]);
         }
 
-        return array_merge(
-            ProjectConfigHelper::unpackAssociativeArrays($stored),
-            $posted
-        );
-    }
-
-    /**
-     * @return bool
-     * @throws \yii\web\ForbiddenHttpException
-     */
-    public function checkUpdateAccess(): bool
-    {
-        return $this->checkAdminAccess();
+        return $this->asSuccess(t('Settings saved.', category: $plugin->handle));
     }
 }

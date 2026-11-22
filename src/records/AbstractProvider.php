@@ -15,6 +15,7 @@ use flipbox\saml\core\models\AbstractSettings;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\records\traits\Ember;
+use flipbox\saml\core\services\AbstractProviderService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
@@ -237,7 +238,7 @@ abstract class AbstractProvider extends BaseModel implements ProviderInterface
     }
 
     /**
-     * Sets this system's key pair for the provider. Saving with {@see \flipbox\saml\core\services\AbstractProviderService::save()}
+     * Sets this system's key pair for the provider. Saving with {@see AbstractProviderService::save()}
      * links it.
      */
     public function setKeychain(?KeyChainRecord $keyChain): static

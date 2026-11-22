@@ -1,24 +1,18 @@
 <?php
 
-/**
- * @copyright  Copyright (c) Flipbox Digital Limited
- */
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers;
 
-class AbstractController extends \craft\web\Controller
-{
-    /************************************************
-     * Access Control
-     ************************************************/
+use CraftCms\Cms\Http\RespondsWithFlash;
+use flipbox\saml\core\AbstractPlugin;
+use flipbox\saml\core\EnsureSAMLPlugin;
 
-    /**
-     * @return bool
-     * @throws \yii\web\ForbiddenHttpException
-     */
-    public function checkAdminAccess(): bool
-    {
-        $this->requireAdmin(false);
-        return true;
-    }
+/**
+ * Base for the SAML plugins' control panel form actions. Routes require an admin (see
+ * {@see AbstractPlugin::registerFormActionRoutes()}).
+ */
+abstract class AbstractController implements EnsureSAMLPlugin
+{
+    use RespondsWithFlash;
 }

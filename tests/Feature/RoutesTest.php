@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Models\User;
 use flipbox\saml\core\helpers\UrlHelper;
+use flipbox\saml\core\tests\fixtures\plugin\controllers\LoginController;
 use flipbox\saml\core\tests\fixtures\plugin\ProviderRecord;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 function routeFor(string $method, string $uri): Illuminate\Routing\Route
 {
-    return Route::getRoutes()->match(Illuminate\Http\Request::create($uri, $method));
+    return Route::getRoutes()->match(Request::create($uri, $method));
 }
 
 it('builds endpoint URLs as 5.x did', function () {
@@ -41,21 +45,21 @@ it('serves the SAML endpoints at the 5.x URLs', function (string $uri, string $a
 
 it('only matches UIDs in endpoint paths', function () {
     expect(routeFor('GET', '/sso/login/not-a-uid')->getControllerClass())
-        ->not->toBe(flipbox\saml\core\tests\fixtures\plugin\controllers\LoginController::class);
+        ->not->toBe(LoginController::class);
 });
 
 it('exempts only the SAML endpoints from CSRF protection', function () {
     $middleware = fn (string $method, string $uri) => Route::gatherRouteMiddleware(routeFor($method, $uri));
 
     expect($middleware('POST', '/sso/login'))->not->toContain(PreventRequestForgery::class)
-        ->and(Route::getRoutes()->match(Illuminate\Http\Request::create('/sso/login', 'POST'))->excludedMiddleware())->toContain(PreventRequestForgery::class)
+        ->and(Route::getRoutes()->match(Request::create('/sso/login', 'POST'))->excludedMiddleware())->toContain(PreventRequestForgery::class)
         ->and(routeFor('POST', '/admin/actions/saml-core-test/metadata/save')->excludedMiddleware())->not->toContain(PreventRequestForgery::class);
 });
 
 it('requires an admin for control panel screens and actions', function (string $method, string $uri) {
     // Solo only allows one user
-    \CraftCms\Cms\Edition::set(\CraftCms\Cms\Edition::Pro);
-    $this->actingAs(\CraftCms\Cms\User\Models\User::factory()->withPermissions(['accessCp'])->create(['admin' => false]), 'craft');
+    Edition::set(Edition::Pro);
+    $this->actingAs(User::factory()->withPermissions(['accessCp'])->create(['admin' => false]), 'craft');
 
     $this->json($method, $uri)->assertForbidden();
 })->with([

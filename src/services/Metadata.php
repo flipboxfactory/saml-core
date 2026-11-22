@@ -3,14 +3,14 @@
 namespace flipbox\saml\core\services;
 
 use flipbox\keychain\records\KeyChainRecord;
+use flipbox\saml\core\events\MetadataCreated;
+use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\helpers\UrlHelper;
 use flipbox\saml\core\models\AbstractSettings;
-use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\events\MetadataCreated;
-use flipbox\saml\core\exceptions\InvalidMetadata;
 use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 use SAML2\Certificate\Key;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
@@ -24,16 +24,16 @@ use SAML2\XML\md\IndexedEndpointType;
 use SAML2\XML\md\KeyDescriptor;
 use SAML2\XML\md\SPSSODescriptor;
 use SAML2\XML\md\SSODescriptorType;
-use InvalidArgumentException;
 
 /**
  * Class AbstractMetadata
- * @package flipbox\saml\core\services\messages
  */
 class Metadata extends PluginService
 {
     public const SET_SIGNING = Key::USAGE_SIGNING;
+
     public const SET_ENCRYPTION = Key::USAGE_ENCRYPTION;
+
     public const PROTOCOL = Constants::NS_SAMLP;
 
     /**
@@ -42,16 +42,16 @@ class Metadata extends PluginService
     public const MAX_FETCH_BYTES = 5 * 1024 * 1024;
 
     /**
-     * @var array
+     * @var list<string>
      */
-    protected $supportedBindings = [
+    protected array $supportedBindings = [
         Constants::BINDING_HTTP_POST,
     ];
 
     /**
-     * @return array
+     * @return list<string>
      */
-    public function getSupportedBindings()
+    public function getSupportedBindings(): array
     {
         return $this->supportedBindings;
     }
@@ -73,8 +73,6 @@ class Metadata extends PluginService
     }
 
     /**
-     * @param string $url
-     * @return EntityDescriptor
      * @throws \Exception
      */
     /**
@@ -108,10 +106,10 @@ class Metadata extends PluginService
     }
 
     public function create(
-        SettingsInterface $settings,
+        AbstractSettings $settings,
         AbstractProvider $provider,
     ): EntityDescriptor {
-        $entityDescriptor = new EntityDescriptor();
+        $entityDescriptor = new EntityDescriptor;
 
         $entityId = $provider->entityId ?: $settings->getEntityId();
 
@@ -142,20 +140,20 @@ class Metadata extends PluginService
     }
 
     /**
-     * @param string $binding
-     * @return IdpSsoDescriptor|SpSsoDescriptor
-     * @throws InvalidConfigException
+     * @return IDPSSODescriptor|SPSSODescriptor
+     *
+     * @throws InvalidArgumentException
      */
     protected function createDescriptor(
         string $binding,
-        SettingsInterface $settings,
+        AbstractSettings $settings,
         AbstractProvider $provider,
     ) {
-        if (!in_array($binding, [
+        if (! in_array($binding, [
             Constants::BINDING_HTTP_POST,
             Constants::BINDING_HTTP_REDIRECT,
         ])) {
-            throw new InvalidArgumentException('Binding not supported: ' . $binding);
+            throw new InvalidArgumentException('Binding not supported: '.$binding);
         }
 
         if ($settings->getMyType() === $settings::SP) {
@@ -168,7 +166,6 @@ class Metadata extends PluginService
     }
 
     /**
-     * @param string $binding
      * @return IDPSSODescriptor
      */
     protected function createIdpDescriptor(
@@ -176,7 +173,7 @@ class Metadata extends PluginService
         AbstractSettings $settings,
         ?AbstractProvider $provider = null,
     ) {
-        $descriptor = new \SAML2\XML\md\IDPSSODescriptor();
+        $descriptor = new IDPSSODescriptor;
         $descriptor->setProtocolSupportEnumeration([
             static::PROTOCOL,
         ]);
@@ -190,7 +187,7 @@ class Metadata extends PluginService
         }
 
         // SSO
-        $ssoEndpoint = new EndpointType();
+        $ssoEndpoint = new EndpointType;
         $ssoEndpoint->setBinding($binding);
         $ssoEndpoint->setLocation(
             UrlHelper::buildEndpointUrl(
@@ -213,18 +210,15 @@ class Metadata extends PluginService
 
         // todo add attributes from mapping
 
-
-
         return $descriptor;
     }
 
     /**
-     * @param string $binding
      * @return SPSSODescriptor
      */
     protected function createSpDescriptor(string $binding, AbstractSettings $settings, AbstractProvider $provider)
     {
-        $descriptor = new SPSSODescriptor();
+        $descriptor = new SPSSODescriptor;
         $descriptor->setProtocolSupportEnumeration([
             static::PROTOCOL,
         ]);
@@ -233,7 +227,7 @@ class Metadata extends PluginService
         $descriptor->setWantAssertionsSigned(true);
 
         // ACS
-        $acsEndpoint = new IndexedEndpointType();
+        $acsEndpoint = new IndexedEndpointType;
         $acsEndpoint->setIndex(1);
         $acsEndpoint->setBinding($binding);
         $acsEndpoint->setLocation(
@@ -248,21 +242,21 @@ class Metadata extends PluginService
             $acsEndpoint,
         ]);
 
-        //SLO
+        // SLO
         $this->addSloEndpoint(
             $descriptor,
             $settings,
             $provider
         );
 
-        //todo add attribute consuming service
-//        var_dump(
-//            $provider->getMapping()
-//        );exit;
-//        $attributeConsumingService = new AttributeConsumingService();
-//        $attributeConsumingService->addRequestedAttribute($att = new RequestedAttribute());
-//        $att->setName('username');
-//        $descriptor->addAttributeConsumingService($attributeConsumingService);
+        // todo add attribute consuming service
+        //        var_dump(
+        //            $provider->getMapping()
+        //        );exit;
+        //        $attributeConsumingService = new AttributeConsumingService();
+        //        $attributeConsumingService->addRequestedAttribute($att = new RequestedAttribute());
+        //        $att->setName('username');
+        //        $descriptor->addAttributeConsumingService($attributeConsumingService);
 
         return $descriptor;
     }
@@ -271,8 +265,8 @@ class Metadata extends PluginService
         SSODescriptorType $descriptorType,
         AbstractSettings $settings,
         AbstractProvider $provider,
-    ) {
-        $sloEndpointRedirect = new EndpointType();
+    ): void {
+        $sloEndpointRedirect = new EndpointType;
         $sloEndpointRedirect->setBinding(
             Constants::BINDING_HTTP_REDIRECT
         );
@@ -286,7 +280,7 @@ class Metadata extends PluginService
             $sloLogoutEndpointUrl
         );
 
-        $sloEndpointPost = new EndpointType();
+        $sloEndpointPost = new EndpointType;
         $sloEndpointPost->setBinding(
             Constants::BINDING_HTTP_POST
         );
@@ -300,34 +294,28 @@ class Metadata extends PluginService
         ]);
     }
 
-
-
-    /**
-     * @param SSODescriptorType $ssoDescriptor
-     * @param KeyChainRecord $keyChainRecord
-     */
     protected function setCertificate(
         SSODescriptorType $ssoDescriptor,
         KeyChainRecord $keyChainRecord,
         string $signOrEncrypt,
-    ) {
+    ): void {
         /**
          * Validate use string
          */
-        if (!in_array($signOrEncrypt, [
+        if (! in_array($signOrEncrypt, [
             self::SET_SIGNING,
             self::SET_ENCRYPTION,
         ])) {
-            throw new \InvalidArgumentException('Sign or Encrypt argument can only be "signing" or "encrypt"');
+            throw new InvalidArgumentException('Sign or Encrypt argument can only be "signing" or "encrypt"');
         }
 
         /**
          * Create sub object
          */
-        $keyDescriptor = new KeyDescriptor();
-        $keyInfo = new KeyInfo();
-        $x509Data = new X509Data();
-        $x509Certificate = new X509Certificate();
+        $keyDescriptor = new KeyDescriptor;
+        $keyInfo = new KeyInfo;
+        $x509Data = new X509Data;
+        $x509Certificate = new X509Certificate;
 
         $keyInfo->addInfo($x509Data);
 
@@ -342,26 +330,18 @@ class Metadata extends PluginService
         $ssoDescriptor->addKeyDescriptor($keyDescriptor);
     }
 
-    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    public function updateDescriptorCertificates(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord): void
     {
-        $this->setSign($ssoDescriptor,$keyChainRecord);
-        $this->setEncrypt($ssoDescriptor,$keyChainRecord);
+        $this->setSign($ssoDescriptor, $keyChainRecord);
+        $this->setEncrypt($ssoDescriptor, $keyChainRecord);
     }
 
-    /**
-     * @param SSODescriptorType
-     * @param KeyChainRecord $keyChainRecord
-     */
-    protected function setSign(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    protected function setSign(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord): void
     {
         $this->setCertificate($ssoDescriptor, $keyChainRecord, static::SET_SIGNING);
     }
 
-    /**
-     * @param SSODescriptorType
-     * @param KeyChainRecord $keyChainRecord
-     */
-    protected function setEncrypt(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord)
+    protected function setEncrypt(SSODescriptorType $ssoDescriptor, KeyChainRecord $keyChainRecord): void
     {
         $this->setCertificate($ssoDescriptor, $keyChainRecord, static::SET_ENCRYPTION);
     }

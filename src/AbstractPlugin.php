@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace flipbox\saml\core;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
@@ -20,7 +22,6 @@ use flipbox\saml\core\records\AbstractProviderIdentity;
 use flipbox\saml\core\services\AbstractProviderIdentityService;
 use flipbox\saml\core\services\AbstractProviderService;
 use flipbox\saml\core\services\Cp;
-use flipbox\saml\core\services\EditProvider;
 use flipbox\saml\core\services\messages\LogoutRequest;
 use flipbox\saml\core\services\messages\LogoutResponse;
 use flipbox\saml\core\services\Metadata;
@@ -103,7 +104,6 @@ abstract class AbstractPlugin extends Plugin
             'metadata' => Metadata::class,
             'logoutRequest' => LogoutRequest::class,
             'logoutResponse' => LogoutResponse::class,
-            'editProvider' => EditProvider::class,
             'session' => Session::class,
         ];
     }
@@ -232,7 +232,7 @@ abstract class AbstractPlugin extends Plugin
 
     public function getSettingsResponse(): mixed
     {
-        return redirect()->to(\CraftCms\Cms\Support\Url::cpUrl($this->handle.'/settings'));
+        return redirect()->to(Url::cpUrl($this->handle.'/settings'));
     }
 
     public function getCpNavItem(): NavItem|array|null
@@ -241,7 +241,7 @@ abstract class AbstractPlugin extends Plugin
 
         if ($item instanceof NavItem) {
             $item->subnav(array_map(
-                fn (string $id, array $link) => new NavItem()->id($id)->label($link['label'])->href(\CraftCms\Cms\Support\Url::cpUrl($link['url'])),
+                fn (string $id, array $link) => new NavItem()->id($id)->label($link['label'])->href(Url::cpUrl($link['url'])),
                 array_keys($this->getSubNav()),
                 $this->getSubNav(),
             ));
@@ -262,7 +262,7 @@ abstract class AbstractPlugin extends Plugin
             'saml.keychain' => ['url' => $this->handle.'/keychain', 'label' => t('Keychain', category: $this->handle)],
         ];
 
-        if (\CraftCms\Cms\Cms::config()->allowAdminChanges) {
+        if (Cms::config()->allowAdminChanges) {
             $nav['saml.settings'] = ['url' => $this->handle.'/settings', 'label' => t('Settings', category: $this->handle)];
         }
 
@@ -288,12 +288,6 @@ abstract class AbstractPlugin extends Plugin
     {
         /** @var Cp */
         return $this->service('cp');
-    }
-
-    public function getEditProvider(): EditProvider
-    {
-        /** @var EditProvider */
-        return $this->service('editProvider');
     }
 
     public function getProvider(): AbstractProviderService

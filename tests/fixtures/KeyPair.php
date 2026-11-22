@@ -10,8 +10,7 @@ final class KeyPair
     public function __construct(
         public readonly string $privateKeyPem,
         public readonly string $certificatePem,
-    ) {
-    }
+    ) {}
 
     public static function generate(string $digest = 'sha256'): self
     {

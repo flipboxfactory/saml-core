@@ -13,21 +13,21 @@ use SAML2\XML\saml\Issuer;
 
 /**
  * Class MessageHelper
- * @package flipbox\saml\core\helpers
  */
 class MessageHelper
 {
     public const REQUEST_PARAMETER = 'SAMLRequest';
+
     public const RESPONSE_PARAMETER = 'SAMLResponse';
+
     public const ID_LENGTH = 43;
 
-    public static function generateId()
+    public static function generateId(): string
     {
-        return '_' . bin2hex(openssl_random_pseudo_bytes((int) ((self::ID_LENGTH - 1) / 2)));
+        return '_'.bin2hex(openssl_random_pseudo_bytes((int) ((self::ID_LENGTH - 1) / 2)));
     }
 
     /**
-     * @param SamlMessage $message
      * @return bool
      */
     public static function isResponse(SamlMessage $message)
@@ -36,7 +36,6 @@ class MessageHelper
     }
 
     /**
-     * @param SamlMessage $message
      * @return bool
      */
     public static function isRequest(SamlMessage $message)
@@ -45,7 +44,6 @@ class MessageHelper
     }
 
     /**
-     * @param SamlMessage $message
      * @return string
      */
     public static function getParameterKeyByMessage(SamlMessage $message)
@@ -53,11 +51,7 @@ class MessageHelper
         return static::isRequest($message) ? static::REQUEST_PARAMETER : static::RESPONSE_PARAMETER;
     }
 
-    /**
-     * @param $issuer
-     * @return string|null
-     */
-    public static function getIssuer($issuer)
+    public static function getIssuer(Issuer|string|null $issuer): ?string
     {
         if ($issuer instanceof Issuer) {
             return $issuer->getValue();

@@ -12,6 +12,7 @@ use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\LinkRecord;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ColumnDefinition;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -38,10 +39,11 @@ abstract class AbstractInstall extends Migration
 
         if (! Schema::hasTable(LinkRecord::TABLE_ALIAS)) {
             Schema::create(LinkRecord::TABLE_ALIAS, function (Blueprint $table) {
-                $table->id();
+                $table->integer('id', true);
                 $table->integer('providerId');
                 $table->char('providerUid', 36);
-                $table->foreignId('keyChainId')->constrained(KeyChainRecord::TABLE)->cascadeOnDelete();
+                $this->referenceColumn($table, 'keyChainId', KeyChainRecord::TABLE);
+                $table->foreign('keyChainId')->references('id')->on(KeyChainRecord::TABLE)->cascadeOnDelete();
                 $table->dateTime('dateCreated');
                 $table->dateTime('dateUpdated');
                 $table->char('uid', 36)->default('0');
@@ -51,9 +53,11 @@ abstract class AbstractInstall extends Migration
 
         if (! Schema::hasTable($this->getIdentityTableName())) {
             Schema::create($this->getIdentityTableName(), function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('providerId')->constrained($this->getProviderTableName())->cascadeOnDelete();
-                $table->foreignId('userId')->constrained(Table::USERS)->cascadeOnDelete();
+                $table->integer('id', true);
+                $table->integer('providerId');
+                $table->foreign('providerId')->references('id')->on($this->getProviderTableName())->cascadeOnDelete();
+                $this->referenceColumn($table, 'userId', Table::USERS);
+                $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete();
                 $table->string('nameId');
                 $table->string('sessionId')->nullable();
                 $table->boolean('enabled')->default(true);
@@ -69,7 +73,8 @@ abstract class AbstractInstall extends Migration
 
     protected function defineProviderTable(Blueprint $table): void
     {
-        $table->id();
+        // INT ids, as in 5.x and Craft's own tables
+        $table->integer('id', true);
         $table->string('label', 64)->nullable();
         $table->string('entityId')->index();
         $table->mediumText('metadata');
@@ -77,7 +82,8 @@ abstract class AbstractInstall extends Migration
         $table->enum('providerType', [SettingsInterface::SP, SettingsInterface::IDP]);
         $table->boolean('encryptAssertions')->default(false);
         $table->string('encryptionMethod', 64)->nullable();
-        $table->foreignId('siteId')->nullable()->constrained(Table::SITES)->nullOnDelete();
+        $this->referenceColumn($table, 'siteId', Table::SITES)->nullable();
+        $table->foreign('siteId')->references('id')->on(Table::SITES)->nullOnDelete();
         $table->text('groupOptions')->nullable();
         $table->text('metadataOptions')->nullable();
         $table->boolean('syncGroups')->default(true);
@@ -88,6 +94,25 @@ abstract class AbstractInstall extends Migration
         $table->dateTime('dateCreated');
         $table->dateTime('dateUpdated');
         $table->char('uid', 36)->default('0');
+    }
+
+    /**
+     * A column of the same integer type as `$referencedTable.id`, so MySQL accepts a foreign key to it. (KeyChain's
+     * `id` is INT on sites upgraded from Craft 5, and may differ on fresh installs.)
+     */
+    protected function referenceColumn(Blueprint $table, string $column, string $referencedTable): ColumnDefinition
+    {
+        $id = collect(Schema::getColumns($referencedTable))->firstWhere('name', 'id') ?? [];
+        $typeName = strtolower((string) ($id['type_name'] ?? 'int'));
+        $unsigned = str_contains(strtolower((string) ($id['type'] ?? '')), 'unsigned');
+        $big = in_array($typeName, ['bigint', 'int8', 'bigserial'], true);
+
+        return match (true) {
+            $big && $unsigned => $table->unsignedBigInteger($column),
+            $big => $table->bigInteger($column),
+            $unsigned => $table->unsignedInteger($column),
+            default => $table->integer($column),
+        };
     }
 
     public function down(): void

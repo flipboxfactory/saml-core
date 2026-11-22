@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace flipbox\saml\core\records;
 
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Facades\Users;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $nameId
  * @property string|null $sessionId
  * @property bool $enabled
- * @property \Carbon\CarbonInterface $lastLoginDate
+ * @property CarbonInterface $lastLoginDate
  * @property string $uid
  */
 abstract class AbstractProviderIdentity extends BaseModel implements ProviderIdentityInterface

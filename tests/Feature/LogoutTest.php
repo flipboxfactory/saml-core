@@ -8,10 +8,12 @@ use flipbox\saml\core\tests\fixtures\KeyPair;
 use flipbox\saml\core\tests\fixtures\plugin\ProviderIdentityRecord;
 use flipbox\saml\core\tests\fixtures\plugin\ProviderRecord;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
-use SAML2\Constants;
+use SAML2\DOMDocumentFactory;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse;
+use SAML2\Message;
+use SAML2\XML\md\EntityDescriptor;
 use SAML2\XML\saml\Issuer;
 use SAML2\XML\saml\NameID;
 
@@ -22,7 +24,7 @@ beforeEach(function () {
 
     // This system (the SP), with a key pair to sign its LogoutResponses
     $own = $this->plugin()->getProvider()->create(
-        new SAML2\XML\md\EntityDescriptor(SAML2\DOMDocumentFactory::fromString(idpMetadataXml($this->plugin()->getSettings()->getEntityId(), [keyPair()->certificatePem]))->documentElement),
+        new EntityDescriptor(DOMDocumentFactory::fromString(idpMetadataXml($this->plugin()->getSettings()->getEntityId(), [keyPair()->certificatePem]))->documentElement),
     );
     $own->providerType = 'sp';
     $own->setKeychain(KeyChain::getInstance()->getService()->generateOpenssl(['pluginHandle' => 'saml-core-test']));
@@ -106,7 +108,7 @@ it('logs out and answers a signed LogoutRequest with a signed LogoutResponse', f
 
     $this->assertGuest('craft');
     preg_match('/name="SAMLResponse" value="([^"]+)"/', $response->getContent(), $m);
-    $logoutResponse = SAML2\Message::fromXML(SAML2\DOMDocumentFactory::fromString(base64_decode(html_entity_decode($m[1])))->documentElement);
+    $logoutResponse = Message::fromXML(DOMDocumentFactory::fromString(base64_decode(html_entity_decode($m[1])))->documentElement);
 
     expect($response->getContent())->toContain('action="'.IDP.'/slo"')
         ->and($logoutResponse)->toBeInstanceOf(LogoutResponse::class)
@@ -150,7 +152,7 @@ it('only accepts a LogoutResponse to this session’s request', function () {
     // Start a logout, which remembers the LogoutRequest's ID in the session
     $started = $this->actingAs($this->user, 'craft')->get('/sso/logout/request/'.$this->idp->uid)->assertOk();
     preg_match('/name="SAMLRequest" value="([^"]+)"/', $started->getContent(), $m);
-    $requestId = SAML2\Message::fromXML(SAML2\DOMDocumentFactory::fromString(base64_decode(html_entity_decode($m[1])))->documentElement)->getId();
+    $requestId = Message::fromXML(DOMDocumentFactory::fromString(base64_decode(html_entity_decode($m[1])))->documentElement)->getId();
     $cookie = $started->getCookie(config('session.cookie'), false);
 
     $this->withUnencryptedCookie($cookie->getName(), $cookie->getValue())
@@ -166,7 +168,7 @@ it('starts a logout with a signed LogoutRequest for the user’s identity', func
     $response = $this->actingAs($this->user, 'craft')->get('/sso/logout/request/'.$this->idp->uid)->assertOk();
 
     preg_match('/name="SAMLRequest" value="([^"]+)"/', $response->getContent(), $m);
-    $request = SAML2\Message::fromXML(SAML2\DOMDocumentFactory::fromString(base64_decode(html_entity_decode($m[1])))->documentElement);
+    $request = Message::fromXML(DOMDocumentFactory::fromString(base64_decode(html_entity_decode($m[1])))->documentElement);
 
     expect($request)->toBeInstanceOf(LogoutRequest::class)
         ->and($request->getNameId()->getValue())->toBe('jane@example.com')

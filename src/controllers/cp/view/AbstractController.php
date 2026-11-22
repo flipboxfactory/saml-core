@@ -1,33 +1,53 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 3/9/18
- * Time: 2:48 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers\cp\view;
 
-use flipbox\saml\core\controllers\AbstractController as BaseController;
+use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use flipbox\saml\core\EnsureSAMLPlugin;
-use flipbox\saml\core\web\assets\bundles\SamlCore;
+use Illuminate\Http\Request;
+use Illuminate\Support\ViewErrorBag;
 
 /**
- * Class AbstractController
- * @package flipbox\saml\core\controllers\cp\view
+ * Base for the SAML plugins' control panel screens. Routes require an admin.
  */
-abstract class AbstractController extends BaseController implements EnsureSAMLPlugin
+abstract class AbstractController implements EnsureSAMLPlugin
 {
-    public const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp';
+    /**
+     * @param  list<ActionItem>  $crumbs
+     */
+    protected function screen(string $title, array $crumbs = []): CpScreenResponse
+    {
+        return new CpScreenResponse()
+            ->title($title)
+            ->crumbs([
+                new ActionItem()->label((string) $this->getPlugin()->name)->href(Url::cpUrl($this->getPlugin()->handle)),
+                ...$crumbs,
+            ]);
+    }
 
     /**
-     * @throws \yii\base\InvalidConfigException
+     * A form screen that posts to one of the plugin's actions, with values and errors from a failed submission.
+     *
+     * @param  array<string, mixed>  $values
      */
-    public function init(): void
+    protected function form(CpScreenResponse $screen, Request $request, Ui $ui, array $values, string $action, ?string $redirect = null): CpScreenResponse
     {
-        parent::init();
-        \Craft::$app->view->registerAssetBundle(
-            SamlCore::class
-        );
+        $errors = $request->session()->get('errors');
+
+        return $screen
+            ->redirectUrl($redirect)
+            ->ui($ui, new UiContext(
+                values: [...$values, ...array_intersect_key((array) $request->old(), $values)],
+                errors: $errors instanceof ViewErrorBag ? $errors->getBag('default')->getMessages() : [],
+            ), [
+                'submit' => ['method' => 'post', 'url' => Url::actionUrl($this->getPlugin()->handle.'/'.$action)],
+                ...($redirect ? ['redirect' => Url::cpUrl($redirect)] : []),
+            ]);
     }
 }

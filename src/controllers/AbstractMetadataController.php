@@ -1,359 +1,254 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dsmrt
- * Date: 2/10/18
- * Time: 10:47 PM
- */
+
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers;
 
-use Craft;
-use craft\records\Site;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Url;
 use flipbox\keychain\records\KeyChainRecord;
-use flipbox\saml\core\controllers\cp\view\AbstractController;
-use flipbox\saml\core\controllers\cp\view\metadata\AbstractEditController;
-use flipbox\saml\core\controllers\cp\view\metadata\VariablesTrait;
 use flipbox\saml\core\exceptions\InvalidMetadata;
 use flipbox\saml\core\helpers\SerializeHelper;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
-use flipbox\saml\core\records\ProviderInterface;
-use yii\web\NotFoundHttpException;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\MessageBag;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
-abstract class AbstractMetadataController extends AbstractController implements \flipbox\saml\core\EnsureSAMLPlugin
+use function CraftCms\Cms\t;
+
+/**
+ * Provider form actions (`actions/{handle}/metadata/…`).
+ */
+abstract class AbstractMetadataController extends AbstractController
 {
-    use VariablesTrait;
-
     /**
-     * @return string
-     * @throws InvalidMetadata
-     * @throws \yii\web\ForbiddenHttpException
+     * This system's metadata XML.
      */
-    public function actionIndex()
+    public function index(): HttpResponse
     {
-        $this->requireAdmin(false);
+        $provider = $this->getPlugin()->getProvider()->findByEntityId($this->getPlugin()->getSettings()->getEntityId())->first()
+            ?? throw new InvalidMetadata('Metadata for this server is missing. Please configure this plugin.');
 
-        /** @var AbstractProvider $provider */
-        $provider = $this->getPlugin()->getProvider()->findByEntityId(
-            $this->getPlugin()->getSettings()->getEntityId()
-        )->one();
-
-        if (!$provider) {
-            throw new InvalidMetadata('Metadata for this server is missing. Please configure this plugin.');
-        }
-
-        SerializeHelper::xmlContentType();
-        return $provider->toXmlString();
+        return SerializeHelper::xmlResponse($provider->toXmlString());
     }
 
     /**
-     * @return \yii\web\Response
-     * @throws \Exception
-     * @throws \yii\web\BadRequestHttpException
+     * Saves a provider.
      */
-    public function actionAutoCreate()
+    public function save(Request $request): Response
     {
-        $this->requireAdmin(false);
-        $this->requirePostRequest();
+        [$record, $errors] = $this->processSaveAction($request);
 
-        $providerRecord = $this->processSaveAction();
-        if (is_null($providerRecord->uid)) {
-            $providerRecord->generateUid();
+        if ($errors->isNotEmpty()) {
+            return $this->failure($request, $errors);
         }
 
-        $entityDescriptor = $this->getPlugin()->getMetadata()->create(
-            $this->getPlugin()->getSettings(),
-            $providerRecord
-        );
+        $this->getPlugin()->getProvider()->save($record);
 
-        $provider = $this->getPlugin()->getProvider()->create(
-            $entityDescriptor,
-            $providerRecord->keychain
-        );
-
-        $providerRecord->entityId = $provider->getEntityId();
-        $providerRecord->metadata = $provider->metadata;
-        $providerRecord->setMetadataModel($provider->getMetadataModel());
-
-
-        if (!$this->getPlugin()->getProvider()->save($providerRecord)) {
-            return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
-                array_merge(
-                    [
-                        'provider' => $providerRecord,
-                        'keychain' => $providerRecord->keychain ?: new KeyChainRecord(),
-                    ],
-                    $this->getPlugin()->getEditProvider()->prepVariables($providerRecord)
-                )
-            );
-        }
-
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(t('Provider saved.', category: $this->getPlugin()->handle), redirect: $this->getPostedRedirectUrl() ?? $this->providerListUrl());
     }
 
     /**
-     * @return \yii\web\Response
-     * @throws \Exception
-     * @throws \yii\web\BadRequestHttpException
+     * Saves this system's own provider, generating its metadata from the plugin settings and key pair.
      */
-    public function actionSave()
+    public function autoCreate(Request $request): Response
     {
-        $this->requireAdmin(false);
-        $this->requirePostRequest();
+        [$record, $errors] = $this->processSaveAction($request, own: true);
 
-        /** @var AbstractProvider $record */
-        $record = $this->processSaveAction();
-
-        if ($record->hasErrors() || !$this->getPlugin()->getProvider()->save($record)) {
-            return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
-                array_merge(
-                    [
-                        'provider' => $record,
-                        'keychain' => $record->keychain ?: new KeyChainRecord(),
-                    ],
-                    $this->getPlugin()->getEditProvider()->prepVariables($record)
-                )
-            );
+        if ($errors->isNotEmpty()) {
+            return $this->failure($request, $errors);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t($this->getPlugin()->getHandle(), 'Provider saved.'));
+        $record->generateUid();
+        $entityDescriptor = $this->getPlugin()->getMetadata()->create($this->getPlugin()->getSettings(), $record);
 
-        return $this->redirectToPostedUrl();
+        $record->entityId = (string) $entityDescriptor->getEntityID();
+        $record->setMetadataModel($entityDescriptor);
+        $record->metadata = $record->toXmlString();
+
+        $this->getPlugin()->getProvider()->save($record);
+
+        return $this->asSuccess(t('Provider saved.', category: $this->getPlugin()->handle), redirect: $this->getPostedRedirectUrl() ?? $this->providerListUrl());
+    }
+
+    public function changeStatus(Request $request): Response
+    {
+        $record = $this->findProvider($request->input('identifier'));
+        $record->enabled = ! $record->enabled;
+        $this->getPlugin()->getProvider()->save($record);
+
+        return $this->asSuccess(t('Provider saved.', category: $this->getPlugin()->handle));
+    }
+
+    public function delete(Request $request): Response
+    {
+        $record = $this->findProvider($request->input('identifier', $request->input('id')));
+
+        if (! $this->getPlugin()->getProvider()->delete($record)) {
+            return $this->asFailure(t('Couldn’t delete the provider.', category: $this->getPlugin()->handle));
+        }
+
+        return $this->asSuccess(t('Provider deleted.', category: $this->getPlugin()->handle), redirect: $this->providerListUrl());
     }
 
     /**
-     * Actions
+     * Downloads a key pair's certificate (public).
      */
-
-    /**
-     * @return \yii\web\Response
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
-     * @throws \Exception
-     */
-    public function actionChangeStatus()
+    public function downloadCertificate(Request $request): HttpResponse
     {
-        $this->requireAdmin(false);
-        $this->requirePostRequest();
+        $keyId = $request->input('keyId');
+        abort_unless(is_numeric($keyId), 404, 'Key not found.');
 
-        $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
+        $keychain = KeyChainRecord::query()->whereKey((int) $keyId)->firstOr(fn () => abort(404, 'Key not found.'));
 
-        /** @var string $recordClass */
-        $recordClass = $this->getPlugin()->getProviderRecordClass();
-
-        /** @var AbstractProvider $record */
-        $record = $recordClass::find()->where([
-            'id' => $providerId,
-        ])->one();
-
-        $record->enabled = !$record->enabled;
-
-        if (!$this->getPlugin()->getProvider()->save($record)) {
-            return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
-                array_merge(
-                    [
-                        'provider' => $record,
-                        'keychain' => $record->keychain ?: new KeyChainRecord(),
-                    ],
-                    $this->getPlugin()->getEditProvider()->prepVariables($record)
-                )
-            );
-        }
-
-        return $this->redirectToPostedUrl();
+        return new HttpResponse($keychain->getDecryptedCertificate(), 200, [
+            'Content-Type' => 'application/x-x509-ca-cert',
+            'Content-Disposition' => 'attachment; filename="certificate.crt"',
+        ]);
     }
 
     /**
-     * @return \yii\web\Response
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
+     * Builds the provider record from the submitted form.
+     *
+     * @return array{0: AbstractProvider, 1: MessageBag}
      */
-    public function actionDelete()
+    protected function processSaveAction(Request $request, bool $own = false): array
     {
-        $this->requireAdmin(false);
-        $this->requirePostRequest();
-
-        $providerId = Craft::$app->request->getRequiredBodyParam('identifier');
-
-        /** @var string $recordClass */
-        $recordClass = $this->getPlugin()->getProviderRecordClass();
-
-        /** @var ProviderInterface $record */
-        $record = $recordClass::find()->where([
-            'id' => $providerId,
-        ])->one();
-
-        if (!$this->getPlugin()->getProvider()->delete($record)) {
-            return $this->renderTemplate(
-                $this->getPlugin()->getEditProvider()->getTemplateIndex() . AbstractEditController::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'edit',
-                array_merge(
-                    [
-                        'provider' => $record,
-                        'keychain' => $record->keychain ?: new KeyChainRecord(),
-                    ],
-                    $this->getPlugin()->getEditProvider()->prepVariables($record)
-                )
-            );
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    /**
-     * @return ProviderInterface
-     * @throws \Exception
-     */
-    protected function processSaveAction()
-    {
-        $providerId = Craft::$app->request->getParam('identifier');
-        $entityId = Craft::$app->request->getParam('entityId');
-        $keyId = Craft::$app->request->getParam('keychain');
-        $providerType = Craft::$app->request->getParam('providerType');
-        $providerSite = Craft::$app->request->getParam('providerSite');
-        $metadata = Craft::$app->request->getParam('metadata-text');
-        $metadataUrl = Craft::$app->request->getParam('metadata-url-text');
-        $metadataUrlInterval = Craft::$app->request->getParam('metadata-url-interval-text');
-        $mapping = Craft::$app->request->getParam('mapping', []);
-        $label = Craft::$app->request->getRequiredParam('label');
-        $nameIdOverride = Craft::$app->request->getParam('nameIdOverride');
-
         $plugin = $this->getPlugin();
+        $errors = new MessageBag;
+        $handle = $plugin->handle;
 
-        $recordClass = $this->getPlugin()->getProviderRecordClass();
-        /** @var AbstractProvider $record */
-        if ($providerId) {
-            $record = $recordClass::find()->where([
-                'id' => $providerId,
-            ])->one();
+        $record = $request->filled('identifier')
+            ? $this->findProvider($request->input('identifier'))
+            : tap(new ($plugin->getProviderRecordClass()), fn (AbstractProvider $r) => $r->enabled = true);
 
-            if (!$record) {
-                throw new \Exception("Provider with ID: {$providerId} not found.");
-            }
-        } else {
-            $record = new $recordClass();
-
-            //enabled is default
-            $record->enabled = true;
-        }
-
-        $record->entityId = $entityId;
-        if ($providerSite) {
-            if ($site = Site::findOne([
-                'id' => $providerSite,
-            ])) {
-                $record->setSite($site);
-            } else {
-                // @todo add
-                var_dump('wat?');
-                exit;
-            }
-        }
-
-        // Metadata
-        if (!$metadata && $metadataUrl) {
-            $metadataModel = $this->getPlugin()->getMetadata()->fetchByUrl($metadataUrl);
-            $record->metadata = $metadataModel->toXML()->ownerDocument->saveXML();
-            $record->setMetadataModel($metadataModel);
-        } else {
-            $record->metadata = $metadata;
-        }
-
-        // Mapping
-        if (is_array($mapping)) {
-            $record->setMapping(
-                $mapping
-            );
+        $providerType = (string) $request->input('providerType', $own ? $plugin->getMyType() : $plugin->getRemoteType());
+        if (! in_array($providerType, [SettingsInterface::SP, SettingsInterface::IDP], true)) {
+            $errors->add('providerType', t('Invalid provider type.', category: $handle));
         }
 
         $record->providerType = $providerType;
-        $record->nameIdOverride = $nameIdOverride;
+        $record->label = $request->string('label')->trim()->toString() ?: null;
+        $record->nameIdOverride = $request->input('nameIdOverride') ?: null;
+        $record->syncGroups = $request->boolean('syncGroups');
+        $record->groupsAttributeName = $request->input('groupsAttributeName') ?: AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME;
 
-        // IDP Plugin on SP Provider ONLY
-        if ($this->getPlugin()->getMyType() === SettingsInterface::IDP
-            &&
-            $providerType === SettingsInterface::SP
-        ) {
-            // Encryption settings
-            $record->encryptAssertions = Craft::$app->request->getParam('encryptAssertions') ?: 0;
-            $record->encryptionMethod = Craft::$app->request->getParam('encryptionMethod');
-            $record->setGroupOptions(
-                $groupOptions = new GroupOptions([
-                    'options' => Craft::$app->request->getParam('groupOptions', []) ?: [],
-                ])
-            );
+        if (! $record->label) {
+            $errors->add('label', t('Label is required.', category: $handle));
         }
 
-        $record->setMetadataOptions(
-            new MetadataOptions([
-                'url' => $metadataUrl,
-                'expiryInterval' => $metadataUrlInterval,
-            ])
-        );
+        if ($request->filled('entityId')) {
+            $record->entityId = (string) $request->input('entityId');
+        }
 
-        // Group properties
-        $record->syncGroups = Craft::$app->request->getParam('syncGroups') ?: 0;
-
-        $record->groupsAttributeName =
-            Craft::$app->request->getParam('groupsAttributeName') ?:
-                AbstractProvider::DEFAULT_GROUPS_ATTRIBUTE_NAME;
-
-        /**
-         * check for label and add error if it's empty
-         */
-        if ($label) {
-            $record->label = $label;
+        if ($siteId = $request->input('providerSite')) {
+            $site = Site::query()->whereKey((int) $siteId)->first();
+            $site ? $record->setSite($site) : $errors->add('providerSite', t('The site doesn’t exist.', category: $handle));
         } else {
-            $record->addError('label', Craft::t($plugin->getHandle(), "Label is required."));
+            $record->setSite(null);
         }
 
+        // Metadata: pasted XML, or fetched from a URL
+        $metadataUrl = (string) $request->input('metadata-url-text', '');
+        $metadata = (string) $request->input('metadata-text', '');
 
-        if ($keyId) {
-            /** @var KeyChainRecord $keychain */
-            if ($keychain = KeyChainRecord::find()->where([
-                'id' => $keyId,
-            ])->one()) {
-                $record->setKeychain(
-                    $keychain
-                );
+        if (! $own) {
+            try {
+                if ($metadata === '' && $metadataUrl !== '') {
+                    $record->setMetadataModel($plugin->getMetadata()->fetchByUrl($metadataUrl));
+                    $record->metadata = $record->toXmlString();
+                } elseif ($metadata !== '') {
+                    $record->setMetadataXml($metadata);
+                    $record->getMetadataModel();
+                }
+            } catch (Throwable $e) {
+                $errors->add('metadata-text', t('The metadata isn’t valid: {error}', ['error' => $e->getMessage()], $handle));
+            }
+
+            if ($plugin->getRemoteType() === $providerType && ! $record->metadata) {
+                $errors->add('metadata-text', t('Metadata cannot be empty.', category: $handle));
             }
         }
 
-        /**
-         * Metadata should exist for the remote provider
-         */
-        if ($plugin->getRemoteType() === $providerType && !$record->metadata) {
-            $record->addError('metadata-text', Craft::t($plugin->getHandle(), "Metadata cannot be empty."));
+        if (is_array($mapping = $request->input('mapping'))) {
+            $record->setMapping(array_values(array_filter($mapping, 'is_array')));
         }
 
-        return $record;
+        if ($plugin->getMyType() === SettingsInterface::IDP && $providerType === SettingsInterface::SP) {
+            $record->encryptAssertions = $request->boolean('encryptAssertions');
+            $record->encryptionMethod = $request->input('encryptionMethod') ?: null;
+            $record->setGroupOptions(new GroupOptions(['options' => $this->groupOptionsFromInput((array) $request->input('groupOptions', []))]));
+        }
+
+        $record->setMetadataOptions(new MetadataOptions([
+            'url' => $metadataUrl ?: null,
+            'expiryInterval' => $request->input('metadata-url-interval-text') ?: null,
+        ]));
+
+        if ($keyId = $request->input('keychain')) {
+            $keychain = KeyChainRecord::query()->whereKey((int) $keyId)->first();
+            $keychain ? $record->setKeychain($keychain) : $errors->add('keychain', t('The key pair doesn’t exist.', category: $handle));
+        }
+
+        return [$record, $errors];
     }
 
-
     /**
-     * @param $keyId
-     * @return \craft\web\Response|\yii\console\Response
-     * @throws NotFoundHttpException
-     * @throws \yii\web\ForbiddenHttpException
-     * @throws \yii\web\HttpException
-     * @throws \yii\web\RangeNotSatisfiableHttpException
+     * Group options from the access control table (`{groupId|allowany|nogroup: {allow, sync}}`), or the 5.x form
+     * shape (`{allow: [...], sync: [...]}`).
+     *
+     * @param  array<array-key, mixed>  $input
+     * @return array{allow: list<int|string>, sync: list<int|string>}
      */
-    public function actionDownloadCertificate($keyId)
+    protected function groupOptionsFromInput(array $input): array
     {
-        $this->requireAdmin(false);
-
-        /** @var KeyChainRecord $keychain */
-        if (!$keychain = KeyChainRecord::find()->where([
-            'id' => $keyId,
-        ])->one()) {
-            throw new NotFoundHttpException('Key not found');
+        if (isset($input[GroupOptions::OPTION_ALLOW]) || isset($input[GroupOptions::OPTION_SYNC])) {
+            return [
+                'allow' => array_values((array) ($input[GroupOptions::OPTION_ALLOW] ?? [])),
+                'sync' => array_values((array) ($input[GroupOptions::OPTION_SYNC] ?? [])),
+            ];
         }
 
-        return Craft::$app->response->sendContentAsFile($keychain->getDecryptedCertificate(), 'certificate.crt');
+        $options = ['allow' => [], 'sync' => []];
+        foreach ($input as $id => $row) {
+            if (! is_array($row) || ! (is_numeric($id) || in_array($id, [GroupOptions::ALLOW_ANY, GroupOptions::NO_GROUP], true))) {
+                continue;
+            }
+            foreach (['allow', 'sync'] as $option) {
+                if (filter_var($row[$option] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+                    $options[$option][] = $id;
+                }
+            }
+        }
+
+        return $options;
+    }
+
+    protected function findProvider(mixed $id): AbstractProvider
+    {
+        abort_unless(is_numeric($id), 404, 'Provider not found.');
+
+        return $this->getPlugin()->getProvider()->find(['id' => (int) $id])->firstOr(fn () => abort(404, 'Provider not found.'));
+    }
+
+    protected function failure(Request $request, MessageBag $errors): Response
+    {
+        if ($request->expectsJson()) {
+            return $this->asJsonFailure(t('Couldn’t save the provider.', category: $this->getPlugin()->handle), ['errors' => $errors->getMessages()]);
+        }
+
+        $request->flash();
+
+        return back()->withErrors($errors);
+    }
+
+    protected function providerListUrl(): string
+    {
+        return Url::cpUrl($this->getPlugin()->handle.'/metadata');
     }
 }

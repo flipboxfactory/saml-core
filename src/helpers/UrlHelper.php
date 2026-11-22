@@ -47,7 +47,7 @@ class UrlHelper
         }
 
         $site = $provider->site;
-        $baseUrl = $site !== null && $site->hasUrls ? (string) $site->baseUrl : Url::baseSiteUrl();
+        $baseUrl = $site !== null && $site->getAttribute('hasUrls') ? (string) $site->getAttribute('baseUrl') : Url::baseSiteUrl();
 
         return implode('/', [static::providerBaseUrl($baseUrl), $uri]);
     }

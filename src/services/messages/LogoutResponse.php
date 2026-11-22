@@ -7,29 +7,27 @@
 namespace flipbox\saml\core\services\messages;
 
 use flipbox\saml\core\events\LogoutResponseCreated;
-use flipbox\saml\core\services\PluginService;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\services\PluginService;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse as SamlLogoutResponse;
 use SAML2\XML\saml\Issuer;
 
 /**
  * Class AbstractLogoutResponse
- * @package flipbox\saml\core\services\messages
  */
 class LogoutResponse extends PluginService
 {
-
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create(
         LogoutRequest $request,
         AbstractProvider $theirProvider,
         AbstractProvider $ourProvider,
-    ) {
-        $logout = new SamlLogoutResponse();
+    ): SamlLogoutResponse {
+        $logout = new SamlLogoutResponse;
 
         /**
          * Set remote destination
@@ -58,7 +56,7 @@ class LogoutResponse extends PluginService
          * Set issuer
          */
         $logout->setIssuer(
-            $issuer = new Issuer()
+            $issuer = new Issuer
         );
         $issuer->setValue(
             $ourProvider->getEntityId()

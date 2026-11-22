@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use flipbox\keychain\KeyChain;
+use flipbox\saml\core\exceptions\InvalidMetadata;
+use flipbox\saml\core\exceptions\InvalidSignature;
+use flipbox\saml\core\helpers\SignatureVerifier;
 use flipbox\saml\core\models\GroupOptions;
 use flipbox\saml\core\models\MetadataOptions;
 use flipbox\saml\core\records\LinkRecord;
 use flipbox\saml\core\tests\fixtures\KeyPair;
 use flipbox\saml\core\tests\fixtures\plugin\ProviderRecord;
 use Illuminate\Support\Facades\DB;
+use RobRichards\XMLSecLibs\XMLSecurityKey;
+use SAML2\LogoutRequest;
 
 function idpProvider(string $entityId = 'https://idp.example.com', array $certificates = []): ProviderRecord
 {
@@ -96,10 +101,10 @@ it('doesn’t confuse key pairs of the other SAML plugin’s provider with the s
 it('signs with the linked private key and fails closed without one', function () {
     $provider = idpProvider();
 
-    expect(fn () => $provider->keychainPrivateXmlSecurityKey())->toThrow(flipbox\saml\core\exceptions\InvalidMetadata::class);
+    expect(fn () => $provider->keychainPrivateXmlSecurityKey())->toThrow(InvalidMetadata::class);
 
     $provider->setKeychain(KeyChain::getInstance()->getService()->generateOpenssl(['pluginHandle' => 'saml-core-test']));
-    expect($provider->keychainPrivateXmlSecurityKey())->toBeInstanceOf(RobRichards\XMLSecLibs\XMLSecurityKey::class);
+    expect($provider->keychainPrivateXmlSecurityKey())->toBeInstanceOf(XMLSecurityKey::class);
 });
 
 it('finds providers by type, enabled state and entity ID', function () {
@@ -123,3 +128,20 @@ it('deletes a provider and its key pair link', function () {
     expect(test()->plugin()->getProvider()->delete($provider))->toBeTrue()
         ->and(LinkRecord::query()->where('providerUid', $provider->uid)->exists())->toBeFalse();
 });
+
+it('treats a KeyDescriptor without a use attribute as a signing and encryption key', function () {
+    $provider = idpProvider();
+    $xml = str_replace(' use="signing"', '', $provider->metadata);
+    expect($xml)->not->toContain('use="signing"');
+
+    $provider->setMetadataXml($xml);
+
+    expect($provider->signingXMLSecurityKeyStore())->toHaveCount(1)
+        ->and($provider->encryptionKey())->not->toBeNull();
+});
+
+it('fails signature verification when the metadata has no signing keys', function () {
+    $request = new LogoutRequest;
+
+    SignatureVerifier::verifyWithKeys($request, []);
+})->throws(InvalidSignature::class, 'no signing certificate');

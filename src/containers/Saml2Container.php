@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace flipbox\saml\core\containers;
 
+use CraftCms\Cms\View\TemplateMode;
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\EnsureSAMLPlugin;
 use flipbox\saml\core\helpers\MessageHelper;
@@ -11,7 +12,6 @@ use flipbox\saml\core\helpers\SerializeHelper;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use CraftCms\Cms\View\TemplateMode;
 use Psr\Log\LoggerInterface;
 use SAML2\Compat\AbstractContainer;
 
@@ -58,12 +58,10 @@ class Saml2Container extends AbstractContainer implements EnsureSAMLPlugin
     public function debugMessage($message, string $type): void
     {
         if ($message instanceof \DOMElement) {
-            $message = $message->ownerDocument?->saveXML($message);
-        } elseif ($message instanceof \DOMDocument) {
-            $message = $message->saveXML();
+            $message = (string) $message->ownerDocument?->saveXML($message);
         }
 
-        $this->getLogger()->debug((string) $message, ['type' => $type]);
+        $this->getLogger()->debug($message, ['type' => $type]);
     }
 
     /**

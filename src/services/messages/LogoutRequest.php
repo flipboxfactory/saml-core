@@ -8,10 +8,10 @@ namespace flipbox\saml\core\services\messages;
 
 use flipbox\saml\core\events\LogoutRequestCreated;
 use flipbox\saml\core\helpers\SecurityHelper;
-use flipbox\saml\core\services\PluginService;
 use flipbox\saml\core\models\SettingsInterface;
 use flipbox\saml\core\records\AbstractProvider;
 use flipbox\saml\core\records\AbstractProviderIdentity;
+use flipbox\saml\core\services\PluginService;
 use SAML2\Constants;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest as SamlLogoutRequest;
@@ -20,15 +20,10 @@ use SAML2\XML\saml\NameID;
 
 /**
  * Class LogoutRequest
- * @package flipbox\saml\core\services\messages
  */
 class LogoutRequest extends PluginService
 {
     /**
-     * @param AbstractProvider $theirProvider
-     * @param AbstractProvider $ourProvider
-     * @param AbstractProviderIdentity $identity
-     * @return SamlLogoutRequest
      * @throws \Exception
      */
     public function create(
@@ -36,8 +31,8 @@ class LogoutRequest extends PluginService
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
         ?string $relayState = null,
-    ) {
-        $logout = new SamlLogoutRequest();
+    ): SamlLogoutRequest {
+        $logout = new SamlLogoutRequest;
 
         /**
          * Set remote destination
@@ -57,7 +52,7 @@ class LogoutRequest extends PluginService
             (new \DateTime('+5 minutes'))->getTimestamp()
         );
         $logout->setIssueInstant(
-            (new \DateTime())->getTimestamp()
+            (new \DateTime)->getTimestamp()
         );
         $logout->setConsent(
             Constants::CONSENT_UNSPECIFIED
@@ -71,7 +66,7 @@ class LogoutRequest extends PluginService
          * Set NameId
          */
         $logout->setNameID(
-            $nameId = new NameID()
+            $nameId = new NameID
         );
 
         $nameId->setValue($identity->nameId);
@@ -81,7 +76,7 @@ class LogoutRequest extends PluginService
          * Set issuer
          */
         $logout->setIssuer(
-            $issuer = new Issuer()
+            $issuer = new Issuer
         );
         $issuer->setValue(
             $ourProvider->getEntityId()
@@ -114,8 +109,8 @@ class LogoutRequest extends PluginService
         AbstractProvider $ourProvider,
         AbstractProviderIdentity $identity,
         ?string $relayState = null,
-    ) {
-        return (new HTTPRedirect())->getRedirectURL(
+    ): string {
+        return (new HTTPRedirect)->getRedirectURL(
             $this->create(
                 $theirProvider,
                 $ourProvider,

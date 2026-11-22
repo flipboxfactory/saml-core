@@ -6,6 +6,7 @@ use flipbox\saml\core\tests\TestCase;
 
 uses(TestCase::class)->in('Feature');
 
+use flipbox\saml\core\helpers\SecurityHelper;
 use flipbox\saml\core\tests\fixtures\KeyPair;
 use SAML2\Constants;
 use SAML2\XML\ds\KeyInfo;
@@ -40,7 +41,7 @@ function idpMetadataXml(string $entityId, array $signingCertificates, bool $same
             $keyInfo->addInfo($data);
         }
         $certificate = new X509Certificate;
-        $certificate->setCertificate(\flipbox\saml\core\helpers\SecurityHelper::cleanCertificate($pem));
+        $certificate->setCertificate(SecurityHelper::cleanCertificate($pem));
         $data->addData($certificate);
     }
     $keyDescriptor = new KeyDescriptor;

@@ -6,7 +6,6 @@ namespace flipbox\saml\core\tests\fixtures\plugin;
 
 use flipbox\saml\core\AbstractPlugin;
 use flipbox\saml\core\containers\Saml2Container;
-use flipbox\saml\core\tests\fixtures\plugin\controllers;
 use SAML2\Compat\AbstractContainer;
 use SAML2\Compat\ContainerSingleton;
 

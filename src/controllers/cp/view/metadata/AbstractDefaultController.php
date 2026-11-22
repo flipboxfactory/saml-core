@@ -1,127 +1,68 @@
 <?php
 
-/**
- * @copyright  Copyright (c) Flipbox Digital Limited
- */
+declare(strict_types=1);
 
 namespace flipbox\saml\core\controllers\cp\view\metadata;
 
-use Craft;
-use craft\helpers\UrlHelper;
-use flipbox\saml\core\AbstractPlugin;
+use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
 use flipbox\saml\core\controllers\cp\view\AbstractController;
-use flipbox\saml\core\EnsureSAMLPlugin;
-use flipbox\saml\core\models\SettingsInterface;
+use flipbox\saml\core\records\AbstractProvider;
+use flipbox\saml\core\records\ProviderInterface;
+
+use function CraftCms\Cms\t;
 
 /**
- * Class AbstractDefaultController
- * @package flipbox\saml\core\controllers\cp\view\metadata
+ * The provider list.
  */
-abstract class AbstractDefaultController extends AbstractController implements EnsureSAMLPlugin
+abstract class AbstractDefaultController extends AbstractController
 {
-    public const TEMPLATE_INDEX = DIRECTORY_SEPARATOR . '_cp' . DIRECTORY_SEPARATOR . 'metadata';
-
-    /**
-     * @return \yii\web\Response
-     * @throws \Exception
-     */
-    public function actionIndex()
+    public function index(): CpScreenResponse
     {
-        $variables = $this->getPlugin()->getEditProvider()->getBaseVariables();
-        $plugin = $this->getPlugin();
-        $variables['myProvider'] = null;
-        $variables['spProviders'] = [];
-        $variables['idpProviders'] = [];
-        $variables['idpListInstructions'] = $this->getListInstructions(SettingsInterface::IDP);
-        $variables['spListInstructions'] = $this->getListInstructions(SettingsInterface::SP);
+        $handle = $this->getPlugin()->handle;
+        $own = $this->getPlugin()->getProvider()->findOwn();
 
-        /**
-         * Breadcrumbs
-         */
-        $variables['crumbs'] = [
-            [
-                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()),
-                'label' => $this->getPlugin()->name,
-            ],
-            [
-                'url' => UrlHelper::cpUrl($this->getPlugin()->getHandle()) . '/metadata',
-                'label' => 'Provider List',
-            ],
-        ];
+        $nodes = [];
+        foreach ([ProviderInterface::TYPE_SP => t('Service Providers', category: $handle), ProviderInterface::TYPE_IDP => t('Identity Providers', category: $handle)] as $type => $heading) {
+            $providers = $this->getPlugin()->getProvider()->find(['providerType' => $type])->orderBy('id')->get();
 
-        /**
-         * Get IDPs
-         */
-        foreach ($plugin->getProvider()->findByIdp([
-            'enabled' => [true, false],
-        ])->all() as $provider) {
-            $variables['idpProviders'][] = $provider;
-            if ($provider->getEntityId() == $this->getPlugin()->getSettings()->getEntityId()) {
-                $variables['myProvider'] = $provider;
-            }
+            $nodes[] = Heading::make("providers-$type-heading", $heading);
+            $nodes[] = Table::make("providers-$type")
+                ->columns([
+                    ['key' => 'label', 'label' => t('Label', category: $handle), 'sortable' => true, 'width' => '1.5fr'],
+                    ['key' => 'entityId', 'label' => t('Entity ID', category: $handle)],
+                    ['key' => 'uid', 'label' => t('UID')],
+                    ['key' => 'dateUpdated', 'label' => t('Date Updated')],
+                ])
+                ->rows($providers->map(function (AbstractProvider $provider) use ($own, $handle) {
+                    $isMine = $own && $own->id === $provider->id;
+
+                    return [
+                        'id' => $provider->id,
+                        '_status' => $provider->isEnabled(),
+                        'label' => [
+                            'label' => ($provider->label ?: t('Provider', category: $handle)).($isMine ? ' ('.t('My Provider', category: $handle).')' : ''),
+                            'url' => Url::cpUrl("$handle/metadata/".($isMine ? 'my-provider' : $provider->id)),
+                        ],
+                        'entityId' => $provider->entityId,
+                        'uid' => $provider->uid,
+                        'dateUpdated' => ['date' => $provider->dateUpdated?->toIso8601String()],
+                    ];
+                }))
+                ->emptyMessage($type === ProviderInterface::TYPE_SP ? t('No service providers exist yet.', category: $handle) : t('No identity providers exist yet.', category: $handle))
+                ->createAction(
+                    $type === ProviderInterface::TYPE_SP ? t('New service provider', category: $handle) : t('New identity provider', category: $handle),
+                    Url::cpUrl("$handle/metadata/new-$type"),
+                )
+                ->deletable(Url::actionUrl("$handle/metadata/delete"), t('Are you sure you want to delete this provider? SSO with it will stop working.', category: $handle));
         }
 
-        /**
-         * Get SPs
-         */
-        foreach ($plugin->getProvider()->findBySp([
-            'enabled' => [true, false],
-        ])->all() as $provider) {
-            $variables['spProviders'][] = $provider;
-            if ($provider->getEntityId() == $this->getPlugin()->getSettings()->getEntityId()) {
-                $variables['myProvider'] = $provider;
-            }
-        }
-
-        $variables['title'] = Craft::t($this->getPlugin()->getHandle(), $this->getPlugin()->name);
-        return $this->renderTemplate(
-            $this->getPlugin()->getEditProvider()->getTemplateIndex() . static::TEMPLATE_INDEX . DIRECTORY_SEPARATOR . 'list',
-            $variables
-        );
-    }
-
-    /**
-     * @param $providerType
-     * @return string
-     * @throws \Exception
-     */
-    protected function getListInstructions($providerType)
-    {
-        /** @var AbstractPlugin $plugin */
-        $plugin = $this->getPlugin();
-        if (!in_array($providerType, [
-            SettingsInterface::SP,
-            SettingsInterface::IDP,
-        ])) {
-            throw new \Exception($providerType . ' is not a valid type.');
-        }
-
-        /**
-         * Base return off of getMyType and the provider type passed
-         */
-        $return = '';
-        switch ($this->getPlugin()->getMyType()) {
-            case SettingsInterface::IDP:
-                $return = SettingsInterface::SP === $providerType ? Craft::t(
-                    $this->getPlugin()->getHandle(),
-                    'These are the remote providers using this Craft CMS instance to authenticate. '
-                ) : Craft::t(
-                    $this->getPlugin()->getHandle(),
-                    'Your provider configuration(s).'
-                );
-                break;
-            case SettingsInterface::SP:
-                $return = SettingsInterface::SP === $providerType ? Craft::t(
-                    $this->getPlugin()->getHandle(),
-                    'Your provider configuration(s). '
-                ) : Craft::t(
-                    $this->getPlugin()->getHandle(),
-                    'These are the remote providers where the user ' .
-                    'authenticates, ie, OKTA, Microsoft AD, or Google, etc. To configure and IDP, simply obtain the metadata.'
-                );
-                break;
-        }
-
-        return $return;
+        return $this->screen(t('Provider List', category: $handle), [new ActionItem()->label(t('Provider List', category: $handle))])
+            ->selectedSubnavItem('saml.providers')
+            ->ui(Ui::make($nodes));
     }
 }

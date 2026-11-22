@@ -5,6 +5,7 @@ namespace flipbox\saml\core\helpers;
 use flipbox\saml\core\AbstractPlugin;
 use Illuminate\Support\Facades\Log;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
+use SAML2\Assertion;
 use SAML2\EncryptedAssertion;
 use SAML2\Utilities\Certificate;
 
@@ -12,14 +13,20 @@ class SecurityHelper
 {
     public const XMLDSIG_DIGEST_MD5 = 'http://www.w3.org/2001/04/xmldsig-more#md5';
 
-    private static $typeMap = [
+    /**
+     * @var array<string, string>
+     */
+    private static array $typeMap = [
         'RSA-SHA1' => XMLSecurityKey::RSA_SHA1,
         'RSA-SHA256' => XMLSecurityKey::RSA_SHA256,
         'RSA-SHA384' => XMLSecurityKey::RSA_SHA384,
         'RSA-SHA512' => XMLSecurityKey::RSA_SHA512,
     ];
 
-    public static $validEncryptionMethods = [
+    /**
+     * @var list<string>
+     */
+    public static array $validEncryptionMethods = [
         XMLSecurityKey::TRIPLEDES_CBC,
         // Prefered
         XMLSecurityKey::AES128_CBC,
@@ -32,7 +39,6 @@ class SecurityHelper
     ];
 
     /**
-     * @param string $certificate
      * @return string
      */
     public static function convertToCertificate(string $certificate)
@@ -43,12 +49,11 @@ class SecurityHelper
     }
 
     /**
-     * @param string $certificate
      * @return string|string[]|null
      */
     public static function cleanCertificate(string $certificate)
     {
-        if (false == preg_match(Certificate::CERTIFICATE_PATTERN, $certificate, $matches)) {
+        if (preg_match(Certificate::CERTIFICATE_PATTERN, $certificate, $matches) == false) {
             throw new \InvalidArgumentException('Invalid PEM encoded certificate');
         }
 
@@ -56,7 +61,6 @@ class SecurityHelper
     }
 
     /**
-     * @param string $certificate
      * @return string|string[]|null
      */
     public static function cleanCertificateWhiteSpace(string $certificate)
@@ -65,12 +69,11 @@ class SecurityHelper
     }
 
     /**
-     * @param $pem
-     * @return mixed|string|null
-     * @throws \Exception
-     * Thank you lightsaml/lightsaml
+     * The XML security algorithm matching a certificate's signature algorithm (from lightsaml/lightsaml).
+     *
+     * @throws \Exception if it's not recognised
      */
-    public static function getPemAlgorithm($pem)
+    public static function getPemAlgorithm(string $pem): string
     {
         $res = openssl_x509_read($pem);
         $info = openssl_x509_parse($res);
@@ -107,7 +110,7 @@ class SecurityHelper
             }
         }
 
-        if (!$signatureAlgorithm) {
+        if (! $signatureAlgorithm) {
             throw new \Exception('Unrecognized signature algorithm');
         }
 
@@ -115,19 +118,19 @@ class SecurityHelper
     }
 
     /**
-     * @param EncryptedAssertion $encryptedAssertion
-     * @param $pemString
-     * @param array $blacklist
-     * @return \SAML2\Assertion
      * @throws \Exception
      */
-    public static function decryptAssertion(EncryptedAssertion $encryptedAssertion, $pemString, array $blacklist = [])
+    /**
+     * @param  list<string>  $blacklist  algorithms that must not be used
+     */
+    public static function decryptAssertion(EncryptedAssertion $encryptedAssertion, string $pemString, array $blacklist = []): Assertion
     {
         $lastException = null;
         foreach (static::$validEncryptionMethods as $method) {
-            Log::debug('Trying method: ' . $method, ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
+            Log::debug('Trying method: '.$method, ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
             if (in_array($method, $blacklist)) {
-                Log::debug('Decryption with key #' . $method . ' blacklisted.', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
+                Log::debug('Decryption with key #'.$method.' blacklisted.', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
+
                 continue;
             }
             $xmlSecurityKey = new XMLSecurityKey($method, [
@@ -145,11 +148,12 @@ class SecurityHelper
                     $xmlSecurityKey,
                     $blacklist
                 );
-                Log::debug('Decryption with key #' . $method . ' succeeded.', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
+                Log::debug('Decryption with key #'.$method.' succeeded.', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
+
                 return $assertion;
             } catch (\Exception $e) {
                 $lastException = $e;
-                Log::debug('Decryption with key #' . $method . ' failed. ', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
+                Log::debug('Decryption with key #'.$method.' failed. ', ['category' => AbstractPlugin::SAML_CORE_HANDLE]);
             }
         }
 

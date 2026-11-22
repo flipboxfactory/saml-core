@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: dsmrt
@@ -8,6 +9,4 @@
 
 namespace flipbox\saml\core\exceptions;
 
-class InvalidSignature extends \Exception
-{
-}
+class InvalidSignature extends \Exception {}

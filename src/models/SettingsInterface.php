@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: dsmrt
@@ -11,6 +12,7 @@ namespace flipbox\saml\core\models;
 interface SettingsInterface
 {
     public const IDP = 'idp';
+
     public const SP = 'sp';
 
     /**
