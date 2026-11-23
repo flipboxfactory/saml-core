@@ -115,11 +115,12 @@ abstract class AbstractProvider extends BaseModel implements ProviderInterface
             }
         }
 
-        $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, (string) $this->metadata);
-
         if ($model = $this->getMetadataModel()) {
             $this->metadata = (string) $model->toXML()->ownerDocument?->saveXML();
         }
+
+        // After normalising, so the hash is of the metadata that's stored
+        $this->sha256 = hash(static::METADATA_HASH_ALGORITHM, (string) $this->metadata);
     }
 
     public function getLoginRequestEndpoint(?AbstractSettings $settings = null): string

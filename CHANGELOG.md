@@ -1,5 +1,9 @@
 Changelog
 =========
+# Unreleased
+## Fixed
+- Saving a provider built from a metadata model (`setMetadataModel()` without setting `metadata`) no longer stores the hash of empty metadata. A second such provider failed the unique `sha256` index. The hash is now taken after the metadata is normalised, so it always matches the stored metadata.
+
 # 6.0.0-beta.1 2026-11-22
 ## Changed
 - Requires Craft CMS 6, PHP 8.5 and KeyChain 6. saml-core is a native Craft 6 library and doesn't need the Yii2 adapter. It stays on simplesamlphp/saml2 4.19.
