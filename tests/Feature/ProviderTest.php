@@ -13,7 +13,9 @@ use flipbox\saml\core\tests\fixtures\KeyPair;
 use flipbox\saml\core\tests\fixtures\plugin\ProviderRecord;
 use Illuminate\Support\Facades\DB;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
+use SAML2\DOMDocumentFactory;
 use SAML2\LogoutRequest;
+use SAML2\XML\md\EntityDescriptor;
 
 function idpProvider(string $entityId = 'https://idp.example.com', array $certificates = []): ProviderRecord
 {
@@ -31,6 +33,39 @@ it('saves a provider with its entity ID, hash and normalised metadata', function
         ->and($row->sha256)->toHaveLength(64)
         ->and($row->uid)->toMatch('/^[0-9a-f-]{36}$/')
         ->and($row->metadata)->toContain('https://idp.example.com/sso');
+});
+
+it('hashes the metadata it stores', function () {
+    $provider = idpProvider();
+    $row = DB::table(ProviderRecord::TABLE_ALIAS)->where('id', $provider->id)->first();
+
+    expect($row->sha256)->toBe(hash('sha256', $row->metadata));
+});
+
+it('saves providers built from metadata models with their own hashes', function () {
+    // The hash was taken before the model's XML was written, so every such provider got the empty-string hash and
+    // a second one failed the unique index
+    $providers = array_map(function (string $entityId) {
+        $provider = new ProviderRecord(['providerType' => 'idp']);
+        $provider->setMetadataModel(new EntityDescriptor(DOMDocumentFactory::fromString(idpMetadataXml($entityId, [keyPair()->certificatePem]))->documentElement));
+
+        return test()->plugin()->getProvider()->save($provider);
+    }, ['https://one.example.com', 'https://two.example.com']);
+
+    foreach ($providers as $provider) {
+        $row = DB::table(ProviderRecord::TABLE_ALIAS)->where('id', $provider->id)->first();
+        expect($row->sha256)->toBe(hash('sha256', $row->metadata))
+            ->and($row->sha256)->not->toBe(hash('sha256', ''));
+    }
+});
+
+it('updates the hash when the metadata changes', function () {
+    $provider = idpProvider();
+    $provider->setMetadataXml(idpMetadataXml('https://idp.example.com', [KeyPair::generate()->certificatePem]));
+    test()->plugin()->getProvider()->save($provider);
+
+    $row = DB::table(ProviderRecord::TABLE_ALIAS)->where('id', $provider->id)->first();
+    expect($row->sha256)->toBe(hash('sha256', $row->metadata));
 });
 
 it('round-trips mapping, group and metadata options as JSON', function () {
