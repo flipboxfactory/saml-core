@@ -1,6 +1,6 @@
 Changelog
 =========
-# Unreleased
+# 6.0.0-beta.2 2026-11-24
 ## Fixed
 - Saving a provider built from a metadata model (`setMetadataModel()` without setting `metadata`) no longer stores the hash of empty metadata. A second such provider failed the unique `sha256` index. The hash is now taken after the metadata is normalised, so it always matches the stored metadata.
 
